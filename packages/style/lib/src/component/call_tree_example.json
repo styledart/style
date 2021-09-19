@@ -1,0 +1,37 @@
+{
+  "serviceRootName": {
+    "q": {
+      "_comment": "Default Query Handler",
+      "q": "Endpoint()"
+    },
+    "lg": {
+      "_comment": "Default Login",
+      "q": "Endpoint()"
+    },
+    "rg": {
+      "_comment": "Default Register",
+      "q": "Endpoint()"
+    },
+    "lgo": {
+      "_comment": "Default Logout",
+      "q": "Endpoint()"
+    },
+    "users": {
+      "{user}": {
+        "media": {
+          "picture": "Endpoint({id})",
+          "video": "Endpoint({id})"
+        },
+        "posts": {
+          "{post}": {
+            "media": {
+              "picture": "Endpoint({id})"
+            }
+          }
+        }
+      }
+    },
+    "localization": "MicroService('localization_service')",
+    "info": "Endpoint()"
+  }
+}

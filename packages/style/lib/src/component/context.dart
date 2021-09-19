@@ -1,0 +1,320 @@
+part of 'run.dart';
+
+abstract class BuildContext {
+  ServiceOwnerMixin get owner;
+
+  Component get component;
+
+  CryptoState? _crypto;
+
+  CryptoState get crypto =>
+      _crypto ??
+      owner._states[owner._cryptoServiceKey]!.state
+          as CryptoState;
+
+  DataAccessState? _dataAccessState;
+
+  DataAccessState get dataAccess =>
+      _dataAccessState ??
+      owner._states[owner._dataAccessKey]!.state
+          as DataAccessState;
+
+  SocketServiceState? _socketServiceState;
+
+  SocketServiceState get webSocket =>
+      _socketServiceState ??
+      owner._states[owner._socketServiceKey]!.state
+          as SocketServiceState;
+
+  HttpServiceState? _httpServiceState;
+
+  HttpServiceState get httpService =>
+      _httpServiceState ??
+      owner._states[owner._httpServiceKey]!.state
+          as HttpServiceState;
+
+  T? findAncestorBindingOfType<T extends Binding>();
+
+  T? findAncestorComponentOfType<T extends Component>();
+
+  T? findAncestorServiceByName<T extends ServiceBinding>(
+      String name);
+
+  T? findAncestorStateOfType<
+      T extends State<StatefulComponent>>();
+
+  T? findChildService<T extends ServiceBinding>();
+
+  T? findChildState<T extends State>();
+
+  CallingBinding get findCalling;
+
+  CallingBinding? get ancestorCalling;
+}
+
+/// Mimari kurucusu
+/// Gerekli işlemleri gerekli yollara ekler
+///
+/// Aynı zamanda component ve calling  arasındaki köprüdür.
+///
+/// Binding ağacı bitince dökümantasyon oluşturulur
+///
+/// Binding aynı zamanda bir context'tir
+///
+/// Context yalnızca build esnasında gerekli olan bilgileri taşır
+abstract class Binding extends BuildContext {
+  Binding(Component component)
+      : _component = component,
+        _key = component.key ?? Key.random(),
+        super();
+
+  ///Calling get calling;
+
+  Key get key => _key;
+
+  final Key _key;
+
+  final Component _component;
+
+  @override
+  Component get component => _component;
+
+  Binding? _parent;
+
+  void attachToParent(Binding parent,
+      [ServiceOwnerMixin? owner]) {
+    _owner = owner;
+    _parent = parent;
+    _crypto = parent._crypto;
+    _httpServiceState = parent._httpServiceState;
+    _socketServiceState = parent._socketServiceState;
+    _dataAccessState = parent._dataAccessState;
+  }
+
+  @override
+  ServiceOwnerMixin get owner => _owner!;
+  ServiceOwnerMixin? _owner;
+
+  TreeVisitor<Binding> visitChildren(
+      TreeVisitor<Binding> visitor) {
+    return visitor;
+  }
+
+  TreeVisitor<Calling> visitCallingChildren(
+      TreeVisitor<Calling> visitor);
+
+  @override
+  T? findAncestorBindingOfType<T extends Binding>() {
+    Binding? ancestor = _parent;
+    while (ancestor != null && ancestor.runtimeType != T) {
+      ancestor = ancestor._parent;
+    }
+    return ancestor as T?;
+  }
+
+  @override
+  T? findAncestorComponentOfType<T extends Component>() {
+    Binding? ancestor = _parent;
+    while (ancestor != null &&
+        ancestor.component.runtimeType != T) {
+      ancestor = ancestor._parent;
+    }
+    return ancestor?.component as T?;
+  }
+
+  @override
+  T? findAncestorServiceByName<T extends ServiceBinding>(
+      String name) {
+    Binding? ancestor = _owner;
+    while (ancestor != null &&
+        !(ancestor is T &&
+            ((ancestor).serviceRootName == name))) {
+      ancestor = ancestor._owner;
+    }
+    return ancestor as T?;
+  }
+
+  @override
+  T? findAncestorStateOfType<
+      T extends State<StatefulComponent>>() {
+    Binding? ancestor = _parent;
+    while (ancestor != null &&
+        !(ancestor is StatefulBinding &&
+            ancestor.state is T)) {
+      ancestor = ancestor._parent;
+    }
+    return (ancestor as StatefulBinding?)?.state as T?;
+  }
+
+  @override
+  T? findChildService<T extends ServiceBinding>() {
+    var visiting =
+        visitChildren(TreeVisitor<Binding>((visitor) {
+      if (visitor.currentValue is T) {
+        visitor.stop(visitor.currentValue);
+      }
+    }));
+
+    return visiting.result as T;
+  }
+
+  @override
+  T? findChildState<T extends State>() {
+    var visiting =
+        visitChildren(TreeVisitor<Binding>((visitor) {
+      if (visitor.currentValue is StatefulBinding &&
+          (visitor.currentValue as StatefulBinding).state
+              is T) {
+        visitor.stop(visitor.currentValue);
+      }
+    }));
+
+    return (visiting.result as StatefulBinding?)?.state
+        as T?;
+  }
+
+  @override
+  CallingBinding get findCalling {
+    return visitCallingChildren(TreeVisitor((visitor) {
+      visitor.stop(visitor.currentValue);
+    })).currentValue.binding;
+  }
+
+  @override
+  CallingBinding? get ancestorCalling {
+    Binding? result;
+    Binding? ancestor = _parent;
+    while (ancestor != null &&
+        result == null &&
+        ancestor is! ServiceBinding) {
+      if (ancestor is CallingBinding) {
+        result = ancestor;
+        break;
+      }
+      ancestor = ancestor._parent;
+    }
+
+    return result as CallingBinding?;
+  }
+
+  void _build();
+}
+
+class TreeVisitor<T> {
+  TreeVisitor(this.visitor);
+
+  void Function(TreeVisitor<T> visitor)? visitor;
+
+  bool _stopped = false;
+
+  late T currentValue;
+
+  void call(T value) {
+    currentValue = value;
+    visitor!.call(this);
+  }
+
+  void stop(T value) {
+    result = value;
+    _stopped = true;
+  }
+
+  T? result;
+}
+
+typedef BindingVisitor = void Function(Binding binding);
+
+abstract class DevelopmentBinding extends Binding {
+  DevelopmentBinding(Component component)
+      : super(component);
+
+  Binding? _child;
+
+  Component build(Binding binding);
+
+  @override
+  TreeVisitor<Binding> visitChildren(
+      TreeVisitor<Binding> visitor) {
+    visitor(this);
+    _child!.visitChildren(visitor);
+    return visitor;
+  }
+
+  @override
+  TreeVisitor<Calling> visitCallingChildren(
+      TreeVisitor<Calling> visitor) {
+    return _child!.visitCallingChildren(visitor);
+  }
+
+  @override
+  void _build() {
+    /// Build this binding component
+    /// create child's binding
+    /// attach this
+    _child = null;
+    var _childComponent = build(this);
+    _child = _childComponent.createBinding();
+    _child!.attachToParent(this, _owner);
+    _child!._build();
+  }
+}
+
+class StatelessBinding extends DevelopmentBinding {
+  StatelessBinding(StatelessComponent component)
+      : super(component);
+
+  @override
+  StatelessComponent get component =>
+      super.component as StatelessComponent;
+
+  @override
+  Component build(Binding binding) =>
+      component.build(binding);
+
+  @override
+  Key get key => _key;
+
+  @override
+  TreeVisitor<Binding> visitChildren(
+      TreeVisitor<Binding> visitor) {
+    visitor(this);
+    _child!.visitChildren(visitor);
+    return visitor;
+  }
+}
+
+class StatefulBinding extends DevelopmentBinding {
+  StatefulBinding(StatefulComponent component)
+      : super(component);
+
+  bool get initialized => _state != null;
+
+  State get state => _state!;
+
+  State? _state;
+
+  @override
+  StatefulComponent get component =>
+      super.component as StatefulComponent;
+
+  @override
+  TreeVisitor<Binding> visitChildren(
+      TreeVisitor<Binding> visitor) {
+    visitor(this);
+    _child!.visitChildren(visitor);
+    return visitor;
+  }
+
+  @override
+  Component build(Binding binding) {
+    _state ??= (component).createState();
+    _state!._component = component;
+    _state!._binding = this;
+    _state!.initState();
+    if (binding._owner != null &&
+        binding.key is GlobalKey) {
+      _owner!.addState(state);
+    }
+    return _state!.build(binding);
+  }
+}

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/packages/style_interface/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/style_interface/build" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/angular/angular_test/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/angular/angular_test/build" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/angular/angular/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/angular/angular/build" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/angular/examples/hello_world/build" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/angular/examples/hello_world/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/angular/angular_compiler/build" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/angular/angular_compiler/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/angular/angular_forms/build" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/angular/angular_forms/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/angular/_tests/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/angular/_tests/build" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/angular/angular_ast/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/angular/angular_ast/build" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/angular/angular_router/build" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/angular/angular_router/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/style/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/style/build" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/style/.pub" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Dart SDK" level="project" />
+    <orderEntry type="library" name="Dart Packages" level="project" />
+  </component>
+</module>
