@@ -1,4 +1,4 @@
-part of '../run.dart';
+part of '../../style_base.dart';
 
 class Gateway extends StatelessComponent {
   const Gateway({this.unknown, this.root, required this.children, Key? key})
@@ -10,18 +10,13 @@ class Gateway extends StatelessComponent {
 
   @override
   Component build(BuildContext context) {
-    Endpoint _unknown = unknown ??
-        context
-            .findAncestorStateOfType<ServiceState>()
-            ?.component
-            .defaultUnknownEndpoint ??
-        UnknownEndpoint();
+    var _unknown = unknown ?? context.unknown;
 
-    Endpoint _root = root ?? _unknown;
+    var _root = root ?? _unknown;
 
-    final Map<PathSegment, CallingComponent> _components = children.map(
+    final _components = children.map(
         (key, value) => MapEntry(PathSegment(key),
-            PathRouter(segment: PathSegment(key), child: value)));
+            PathRouter(segment: key, child: value)));
     assert(() {
       var argCount = 0;
       String? _reservedUsed;
@@ -40,9 +35,9 @@ class Gateway extends StatelessComponent {
 
     _components.addAll({
       PathSegment("*root"):
-          PathRouter(segment: PathSegment("*root"), child: _root),
+          PathRouter(segment: "*root", child: _root),
       PathSegment("*unknown"):
-          PathRouter(segment: PathSegment("*unknown"), child: _unknown)
+          PathRouter(segment:"*unknown", child: _unknown)
     });
 
     return _GatewayCallingComponent(components: _components);
@@ -71,7 +66,7 @@ class GatewayCalling extends Calling {
   final Map<PathSegment, CallingComponent> components;
 
   @override
-  FutureOr<void> onCall(StyleRequest request) {
+  FutureOr<void> onCall(Request request) {
     // binding.children
     // (binding.component as _GatewayCallingComponent);
 
@@ -172,7 +167,7 @@ class GatewayCalling extends Calling {
 //   GatewayCalling(Binding binding) : super(binding: (binding as CallingBinding));
 //
 //   @override
-//   FutureOr<void> onCall(StyleRequest request) {
+//   FutureOr<void> onCall(Request request) {
 //     // TODO: implement onCall
 //     throw UnimplementedError();
 //   }

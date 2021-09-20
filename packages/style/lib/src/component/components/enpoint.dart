@@ -1,10 +1,10 @@
-part of '../run.dart';
+part of '../../style_base.dart';
 
 class EndpointCalling extends Calling {
   EndpointCalling(EndpointCallingBinding endpoint) : super(binding: endpoint);
 
   @override
-  FutureOr<void> onCall(StyleRequest request) {
+  FutureOr<void> onCall(Request request) {
     // TODO: implement onCall
     throw UnimplementedError();
   }
@@ -20,7 +20,7 @@ abstract class Endpoint extends CallingComponent {
   Calling createCalling(BuildContext context) =>
       EndpointCalling(context as EndpointCallingBinding);
 
-  FutureOr<void> onCall(StyleRequest request);
+  FutureOr<void> onCall(Request request);
 }
 
 class EndpointCallingBinding extends CallingBinding {
@@ -54,7 +54,7 @@ class EndpointCallingBinding extends CallingBinding {
 
   String get fullPath {
     var list = <String>[];
-    List<Component> ancestorComponents = [];
+    var ancestorComponents = <Component>[];
     CallingBinding? ancestor;
     ancestor = this;
     while (ancestor is! ServiceBinding && ancestor != null) {
@@ -96,7 +96,7 @@ class UnknownEndpoint extends Endpoint {
   UnknownEndpoint() : super();
 
   @override
-  FutureOr<void> onCall(StyleRequest request) {
+  FutureOr<void> onCall(Request request) {
     // TODO: implement onCall
     throw UnimplementedError();
   }

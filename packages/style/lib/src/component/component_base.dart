@@ -1,4 +1,4 @@
-part of 'run.dart';
+part of '../style_base.dart';
 
 /// Ana Mimarideki her bir parça
 ///

@@ -1,4 +1,4 @@
-part of '../run.dart';
+part of '../../style_base.dart';
 
 class Server extends StatefulComponent {
   Server(
@@ -29,8 +29,6 @@ class Server extends StatefulComponent {
   final Endpoint unknown;
   final Endpoint rootEndpoint;
 
-  Endpoint? get defaultUnknownEndpoint => unknown;
-
   @override
   State<StatefulComponent> createState() => ServiceState();
 }
@@ -48,9 +46,8 @@ class ServiceState extends State<Server> {
 
   @override
   Component build(BuildContext context) {
-    final Map<PathSegment, CallingComponent> _components = component.children
-        .map((key, value) => MapEntry(PathSegment(key),
-            PathRouter(segment: PathSegment(key), child: value)));
+    final _components = component.children.map((key, value) =>
+        MapEntry(PathSegment(key), PathRouter(segment: key, child: value)));
 
     assert(() {
       var argCount = 0;
@@ -79,6 +76,8 @@ class ServiceState extends State<Server> {
                     dataAccess: dataAccess,
                     cryptoService: cryptoService,
                     rootName: rootName,
+                    root: component.rootEndpoint,
+                    unknonwn: component.unknown,
                     children: _components))),
       ),
     );
@@ -86,17 +85,19 @@ class ServiceState extends State<Server> {
 }
 
 class ServiceCallingComponent extends CallingComponent {
-  ServiceCallingComponent({
-    required this.httpServiceNew,
-    required this.socketService,
-    required this.dataAccess,
-    required this.cryptoService,
-    required this.rootName,
-    required this.children,
-    this.serviceMaxIdleDuration = const Duration(minutes: 180),
-    this.createStateOnCall = true,
-    this.createStateOnInitialize = true,
-  }) : super();
+  ServiceCallingComponent(
+      {required this.httpServiceNew,
+      required this.socketService,
+      required this.dataAccess,
+      required this.cryptoService,
+      required this.rootName,
+      required this.children,
+      this.serviceMaxIdleDuration = const Duration(minutes: 180),
+      this.createStateOnCall = true,
+      this.createStateOnInitialize = true,
+      required this.unknonwn,
+      required this.root})
+      : super();
 
   final String rootName;
   final CryptoHandler cryptoService;
@@ -107,6 +108,7 @@ class ServiceCallingComponent extends CallingComponent {
   final Duration serviceMaxIdleDuration;
   final bool createStateOnCall;
   final Map<PathSegment, CallingComponent> children;
+  final Endpoint root, unknonwn;
 
   /// type belirtilmezse bir üsttekini getirir
   /// type belirtilirse ve bir üstteki o type değilse
@@ -146,7 +148,7 @@ class ServiceBinding extends CallingBinding with ServiceOwnerMixin {
   @override
   void _build() {
     serviceRootName = component.rootName;
-
+    _unknown = component.unknonwn;
     _crypto = findAncestorStateOfType<CryptoState>();
     _dataAccessState = findAncestorStateOfType<DataAccessState>();
     _socketServiceState = findAncestorStateOfType<SocketServiceState>();
@@ -173,6 +175,7 @@ class ServiceBinding extends CallingBinding with ServiceOwnerMixin {
     }
     children = _bindings;
 
+    print("Service Creating: $children");
     for (var bind in children) {
       bind.attachToParent(this, _owner ?? this);
       bind._build();
@@ -215,9 +218,6 @@ class ServiceBinding extends CallingBinding with ServiceOwnerMixin {
       }
     }
     return visitor;
-
-    // TODO: implement callingVisitor
-    throw UnimplementedError();
   }
 }
 
@@ -228,7 +228,7 @@ class ServiceCalling extends Calling {
   ServiceBinding get binding => super.binding as ServiceBinding;
 
   @override
-  FutureOr<void> onCall(StyleRequest request) {
+  FutureOr<void> onCall(Request request) {
     // TODO: implement onCall
     throw UnimplementedError();
   }

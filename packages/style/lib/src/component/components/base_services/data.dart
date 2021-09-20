@@ -1,4 +1,4 @@
-part of '../../run.dart';
+part of '../../../style_base.dart';
 
 class DataAccess extends StatefulComponent {
   const DataAccess(

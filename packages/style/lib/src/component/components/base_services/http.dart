@@ -1,5 +1,4 @@
-part of '../../run.dart';
-
+part of '../../../style_base.dart';
 abstract class HttpServiceHandler {
   //TODO:
   const HttpServiceHandler();

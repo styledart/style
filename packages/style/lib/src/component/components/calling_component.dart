@@ -1,4 +1,4 @@
-part of '../run.dart';
+part of '../../style_base.dart';
 
 abstract class CallingComponent extends Component {
   @override
@@ -23,7 +23,7 @@ abstract class SingleChildCallingComponent
     extends CallingComponent {
   SingleChildCallingComponent(this.child);
 
-  final Component child;
+  final Component? child;
 
   @override
   SingleChildCallingBinding createBinding();
@@ -81,12 +81,13 @@ class SingleChildCallingBinding extends CallingBinding {
 
   Binding? _child;
 
-  Binding get child => _child!;
+  Binding? get child => _child!;
 
   @override
   void _build() {
     _calling = component.createCalling(this);
-    _child = component.child.createBinding();
+    var _childComponents = component.child ?? unknown;
+    _child = _childComponents.createBinding();
     _child!.attachToParent(this, _owner);
     _child!._build();
   }
@@ -95,7 +96,7 @@ class SingleChildCallingBinding extends CallingBinding {
   TreeVisitor<Calling> callingVisitor(
       TreeVisitor<Calling> visitor) {
     visitor(calling);
-    return child.visitCallingChildren(visitor);
+    return child?.visitCallingChildren(visitor) ?? visitor;
   }
 }
 

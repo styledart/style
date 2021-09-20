@@ -1,4 +1,4 @@
-part of 'run.dart';
+part of '../style_base.dart';
 
 abstract class BuildContext {
   ServiceOwnerMixin get owner;
@@ -50,6 +50,12 @@ abstract class BuildContext {
   CallingBinding get findCalling;
 
   CallingBinding? get ancestorCalling;
+
+  Component get unknown => _unknown!;
+
+  Component? _unknown;
+
+
 }
 
 /// Mimari kurucusu
@@ -86,6 +92,7 @@ abstract class Binding extends BuildContext {
     _owner = owner;
     _parent = parent;
     _crypto = parent._crypto;
+    _unknown = parent._unknown;
     _httpServiceState = parent._httpServiceState;
     _socketServiceState = parent._socketServiceState;
     _dataAccessState = parent._dataAccessState;
@@ -105,7 +112,7 @@ abstract class Binding extends BuildContext {
 
   @override
   T? findAncestorBindingOfType<T extends Binding>() {
-    Binding? ancestor = _parent;
+    var ancestor = _parent;
     while (ancestor != null && ancestor.runtimeType != T) {
       ancestor = ancestor._parent;
     }
@@ -114,7 +121,7 @@ abstract class Binding extends BuildContext {
 
   @override
   T? findAncestorComponentOfType<T extends Component>() {
-    Binding? ancestor = _parent;
+    var ancestor = _parent;
     while (ancestor != null &&
         ancestor.component.runtimeType != T) {
       ancestor = ancestor._parent;
@@ -137,7 +144,7 @@ abstract class Binding extends BuildContext {
   @override
   T? findAncestorStateOfType<
       T extends State<StatefulComponent>>() {
-    Binding? ancestor = _parent;
+    var ancestor = _parent;
     while (ancestor != null &&
         !(ancestor is StatefulBinding &&
             ancestor.state is T)) {
@@ -183,7 +190,7 @@ abstract class Binding extends BuildContext {
   @override
   CallingBinding? get ancestorCalling {
     Binding? result;
-    Binding? ancestor = _parent;
+    var ancestor = _parent;
     while (ancestor != null &&
         result == null &&
         ancestor is! ServiceBinding) {

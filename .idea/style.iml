@@ -3,8 +3,6 @@
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
     <content url="file://$MODULE_DIR$">
-      <excludeFolder url="file://$MODULE_DIR$/packages/style_interface/.pub" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/style_interface/build" />
       <excludeFolder url="file://$MODULE_DIR$/packages/angular/angular_test/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/packages/angular/angular_test/build" />
       <excludeFolder url="file://$MODULE_DIR$/packages/angular/angular/.pub" />
@@ -24,6 +22,9 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/style/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/packages/style/build" />
       <excludeFolder url="file://$MODULE_DIR$/packages/style/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/style_interface/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/style_interface/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/style_interface/build" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

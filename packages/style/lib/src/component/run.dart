@@ -1,34 +1,4 @@
-import 'dart:async';
-
-import 'package:meta/meta.dart';
-import 'package:style_interface/style_interface.dart';
-part 'calling.dart';
-
-part 'component_base.dart';
-
-part 'components/base_services/base.dart';
-
-part 'components/base_services/crypto.dart';
-
-part 'components/base_services/data.dart';
-
-part 'components/base_services/http.dart';
-
-part 'components/base_services/web_socket.dart';
-
-part 'components/calling_component.dart';
-
-part 'components/enpoint.dart';
-
-part 'components/gateway.dart';
-
-part 'components/path_router.dart';
-
-part 'components/path_segment.dart';
-
-part 'components/service.dart';
-
-part 'context.dart';
+part of '../style_base.dart';
 
 void main() {
   runService(MyServer());
@@ -43,11 +13,11 @@ void runService(Component component) {
     print(visitor.currentValue.component);
   }));
 
-  List<String> results = [];
-  var visiting = binding.visitCallingChildren(TreeVisitor((binding) {
+  var results = <String>[];
+  binding.visitCallingChildren(TreeVisitor((binding) {
     if (binding.currentValue is EndpointCalling) {
       results.add(
-          "% ${(binding.currentValue.binding as EndpointCallingBinding).fullPath} %");
+          "%${(binding.currentValue.binding as EndpointCallingBinding).fullPath} %");
     }
   }));
 
@@ -89,10 +59,7 @@ class User extends StatelessComponent {
   @override
   Component build(BuildContext context) {
     print("in users: ${context.owner}");
-    return Gateway(children: {
-      "media" : Media(),
-      "picture" : Picture()
-    });
+    return Gateway(children: {"media": Media(), "picture": Picture()});
   }
 }
 
@@ -100,7 +67,7 @@ class Media extends StatelessComponent {
   @override
   Component build(BuildContext context) {
     print("in media: ${context.owner}");
-    return Gateway(children: {});
+    return Gateway(children: {"picture": Picture(), "video": Video()});
   }
 }
 
@@ -108,7 +75,7 @@ class Picture extends Endpoint {
   Picture() : super();
 
   @override
-  FutureOr<void> onCall(StyleRequest request) {
+  FutureOr<void> onCall(Request request) {
     throw UnimplementedError();
   }
 }
@@ -117,7 +84,7 @@ class Video extends Endpoint {
   Video() : super();
 
   @override
-  FutureOr<void> onCall(StyleRequest request) {
+  FutureOr<void> onCall(Request request) {
     throw UnimplementedError();
   }
 }

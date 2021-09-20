@@ -1,5 +1,4 @@
-part of 'run.dart';
-
+part of '../style_base.dart';
 
 
 
@@ -21,7 +20,7 @@ abstract class Calling {
 
   // String name;
 
-  FutureOr<void> onCall(StyleRequest request);
+  FutureOr<void> onCall(Request request);
 
   int callCount = 0;
 

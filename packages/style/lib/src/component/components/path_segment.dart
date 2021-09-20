@@ -1,3 +1,3 @@
-part of '../run.dart';
+part of '../../style_base.dart';
 
 
