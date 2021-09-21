@@ -1,4 +1,16 @@
-# Futures
+
+# Feature
+
+- [ ] Microservice- Internal - External Service. Services be active or reactive with idle duration, terminal commands.
+- [ ] Style Command Line App
+- [ ] ViewEndpoint for Server Side Rendering. Endpoint built in initialize and serve views
+- [ ] DataView . MVC Pattern
+- [ ] Auto Api Documentation
+- [ ] Role Based Admin Auth
+- [ ] Differnt State for Each Client
+- [ ] Monitoring- All calling  tree statuses, service statuses, client states
+- [ ] Simple CRUD
+
 
 
 ## Components
