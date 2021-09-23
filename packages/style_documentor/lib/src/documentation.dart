@@ -4,14 +4,12 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 
 class DocumentationBuilder implements Builder {
-
   DocumentationBuilder(this.options);
 
   BuilderOptions options;
 
   @override
   FutureOr<void> build(BuildStep buildStep) async {
-
     // Get the `LibraryElement` for the primary input.
     var entryLib = await buildStep.inputLibrary;
     print("HANDLE STEP ${entryLib.identifier} :");
@@ -22,10 +20,9 @@ class DocumentationBuilder implements Builder {
 
     var info = buildStep.inputId.addExtension('.txt');
 
-    var main = entryLib.topLevelElements.where((element) => element.name == "main").first as FunctionElement;
-
-
-
+    var main = entryLib.topLevelElements
+        .where((element) => element.name == "main")
+        .first as FunctionElement;
 
     await buildStep.writeAsString(info, '''
       Options: ${options.config}

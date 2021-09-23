@@ -2,26 +2,8 @@
   "$id": "style_server_schema",
   "description": "Style Server Schema for generate server or generate documentation",
   "definitions": {
-    "redirect": {
-      "type": "object",
-      "properties": {
-        "redirect": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "redirect"
-      ]
-    },
     "endpoint": {
-      "anyOf": [
-        {
-          "$ref": "#/definitions/redirect"
-        },
-        {
-          "type": "string"
-        }
-      ]
+      "type": "string"
     },
     "gateway": {
       "type": "array",
@@ -36,6 +18,70 @@
       "properties": {
         "auth_required" : {
           "type": "boolean"
+        }
+      }
+    },
+
+
+    "condition" : {
+      "type": "object",
+      "oneOf": [
+        {
+          "required": ["eq"]
+        },
+        {
+          "required": ["ne"]
+        },
+        {
+          "required": ["and"]
+        },
+        {
+          "required": ["or"]
+        }
+      ],
+      "properties": {
+        "eq": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "maxItems": 2,
+          "minItems": 2
+        }
+      ,
+        "ne" : {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "maxItems": 2,
+          "minItems": 2
+        },
+        "and" : {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "$ref": "#/definitions/condition"
+          }
+        },
+        "or" : {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "$ref": "#/definitions/condition"
+          }
+        }
+      }
+    },
+
+    "permission_gate" : {
+      "type": "object",
+      "required": ["equals"],
+      "properties": {
+        "equals" : {
+          "$ref": "#/definitions/condition"
         }
       }
     },
@@ -95,6 +141,9 @@
             },
             {
               "$ref": "#/definitions/agent_gate"
+            },
+            {
+              "$ref": "#/definitions/permission_gate"
             }
           ]
         }
@@ -151,9 +200,18 @@
   },
   "required": [
     "unknown",
-    "gateway"
+    "gateway",
+    "root",
+    "rootName"
   ],
   "properties": {
+    "rootName" : {
+      "type": "string"
+    },
+    "root" : {
+      "$ref": "#/definitions/endpoint"
+    },
+
     "gateway": {
       "$ref": "#/definitions/gateway"
     },
@@ -165,8 +223,8 @@
       "default": "localhost"
     },
     "port": {
-      "type": "string",
-      "default": "9090"
+      "type": "integer",
+      "default": 9090
     }
 
   }
