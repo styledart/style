@@ -1,0 +1,28 @@
+#targets:
+#  style_documentor:
+#    builders:
+#      documentationBuilder:
+#        enabled: True
+#        generate_for:
+#          exclude:
+#            - lib/src/component/**
+#            - lib/src/models/**
+#            - example/**
+#            - test/**
+#          include:
+#            - lib/src/style_base.dart
+
+builders:
+  documentationBuilder:
+    import: "package:style_documentor/style_documentor.dart"
+    builder_factories: ["documentationBuilder"]
+    build_extensions: {".dart": [".dart.txt"]}
+    build_to: source
+    auto_apply: all_packages
+    defaults:
+      generate_for:
+        exclude:
+          - lib/**
+          - test/**
+        include:
+          - example/**

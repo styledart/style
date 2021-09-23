@@ -53,9 +53,13 @@ abstract class StatefulComponent extends Component {
   StatefulBinding createBinding() => StatefulBinding(this);
 }
 
+///
 abstract class State<T extends StatefulComponent> {
+
+  ///
   bool get mounted => _binding != null;
 
+  ///
   Component build(BuildContext context);
 
   T? _component;
@@ -68,6 +72,7 @@ abstract class State<T extends StatefulComponent> {
   ///
   StatefulBinding get context => _binding!;
 
+  ///
   void initState() async {}
 }
 

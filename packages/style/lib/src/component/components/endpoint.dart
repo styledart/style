@@ -4,14 +4,37 @@ class EndpointCalling extends Calling {
   EndpointCalling(EndpointCallingBinding endpoint) : super(binding: endpoint);
 
   @override
-  FutureOr<void> onCall(Request request) {
+  // TODO: implement binding
+  EndpointCallingBinding get binding => super.binding as EndpointCallingBinding;
+
+  @override
+  FutureOr<Message> onCall(Request request) {
+
+    return binding.component.onCall(request);
+
+
+    return request.createResponse({
+      "path" : "unknown"
+    });
+
+
     // TODO: implement onCall
     throw UnimplementedError();
   }
+
+
 }
 
+///
 abstract class Endpoint extends CallingComponent {
-  Endpoint();
+  ///
+  Endpoint({Key? key}) : super(key: key);
+
+  ///
+  late final BuildContext? _context;
+
+  ///
+  BuildContext get context => _context!;
 
   @override
   CallingBinding createBinding() => EndpointCallingBinding(this);
@@ -20,7 +43,7 @@ abstract class Endpoint extends CallingComponent {
   Calling createCalling(BuildContext context) =>
       EndpointCalling(context as EndpointCallingBinding);
 
-  FutureOr<void> onCall(Request request);
+  FutureOr<Message> onCall(Request request);
 }
 
 class EndpointCallingBinding extends CallingBinding {
@@ -51,7 +74,6 @@ class EndpointCallingBinding extends CallingBinding {
   //
   // }
 
-
   String get fullPath {
     var list = <String>[];
     var ancestorComponents = <Component>[];
@@ -59,7 +81,8 @@ class EndpointCallingBinding extends CallingBinding {
     ancestor = this;
     while (ancestor is! ServiceBinding && ancestor != null) {
       if (ancestor.component is PathSegmentBindingMixin) {
-        list.add(((ancestor).component as PathSegmentBindingMixin).segment.name);
+        list.add(
+            ((ancestor).component as PathSegmentBindingMixin).segment.name);
       }
       ancestorComponents.add(ancestor.component);
       ancestor = ancestor.ancestorCalling;
@@ -68,7 +91,7 @@ class EndpointCallingBinding extends CallingBinding {
       throw Exception("No Service Found from: \nFrom:$ancestorComponents");
     }
 
-    list.add(owner.httpService.component.httpServiceHandler.address);
+    list.add(owner.httpService.address);
 
     return list.reversed.join("/");
   }
@@ -81,7 +104,7 @@ class EndpointCallingBinding extends CallingBinding {
 
   @override
   void _build() {
-    print("In calling: $_owner");
+    component._context = this;
     _calling = component.createCalling(this);
   }
 
@@ -92,12 +115,18 @@ class EndpointCallingBinding extends CallingBinding {
   }
 }
 
+///
 class UnknownEndpoint extends Endpoint {
+  ///
   UnknownEndpoint() : super();
 
   @override
-  FutureOr<void> onCall(Request request) {
-    // TODO: implement onCall
-    throw UnimplementedError();
+  FutureOr<Message> onCall(Request request) {
+    return request.createResponse({
+      "reason": "route_unknown",
+      "route": request.context.pathController.current.name
+    });
   }
+
+
 }

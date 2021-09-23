@@ -61,30 +61,40 @@ part of '../../style_base.dart';
 /// * Adding new single child segments to calling tree
 /// * Adding unknown endpoint to this segment
 /// * Adding root endpoint to this segment a
-class PathRouter extends SingleChildCallingComponent
-    with PathSegmentBindingMixin {
+class PathRouter extends CallingComponent with PathSegmentBindingMixin {
   /// For argument segments use segment with "{segment}" .
   /// [child], [root] and [unknown]
   PathRouter.withPathSegment(
       {required PathSegment segment,
       Component? child,
       Component? root,
-      Component? unknown})
+      Component? unknown,
+      bool? handleUnknownAsRoot})
       : _segment = segment,
-        _unknown = unknown,
         _root = root,
-        super(child);
+        _child = child,
+        handleUnknownAsRoot = handleUnknownAsRoot ?? false,
+        assert(child != null  || root != null, "Child or Root must be defined"),
+        assert(!(handleUnknownAsRoot ?? false) || root != null),
+        super();
 
   /// For argument segments use segment with "{segment}" .
   /// [child], [root] and [unknown] is parent [unknown] in default
   /// for custom [PathSegment] to use constructor [PathRouter.withPathSegment]
-  factory PathRouter({required String segment,
-    Component? child,
-    Component? root,
-    Component? unknown}){
-    return PathRouter.withPathSegment(segment: PathSegment(segment));
+  factory PathRouter(
+      {required String segment,
+      Component? child,
+      Component? root,
+      bool? handleUnknownAsRoot}) {
+    return PathRouter.withPathSegment(
+        segment: PathSegment(segment),
+        child: child,
+        root: root,
+        handleUnknownAsRoot: handleUnknownAsRoot);
   }
 
+  /// Handle //TODO:
+  final bool handleUnknownAsRoot;
 
   final PathSegment _segment;
 
@@ -98,36 +108,113 @@ class PathRouter extends SingleChildCallingComponent
 
   @override
   Calling createCalling(BuildContext context) =>
-      PathRouterCalling(context as SingleChildCallingBinding);
+      PathRouterCalling(context as PathRouterCallingBinding);
 
   @override
-  SingleChildCallingBinding createBinding() => SingleChildCallingBinding(this);
+  PathRouterCallingBinding createBinding() => PathRouterCallingBinding(this);
 
-  final Component? _unknown, _root;
+  final Component? _root, _child;
 
   @override
   Component? get root => _root;
 
   @override
-  Component? get unknown => _unknown;
+  Component? get child => _child;
 }
 
-
 //TODO: PathRouter Calling Binding
+///
+class PathRouterCallingBinding extends CallingBinding {
+  ///
+  PathRouterCallingBinding(PathRouter component) : super(component);
+
+  ///
+  late Binding? childBinding, rootBinding;
+
+  @override
+  void _build() {
+    _calling = component.createCalling(this);
+    rootBinding = component._root?.createBinding();
+    childBinding = component._child?.createBinding();
+
+    // if (rootBinding != null && component.handleUnknownAsRoot) {
+    //   var unknownBinding = _unknown?.createBinding();
+    //   if ((unknownBinding is EndpointCallingBinding) &&
+    //       unknownBinding.component._context == null) {
+    //     unknownBinding._build();
+    //   }
+    // }
+
+    // _unknown = component.unknown ?? _unknown;
+
+    childBinding?.attachToParent(
+      this,
+    );
+    rootBinding?.attachToParent(
+      this,
+    );
+
+    childBinding?._build();
+    rootBinding?._build();
+
+    ///_unknownBinding.attachToParent(this);
+  }
+
+  @override
+  TreeVisitor<Calling> callingVisitor(TreeVisitor<Calling> visitor) {
+    visitor(calling);
+    if (component.root != null) {
+      rootBinding!.visitCallingChildren(visitor);
+    }
+    if (component.child != null) {
+      childBinding!.visitCallingChildren(visitor);
+    }
+    // if (component.unknown != null) {
+    //   unknownBinding!.visitCallingChildren(visitor);
+    // }
+    return visitor;
+  }
+
+  @override
+  TreeVisitor<Binding> visitChildren(TreeVisitor<Binding> visitor) {
+    visitor(this);
+
+    if (rootBinding != null) {
+      rootBinding?.visitChildren(visitor);
+    }
+
+    if (childBinding != null) {
+      childBinding?.visitChildren(visitor);
+    }
+
+    return visitor;
+  }
+
+  @override
+  PathRouter get component => super.component as PathRouter;
+}
 
 /// [PathRouterCalling] call on request this segment.
 /// And route to [child] or [unknown] or [root] which is called
 /// as endpoint
 class PathRouterCalling extends Calling {
-
   /// if child isn't null, creating bindings
-  PathRouterCalling(SingleChildCallingBinding binding)
-      : super(binding: binding);
+  PathRouterCalling(PathRouterCallingBinding binding) : super(binding: binding);
+
+  PathRouterCallingBinding get binding =>
+      super.binding as PathRouterCallingBinding;
 
   @override
-  FutureOr<void> onCall(Request request) {
-    // TODO: implement onCall
-    throw UnimplementedError();
+  FutureOr<Message> onCall(Request request) {
+    if (request.path.notProcessedValues.isEmpty) {
+      return (binding.rootBinding ?? binding.unknown).call(request);
+    } else {
+      return (binding.childBinding ??
+              (binding.component.handleUnknownAsRoot
+                  ? binding.rootBinding!
+                  : binding.unknown))
+          .call(request);
+    }
   }
 }
 
@@ -152,8 +239,6 @@ class PathRouterCalling extends Calling {
 /// Look [CallingPathSegment] for happening values during the call.
 @immutable
 abstract class PathSegment {
-
-
   /// Automatically create [ArgumentSegment] or [NamedSegment].
   ///
   /// For [ArgumentSegment], name must be starts with ":" or wrapped with "{}"
@@ -181,7 +266,6 @@ abstract class PathSegment {
   /// unknown route of binding
   bool get isUnknown => name == "*unknown";
 
-
   /// Is root of parent segment
   ///
   /// if client call `host/user`,
@@ -202,14 +286,12 @@ abstract class PathSegment {
   int get hashCode => Object.hash(name, runtimeType);
 }
 
-
 /// ```
 /// host/{user}/info
 /// ```
 /// * [NamedSegment] is not handle any parameters.
 /// "info" is named segment.
 class NamedSegment extends PathSegment {
-
   /// Not use with ":" or "{}"
   const NamedSegment(String name) : super._(name);
 }
@@ -221,7 +303,6 @@ class NamedSegment extends PathSegment {
 /// and next route if possible.
 /// "{user}" is argument segment
 class ArgumentSegment extends PathSegment {
-
   /// Not use without ":" or "{}"
   const ArgumentSegment(String name) : super._(name);
 
@@ -235,12 +316,11 @@ class ArgumentSegment extends PathSegment {
 ///
 /// Carries happening values
 abstract class CallingPathSegment {
-
   /// Don't use
   factory CallingPathSegment(
       {required PathSegment segment, required String value}) {
     if (segment is NamedSegment) {
-      return NamedCallingSegment(segment: segment, name: value);
+      return NamedCallingSegment(segment: segment);
     } else {
       return ArgumentCallingSegment(
           value: value, segment: segment as ArgumentSegment);
@@ -272,17 +352,13 @@ abstract class CallingPathSegment {
 
 /// Happening [NamedSegment] on during the call
 class NamedCallingSegment extends CallingPathSegment {
-
   ///
-  const NamedCallingSegment(
-      {required NamedSegment segment, required String name})
-      : super._(segment: segment, value: name);
+  NamedCallingSegment({required NamedSegment segment})
+      : super._(segment: segment, value: segment.name);
 }
-
 
 /// Happening [ArgumentSegment] on during the call
 class ArgumentCallingSegment extends CallingPathSegment {
-
   ///
   const ArgumentCallingSegment(
       {required String value, required ArgumentSegment segment})
@@ -297,25 +373,30 @@ class ArgumentCallingSegment extends CallingPathSegment {
 /// Each object in the call tree is generated by a [CallingComponent].
 /// Some [Calling]s in the tree create a path segment.
 mixin PathSegmentBindingMixin on CallingComponent {
-
   /// This Calling Component segment
   PathSegment get segment;
 
   /// Using this segment calling as a endpoint
   Component? get root;
 
-  /// Using unknown sub-segments
-  Component? get unknown;
+  /// Using known child
+  Component? get child;
 }
 
 /// [PathController] is controller for during the call
 /// and visiting call tree callings.
 ///
 class PathController {
-
   ///
-  PathController(this.calledPath) : notProcessedValues = calledPath.split("/") {
-    current = notProcessedValues.isEmpty ? "*root" : notProcessedValues.first;
+  PathController(this.calledPath)
+      : notProcessedValues = calledPath
+            .split("/")
+            .where((element) => element.isNotEmpty)
+            .map(PathSegment.new)
+            .toList() {
+    current = notProcessedValues.isEmpty
+        ? PathSegment("*root")
+        : notProcessedValues.first;
   }
 
   /// Called full path
@@ -325,28 +406,28 @@ class PathController {
   final List<CallingPathSegment> processed = [];
 
   /// First segment to be processed
-  late String current;
+  late PathSegment current;
 
   /// Next segments to be processed,
   /// include current
-  final List<String> notProcessedValues;
+  final List<PathSegment> notProcessedValues;
 
   /// Each PathSegmentCalling calls resolveFor for its children.
   /// resolveFor return subsegments that need to be called.
-  CallingPathSegment resolveFor(List<PathSegment> segments) {
+  CallingPathSegment resolveFor(Iterable<PathSegment> segments) {
     CallingPathSegment? result;
 
-    var _segments = segments.map((e) => e.name).toList();
-
+    print(segments);
+    print(current);
     if (notProcessedValues.isEmpty) {
       result =
           CallingPathSegment(segment: PathSegment("*root"), value: "*root");
     } else {
       current = notProcessedValues.first;
-      if (_segments.contains(current)) {
-        var seg = segments.firstWhere((element) => element.name == current);
-        result =
-            NamedCallingSegment(segment: seg as NamedSegment, name: current);
+      if (segments.contains(current)) {
+        var seg =
+            segments.firstWhere((element) => element.name == current.name);
+        result = NamedCallingSegment(segment: seg as NamedSegment);
       } else {
         var argSeg = segments.firstWhere(
             (element) => element.runtimeType == ArgumentSegment, orElse: () {
@@ -357,7 +438,7 @@ class PathController {
           result = CallingPathSegment(segment: argSeg, value: "*unknown");
         } else {
           result = ArgumentCallingSegment(
-              value: current, segment: argSeg as ArgumentSegment);
+              value: current.name, segment: argSeg as ArgumentSegment);
         }
       }
       processed.add(result);

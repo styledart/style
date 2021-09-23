@@ -1,46 +1,27 @@
 part of '../../../style_base.dart';
 
-class CryptoComponent extends StatefulComponent {
-  const CryptoComponent(
-      {GlobalKey? key,
-      required this.cryptoHandler,
-      required this.child})
-      : super(key: key);
+///
+abstract class CryptoService extends _BaseService {
 
-  final Component child;
-  final CryptoHandler cryptoHandler;
+  ///
+  void encrypt();
 
-  @override
-  CryptoState createState() => CryptoState();
 
-  @override
-  StatefulBinding createBinding() =>
-      _BaseServiceStatefulBinding(this);
+
 }
 
-class CryptoState extends State<CryptoComponent> {
-  static CryptoState of(BuildContext context) {
-    return context
-        .owner
-        ._states[context.owner._cryptoServiceKey]!
-        .state as CryptoState;
+ class DefaultCryptoHandler extends CryptoService {
+
+  @override
+  void encrypt() {
+    // TODO: implement encrypt
   }
 
   @override
-  Component build(BuildContext context) {
-    return component.child;
+  Future<void> init() async {
+  print("Data Access Init");
   }
+
 }
 
-abstract class CryptoHandler {
-  const CryptoHandler();
 
-  String encryptFirstStage(String plain);
-}
-
-class DefaultCryptoHandler extends CryptoHandler {
-  @override
-  String encryptFirstStage(String plain) {
-    throw UnimplementedError();
-  }
-}

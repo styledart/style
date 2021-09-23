@@ -2,7 +2,7 @@ part of '../../style_base.dart';
 
 /// It refers to the context in which the request
 /// occurs and the [BuildContext] of the endpoints and gates it reaches.
-abstract class RequestContext {
+class RequestContext {
   /// Not use
   RequestContext(
       {required this.requestTime,
@@ -11,10 +11,10 @@ abstract class RequestContext {
       required this.agent,
       required this.createContext,
       required String fullPath})
-      : controller = PathController(fullPath);
+      : pathController = PathController(fullPath);
 
   /// Path-Call Controller
-  PathController controller;
+  PathController pathController;
 
   /// [BuildContext] is handled
   /// binding of component

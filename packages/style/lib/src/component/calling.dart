@@ -11,6 +11,8 @@ part of '../style_base.dart';
 /// Kimi zaman kuyruk olarak
 ///
 abstract class Calling {
+
+  ///
   Calling({
     required CallingBinding binding,
     /*required this.name*/
@@ -20,10 +22,13 @@ abstract class Calling {
 
   // String name;
 
-  FutureOr<void> onCall(Request request);
+  ///
+  FutureOr<Message> onCall(Request request);
 
+  ///
   int callCount = 0;
 
+  ///
   CallingBinding get binding => _binding;
 }
 

@@ -5,4 +5,4 @@ library style_interface;
 
 export 'src/models/request.dart';
 export 'src/functions/random.dart';
-
+export 'src/functions/uint8_merge.dart';

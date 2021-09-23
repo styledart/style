@@ -1,7 +1,6 @@
-name: style
+name: style_documentor
 description: A starting point for Dart libraries or applications.
 version: 1.0.0
-publish_to: none
 # homepage: https://www.example.com
 
 environment:
@@ -9,18 +8,15 @@ environment:
 
 
 dependencies:
-  style_interface:
-    path: ../style_interface
+  source_gen: ^1.1.0
   analyzer: ^2.3.0
+  build: ^2.1.0
+  # Not imported in code, but used to constrain `build.yaml` requirements
+  build_config: ^1.0.0
+
+
 
 dev_dependencies:
-  style_documentor:
-    path: ../style_documentor
   build_runner: ^2.1.2
-  effective_dart: ^1.3.2
+  lints: ^1.0.1
   test: ^1.17.12
-
-
-
-builders:
-  copyBuilder:

@@ -1,26 +1,16 @@
 part of '../../style_base.dart';
 
+///
 class Gateway extends StatelessComponent {
-  const Gateway({this.unknown, this.root, required this.children, Key? key})
-      : super(key: key);
-
-  final Map<String, Component> children;
-  final Endpoint? unknown;
-  final Endpoint? root;
-
-  @override
-  Component build(BuildContext context) {
-    var _unknown = unknown ?? context.unknown;
-
-    var _root = root ?? _unknown;
-
-    final _components = children.map(
-        (key, value) => MapEntry(PathSegment(key),
-            PathRouter(segment: key, child: value)));
+  ///
+  Gateway({this.root, required List<PathRouter> children, Key? key})
+      : children = children.asMap().map((key, value) =>
+            MapEntry(value.segment, value)),
+        super(key: key) {
     assert(() {
       var argCount = 0;
       String? _reservedUsed;
-      for (var seg in _components.entries) {
+      for (var seg in this.children.entries) {
         if (seg.key.name == "*root" || seg.key.name == "*unknown") {
           _reservedUsed = seg.key.name;
         }
@@ -32,15 +22,15 @@ class Gateway extends StatelessComponent {
     }(),
         "Gateway Allow only 1 argument segment\nmaybe cause is *root"
         "and *unknown routes is reserved");
+  }
 
-    _components.addAll({
-      PathSegment("*root"):
-          PathRouter(segment: "*root", child: _root),
-      PathSegment("*unknown"):
-          PathRouter(segment:"*unknown", child: _unknown)
-    });
+  final Map<PathSegment, CallingComponent> children;
 
-    return _GatewayCallingComponent(components: _components);
+  final Component? root;
+
+  @override
+  Component build(BuildContext context) {
+    return _GatewayCallingComponent(components: children);
   }
 }
 
@@ -51,27 +41,45 @@ class _GatewayCallingComponent extends MultiChildCallingComponent {
   final Map<PathSegment, CallingComponent> components;
 
   @override
-  Calling createCalling(BuildContext context) => GatewayCalling(
-      components: components, binding: context as CallingBinding);
+  Calling createCalling(BuildContext context) =>
+      GatewayCalling(binding: context as CallingBinding);
 }
 
+///
 class GatewayCalling extends Calling {
-  GatewayCalling({required CallingBinding binding, required this.components})
-      : super(binding: binding);
+  ///
+  GatewayCalling({required CallingBinding binding}) : super(binding: binding) {
+    components = {};
+    for (var comp in this.binding.children) {
+      var seg = (comp as PathRouterCallingBinding).component.segment;
+      components[seg] = comp;
+    }
+
+    // components = this.binding.children.asMap().map((key, value) =>
+    //     MapEntry((value as PathRouterCallingBinding).component.segment, value));
+  }
 
   @override
   MultiChildCallingBinding get binding =>
       super.binding as MultiChildCallingBinding;
 
-  final Map<PathSegment, CallingComponent> components;
+  ///
+  late final Map<PathSegment, Binding> components;
 
   @override
-  FutureOr<void> onCall(Request request) {
-    // binding.children
-    // (binding.component as _GatewayCallingComponent);
+  FutureOr<Message> onCall(Request request) {
 
-    // TODO: implement onCall
-    throw UnimplementedError();
+    print(request.path.notProcessedValues);
+    print(components.keys);
+    var _p = request.path.resolveFor(components.keys);
+
+    print("Gateway path resolved: ${_p.segment}"
+        "\nfull: ${request.path.processed}");
+
+    if (_p.segment.isUnknown) {
+      return binding.unknown.call(request);
+    }
+    return components[_p.segment]!.call(request);
   }
 }
 
