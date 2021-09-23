@@ -1,0 +1,35 @@
+{
+	"unknown": "../home",
+	"host": "localhost",
+	"port": 9090,
+	"gateway": [
+		{
+			"segment": "home",
+			"handleUnknownAsRoot": true,
+			"root": {
+				"redirect": "aaaa"
+			},
+			"child": {
+				"gate": {
+					"allowed_agents" : [
+						"http",
+						"webSocket"
+					]
+				},
+				"gate_child": {
+					"gate": {
+						"auth_required": true
+					},
+					"gate_child": "MySecondEndpoint"
+				}
+			}
+		},
+		{
+			"segment": "user",
+			"handleUnknownAsRoot": false,
+			"child": {
+				"redirect": "a"
+			}
+		}
+	]
+}

@@ -1,0 +1,173 @@
+{
+  "$id": "style_server_schema",
+  "description": "Style Server Schema for generate server or generate documentation",
+  "definitions": {
+    "redirect": {
+      "type": "object",
+      "properties": {
+        "redirect": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "redirect"
+      ]
+    },
+    "endpoint": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/redirect"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "gateway": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "$ref": "#/definitions/path_route"
+      }
+    },
+    "auth_gate" : {
+      "type": "object",
+      "required": ["auth_required"],
+      "properties": {
+        "auth_required" : {
+          "type": "boolean"
+        }
+      }
+    },
+
+    "agent" : {
+      "type": "string",
+      "enum": [
+        "http",
+        "webSocket",
+        "internal"
+      ]
+    },
+
+    "agent_gate" : {
+      "type": "object",
+      "required": ["allowed_agents"],
+      "properties": {
+        "allowed_agents" : {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/definitions/agent"
+          }
+        }
+      }
+    },
+    "component" : {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/endpoint"
+        },
+        {
+          "$ref": "#/definitions/path_route"
+        },
+        {
+          "$ref": "#/definitions/gateway"
+        },
+        {
+          "$ref": "#/definitions/gate_component"
+        }
+      ]
+    },
+    "gate_component": {
+      "type": "object",
+      "required": [
+        "gate_child",
+        "gate"
+      ],
+      "properties": {
+        "gate_child": {
+          "$ref": "#/definitions/component"
+        },
+        "gate": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/auth_gate"
+            },
+            {
+              "$ref": "#/definitions/agent_gate"
+            }
+          ]
+        }
+      }
+    },
+    "path_route": {
+      "type": "object",
+      "required": [
+        "segment"
+      ],
+      "properties": {
+        "segment": {
+          "type": "string"
+        },
+        "child": { "$ref": "#/definitions/component"},
+        "root": { "$ref": "#/definitions/component"},
+        "handleUnknownAsRoot": {
+          "type": "boolean"
+        }
+      },
+      "allOf": [
+        {
+          "anyOf": [
+            {
+              "required": [
+                "root"
+              ]
+            },
+            {
+              "required": [
+                "child"
+              ]
+            }
+          ]
+        },
+        {
+          "oneOf": [
+            {
+              "properties": {
+                "handleUnknownAsRoot": {
+                  "const" : false
+                }
+              }
+            },
+            {
+              "required": [
+                "root"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "required": [
+    "unknown",
+    "gateway"
+  ],
+  "properties": {
+    "gateway": {
+      "$ref": "#/definitions/gateway"
+    },
+    "unknown": {
+      "$ref": "#/definitions/endpoint"
+    },
+    "host": {
+      "type": "string",
+      "default": "localhost"
+    },
+    "port": {
+      "type": "integer",
+      "default": 9090
+    }
+
+  }
+}
