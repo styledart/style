@@ -13,16 +13,24 @@
 #            - lib/src/style_base.dart
 
 builders:
-  documentationBuilder:
+  generateServer:
     import: "package:style_documentor/style_documentor.dart"
-    builder_factories: ["documentationBuilder"]
-    build_extensions: {".dart": [".dart.txt"]}
+    builder_factories: ["generateServer"]
+    build_extensions: {".json": [".dart"]}
     build_to: source
     auto_apply: all_packages
-    defaults:
-      generate_for:
-        exclude:
-          - lib/**
-          - test/**
-        include:
-          - example/**
+
+
+#  documentationBuilder:
+#    import: "package:style_documentor/style_documentor.dart"
+#    builder_factories: ["documentationBuilder"]
+#    build_extensions: {".dart": [".dart.txt"]}
+#    build_to: source
+#    auto_apply: all_packages
+#    defaults:
+#      generate_for:
+#        exclude:
+#          - lib/**
+#          - test/**
+#        include:
+#          - example/**

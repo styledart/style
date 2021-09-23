@@ -1,9 +1,9 @@
 {
-  "unknown": "../home",
+  "unknown": "BerberUnknownRequest",
   "root": "../home",
   "host": "localhost",
   "port": 9090,
-  "rootName": "my_server",
+  "rootName" : "berber_server",
   "gateway": [
     {
       "segment": "home",

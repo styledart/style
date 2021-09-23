@@ -80,3 +80,13 @@ class SimpleEndpoint extends Endpoint {
   FutureOr<Message> onCall(Request request) =>
       onRequest(request);
 }
+
+class Redirect extends Endpoint {
+  Redirect(String name);
+
+  @override
+  FutureOr<Message> onCall(Request request) {
+    // TODO: implement onCall
+    throw UnimplementedError();
+  }
+}
