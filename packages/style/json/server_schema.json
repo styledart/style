@@ -166,7 +166,7 @@
     },
     "port": {
       "type": "string",
-      "default": 9090
+      "default": "9090"
     }
 
   }
