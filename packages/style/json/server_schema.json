@@ -165,7 +165,7 @@
       "default": "localhost"
     },
     "port": {
-      "type": "integer",
+      "type": "string",
       "default": 9090
     }
 
