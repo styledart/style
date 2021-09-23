@@ -36,21 +36,6 @@
             </SchemaInfo>
           </value>
         </entry>
-        <entry key="server_schema">
-          <value>
-            <SchemaInfo>
-              <option name="name" value="server_schema" />
-              <option name="relativePathToSchema" value="packages/style/json/server_schema.json" />
-              <option name="patterns">
-                <list>
-                  <Item>
-                    <option name="path" value="packages/style/json/example.json" />
-                  </Item>
-                </list>
-              </option>
-            </SchemaInfo>
-          </value>
-        </entry>
       </map>
     </state>
   </component>
