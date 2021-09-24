@@ -44,7 +44,8 @@
 /// Endpoint calling binding
 //
 // class EndpointCallingBinding extends CallingBinding {
-//   EndpointCallingBinding(EndpointCallingComponent component) : super(component);
+//   EndpointCallingBinding(EndpointCallingComponent component)
+//          : super(component);
 //
 //   @override
 //   EndpointCallingComponent get component =>

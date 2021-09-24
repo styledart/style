@@ -39,7 +39,7 @@ class Server extends StatefulComponent {
   final HttpServiceHandler httpServiceNew;
 
   ///
-  final List<PathRouter> children;
+  final List<Route> children;
 
   ///
   final Endpoint unknown;
@@ -193,6 +193,8 @@ class ServiceBinding extends SingleChildCallingBinding with ServiceOwnerMixin {
   ///
   late Binding rootEndpoint;
 
+  late GatewayCalling _childGateway;
+
   @override
   void _build() {
     serviceRootName = component.rootName;
@@ -216,7 +218,8 @@ class ServiceBinding extends SingleChildCallingBinding with ServiceOwnerMixin {
     // addState(_socketServiceState!);
     // addState(_httpServiceState!);
 
-    // _cryptoServiceKey = _cryptoState?.component.key as GlobalKey<CryptoState>;
+    // _cryptoServiceKey =
+    // _cryptoState?.component.key as GlobalKey<CryptoState>;
     // _dataAccessKey =
     //     _dataAccessState?.component.key as GlobalKey<DataAccessState>;
     // _socketServiceKey =
@@ -243,7 +246,11 @@ class ServiceBinding extends SingleChildCallingBinding with ServiceOwnerMixin {
     rootEndpoint._build();
     _unknown!._build();
 
-
+    _childGateway = _child.visitCallingChildren(TreeVisitor((visitor) {
+      if (visitor.currentValue is GatewayCalling) {
+        visitor.stop(visitor.currentValue);
+      }
+    })).result as GatewayCalling;
 
     // var _bindings = <PathSegment, Binding>{};
     // for (var element in component.children.entries) {
@@ -270,6 +277,7 @@ class ServiceBinding extends SingleChildCallingBinding with ServiceOwnerMixin {
 
   @override
   TreeVisitor<Binding> visitChildren(TreeVisitor<Binding> visitor) {
+    if (visitor._stopped) return visitor;
     visitor(this);
     if (!visitor._stopped) {
       return child.visitChildren(visitor);
@@ -288,6 +296,7 @@ class ServiceBinding extends SingleChildCallingBinding with ServiceOwnerMixin {
 
   @override
   TreeVisitor<Calling> callingVisitor(TreeVisitor<Calling> visitor) {
+    if (visitor._stopped) return visitor;
     visitor(calling);
     if (!visitor._stopped) {
       return child.visitCallingChildren(visitor);
@@ -300,7 +309,9 @@ class ServiceBinding extends SingleChildCallingBinding with ServiceOwnerMixin {
   }
 }
 
+///
 class ServiceCalling extends Calling {
+  ///
   ServiceCalling({required ServiceBinding binding}) : super(binding: binding);
 
   @override
@@ -308,9 +319,16 @@ class ServiceCalling extends Calling {
 
   @override
   FutureOr<Message> onCall(Request request) {
+    var n =
+        request.path.resolveFor(binding._childGateway.components.keys.toList());
 
-
-
+    if (n.segment.isRoot) {
+      return (binding.rootEndpoint).call(request);
+    } else if (n.segment.isUnknown) {
+      return (binding.unknown).call(request);
+    } else {
+      return (binding.child).call(request);
+    }
 
     if (request.path.notProcessedValues.isEmpty) {
       return binding.rootEndpoint.call(request);
@@ -324,9 +342,11 @@ class ServiceCalling extends Calling {
 mixin ServiceOwnerMixin on Binding {
   final Map<GlobalKey, StatefulBinding> _states = {};
 
-  addState(State state) {
+  ///
+  void addState(State state) {
     _states[state.component.key as GlobalKey] = state.context;
   }
 
+  ///
   late String serviceRootName;
 }

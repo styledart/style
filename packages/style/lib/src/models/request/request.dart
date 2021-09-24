@@ -7,7 +7,7 @@ abstract class Message {
       {required this.responded,
       required this.context,
       required this.body,
-      required this.responseCreated}) ;
+      required this.responseCreated});
 
   ///
   bool responseCreated;
@@ -31,12 +31,12 @@ abstract class Message {
   PathController get path => context.pathController;
 
   ///
-  PathSegment get currentPath => path.current;
+  String get currentPath => path.current;
 
   /// Request Body
   /// Http requests body or web socket messages "body" values
   /// In Cron Jobs body is empty
-  Map<String, dynamic> body;
+  dynamic body;
 
   /// Request [Cause].
   /// Indicates why this request is made.
@@ -95,16 +95,31 @@ abstract class Message {
 abstract class Request extends Message {
   /// Creates with subclasses
   Request._(
-      {required RequestContext context, required Map<String, dynamic> body})
+      {required RequestContext context,
+      required dynamic body,
+      required this.accepts})
       : super(
             responded: false,
             responseCreated: false,
             body: body,
             context: context);
 
-  @override
-  Response createResponse(Map<String, dynamic> body, {int? statusCode, Map<String, dynamic>? additionalHeader}) {
-    return Response(request: this, body: body)..responseCreated = true;
+  ///
+  final List<io.ContentType> accepts;
+
+  ///
+  Response createJsonResponse(Map<String, dynamic> body,
+      {int? statusCode, Map<String, dynamic>? additionalHeader}) {
+    if (responseCreated) {
+      throw Exception("Must one time create response");
+    }
+
+    return Response(
+        request: this,
+        body: body,
+        statusCode: statusCode ?? 200,
+        contentType: io.ContentType.json)
+      ..responseCreated = true;
   }
 }
 
@@ -113,7 +128,10 @@ class Response extends Message {
   /// Creates with subclasses
   Response(
       {required Request request,
-      required Map<String, dynamic> body})
+      required dynamic body,
+      required this.statusCode,
+      required this.contentType,
+      this.additionalHeaders})
       : super(
             responded: false,
             responseCreated: false,
@@ -121,39 +139,61 @@ class Response extends Message {
             context: request.context);
 
   ///
-  // factory Response(
-  //     {required Request request, required Map<String, dynamic> body}) {
-  //   if (T == Http) {
-  //     return HttpResponse(
-  //         context: request.context,
-  //         body: body,
-  //         fullPath: request.fullPath) as Response;
-  //   } else if (T == Ws) {
-  //     return WsResponse(
-  //         context: request.context,
-  //         body: body,
-  //         fullPath: request.fullPath) as Response;
-  //   } else {
-  //     return InternalResponse(
-  //         context: request.context,
-  //         body: body,
-  //         fullPath: request.fullPath) as Response<T>;
-  //   }
-  // }
+  int statusCode;
+
+  ///
+  Map<String, dynamic>? additionalHeaders;
+
+  ///
+  io.ContentType contentType;
+
+  ///
+// factory Response(
+//     {required Request request, required Map<String, dynamic> body}) {
+//   if (T == Http) {
+//     return HttpResponse(
+//         context: request.context,
+//         body: body,
+//         fullPath: request.fullPath) as Response;
+//   } else if (T == Ws) {
+//     return WsResponse(
+//         context: request.context,
+//         body: body,
+//         fullPath: request.fullPath) as Response;
+//   } else {
+//     return InternalResponse(
+//         context: request.context,
+//         body: body,
+//         fullPath: request.fullPath) as Response<T>;
+//   }
+// }
 }
 
 ///
 class HttpRequest extends Request {
   ///
   HttpRequest(
-      {required RequestContext context, required Map<String, dynamic> body})
-      : super._(context: context, body: body);
+      {required this.baseRequest,
+      required RequestContext context,
+      required dynamic body})
+      : super._(
+            context: context,
+            body: body,
+            accepts: baseRequest.headers["accept"]
+                    ?.map(io.ContentType.parse)
+                    .toList() ??
+                []);
 
+  ///
+  final io.HttpRequest baseRequest;
+
+  ///
   factory HttpRequest.fromRequest(
       {required io.HttpRequest req,
-      required Map<String, dynamic> json,
+      required dynamic body,
       required BuildContext context}) {
     return HttpRequest(
+        baseRequest: req,
         context: RequestContext(
             requestTime: DateTime.now(),
             currentContext: context,
@@ -161,7 +201,7 @@ class HttpRequest extends Request {
             agent: Agent.http,
             createContext: context,
             fullPath: req.uri.path),
-        body: json);
+        body: body);
   }
 }
 
@@ -180,9 +220,7 @@ class WsRequest extends Request {
   ///
   WsRequest(
       {required RequestContext context, required Map<String, dynamic> body})
-      : super._(context: context, body: body);
-
-
+      : super._(context: context, body: body, accepts: [io.ContentType.json]);
 }
 
 // ///
@@ -198,9 +236,13 @@ class WsRequest extends Request {
 ///
 class InternalRequest extends Request {
   ///
-  InternalRequest(
-      {required RequestContext context, required Map<String, dynamic> body})
-      : super._(context: context, body: body);
+  InternalRequest({required RequestContext context, required dynamic body})
+      : super._(context: context, body: body, accepts: [
+          io.ContentType.json,
+          io.ContentType.text,
+          io.ContentType.html,
+          io.ContentType.binary
+        ]);
 }
 
 // ///

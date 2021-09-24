@@ -4,30 +4,38 @@ part of '../style_base.dart';
 ///
 @immutable
 abstract class Component {
+  ///
   const Component({this.key});
 
+  ///
   final Key? key;
 
+  ///
   Binding createBinding();
 
+  ///
   String toStringDeep() {
     // TODO: implement toStringDeep
     throw UnimplementedError();
   }
 
+  ///
   String toStringSort() {
     // TODO: implement toStringSort
     throw UnimplementedError();
   }
 }
 
+///
 abstract class StatelessComponent extends Component {
+  ///
   const StatelessComponent({Key? key}) : super(key: key);
 
   @override
   StatelessBinding createBinding() =>
       StatelessBinding(this);
 
+  ///
   Component build(BuildContext context);
 
   @override
@@ -43,9 +51,12 @@ abstract class StatelessComponent extends Component {
   }
 }
 
+///
 abstract class StatefulComponent extends Component {
+  ///
   const StatefulComponent({Key? key}) : super(key: key);
 
+  ///
   State<StatefulComponent> createState();
 
   ///
@@ -78,25 +89,40 @@ abstract class State<T extends StatefulComponent> {
 
 
 
+///
 class Key {
-  Key(this.key);
 
+  ///
+  const Key(this.key);
+
+  ///
   Key.random() : key = getRandomId(20);
-  String key;
+
+  ///
+  final String key;
 }
 
+///
+@immutable
 class GlobalKey<T extends State<StatefulComponent>>
     extends Key {
+
+  ///
   GlobalKey(String key) : super(key);
 
+  ///
   GlobalKey.random() : super.random();
-  StatefulBinding? binding;
 
+  ///
+  late final StatefulBinding? binding;
+
+  ///
   T get currentState {
     assert(binding != null);
     return binding!.state as T;
   }
 
+  ///
   bool get mounted =>
       binding != null && binding!._state != null;
 
@@ -105,7 +131,7 @@ class GlobalKey<T extends State<StatefulComponent>>
     return other is GlobalKey<T> && other.key == key;
   }
 
-  int? _hashCode;
+  late final int? _hashCode;
 
   @override
   int get hashCode => _hashCode ??= Object.hash(key, T);

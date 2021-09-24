@@ -81,7 +81,9 @@ class SimpleEndpoint extends Endpoint {
       onRequest(request);
 }
 
+///
 class Redirect extends Endpoint {
+  ///
   Redirect(String name);
 
   @override

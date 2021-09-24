@@ -8,6 +8,7 @@ abstract class CallingComponent extends Component {
   @override
   CallingBinding createBinding();
 
+  ///
   Calling createCalling(BuildContext context);
 
   @override
@@ -23,18 +24,25 @@ abstract class CallingComponent extends Component {
   }
 }
 
+///
 abstract class SingleChildCallingComponent extends CallingComponent {
+  ///
   SingleChildCallingComponent(this.child);
 
+  ///
   final Component child;
 
   @override
   SingleChildCallingBinding createBinding();
 }
 
+///
 abstract class MultiChildCallingComponent extends CallingComponent {
+
+  ///
   MultiChildCallingComponent(this.children);
 
+  ///
   final List<Component> children;
 
   @override
@@ -81,11 +89,13 @@ abstract class SingleChildBindingComponent extends StatelessComponent {
   ///
   final Component child;
 
-  @override
+  ///
   SingleChildBinding createCustomBinding();
 }
 
+///
 class SingleChildBinding extends Binding {
+  ///
   SingleChildBinding(Component component) : super(component);
 
   @override
@@ -94,6 +104,7 @@ class SingleChildBinding extends Binding {
 
   late Binding _child;
 
+  ///
   Binding get child => _child;
 
   @override
@@ -120,7 +131,9 @@ class SingleChildBinding extends Binding {
   }
 }
 
+///
 class SingleChildCallingBinding extends CallingBinding {
+  ///
   SingleChildCallingBinding(SingleChildCallingComponent component)
       : super(component);
 
@@ -130,6 +143,7 @@ class SingleChildCallingBinding extends CallingBinding {
 
   late Binding _child;
 
+  ///
   Binding get child => _child;
 
   @override
@@ -147,12 +161,14 @@ class SingleChildCallingBinding extends CallingBinding {
 
   @override
   TreeVisitor<Calling> callingVisitor(TreeVisitor<Calling> visitor) {
-    visitor(calling);
+    if (visitor._stopped) return visitor; visitor(calling);
     return child.visitCallingChildren(visitor);
   }
 }
 
+///
 class MultiChildCallingBinding extends CallingBinding {
+  ///
   MultiChildCallingBinding(MultiChildCallingComponent component)
       : super(component);
 
@@ -160,6 +176,7 @@ class MultiChildCallingBinding extends CallingBinding {
   MultiChildCallingComponent get component =>
       super.component as MultiChildCallingComponent;
 
+  ///
   late List<Binding> children;
 
   /// Bir map yap buildde
@@ -172,19 +189,16 @@ class MultiChildCallingBinding extends CallingBinding {
       _bindings.add(element.createBinding());
     }
     children = _bindings;
-
     for (var bind in children) {
       bind.attachToParent(this);
       bind._build();
     }
-
     _calling = component.createCalling(this);
-
   }
 
   @override
   TreeVisitor<Calling> callingVisitor(TreeVisitor<Calling> visitor) {
-    visitor(calling);
+    if (visitor._stopped) return visitor;visitor(calling);
     if (!visitor._stopped) {
       for (var child in children) {
         child.visitCallingChildren(visitor);
@@ -195,9 +209,10 @@ class MultiChildCallingBinding extends CallingBinding {
 
   @override
   TreeVisitor<Binding> visitChildren(TreeVisitor<Binding> visitor) {
+    if (visitor._stopped) return visitor;
     visitor(this);
     if (!visitor._stopped) {
-      // print("CAlling Visitor: $children");
+      //
       for (var bind in children) {
         bind.visitChildren(visitor);
       }

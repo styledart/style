@@ -1,4 +1,3 @@
-
 import 'dart:async';
 
 import 'package:style/style.dart';
@@ -8,7 +7,6 @@ void main() {
   runService(MyServer());
 }
 
-
 ///
 class MyServer extends StatelessComponent {
   @override
@@ -16,26 +14,28 @@ class MyServer extends StatelessComponent {
     return Server(
         rootName: "my_server",
         children: [
-          PathRouter(
-              segment: "user",
-              child: User(),
-              handleUnknownAsRoot: true,
+          Route(segment: "favicon.ico", root: UnknownEndpoint()),
+          Route(
+              segment: "post",
+              child: Post(),
               root: SimpleEndpoint((req) async {
-                return req.createResponse({"path": "user_root"});
+                return req.createJsonResponse({"path": "post_root"});
+              })),
+          Route(
+              segment: "{user}",
+              child: User(),
+              root: SimpleEndpoint((req) async {
+                return req.createJsonResponse({"path": "user/*root"});
               }))
         ],
         rootEndpoint: UnknownEndpoint());
   }
 }
 
-
-
 /// For Http Deneme
-
 
 /// TODO: Document
 class MyServerUnknown extends Endpoint {
-
   ///
   MyServerUnknown() : super();
 
@@ -46,8 +46,6 @@ class MyServerUnknown extends Endpoint {
   }
 }
 
-
-
 ///
 class User extends StatelessComponent {
   ///
@@ -55,6 +53,33 @@ class User extends StatelessComponent {
 
   @override
   Component build(BuildContext context) {
-    return UnknownEndpoint();
+    return RouteTo(
+        handleUnknownAsRoot: true, segment: "lang", root: MyUserEndpoint());
+  }
+}
+
+class Post extends StatelessComponent {
+  const Post({Key? key}) : super(key: key);
+
+  @override
+  Component build(BuildContext context) {
+    return RouteTo(segment: "{post_id}", root: PostEnd());
+  }
+}
+
+/// TODO: Document
+class PostEnd extends Endpoint {
+  PostEnd() : super();
+
+  @override
+  FutureOr<Message> onCall(Request request) {
+    return request.createJsonResponse({"args": request.path.arguments});
+  }
+}
+
+class MyUserEndpoint extends Endpoint {
+  @override
+  FutureOr<Message> onCall(Request request) {
+    return request.createJsonResponse({"args": request.path.arguments});
   }
 }

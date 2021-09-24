@@ -13,6 +13,7 @@ abstract class WebSocketService extends _BaseService {
 
 
 
+///
 class DefaultSocketServiceHandler extends WebSocketService {
 
   @override
@@ -23,7 +24,7 @@ class DefaultSocketServiceHandler extends WebSocketService {
   @override
   Future<void> init() async {
 
-    print("Socket Service Init");
+
   }
 
 }

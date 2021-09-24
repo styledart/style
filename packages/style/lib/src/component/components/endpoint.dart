@@ -1,6 +1,8 @@
 part of '../../style_base.dart';
 
+///
 class EndpointCalling extends Calling {
+  ///
   EndpointCalling(EndpointCallingBinding endpoint) : super(binding: endpoint);
 
   @override
@@ -12,14 +14,6 @@ class EndpointCalling extends Calling {
 
     return binding.component.onCall(request);
 
-
-    return request.createResponse({
-      "path" : "unknown"
-    });
-
-
-    // TODO: implement onCall
-    throw UnimplementedError();
   }
 
 
@@ -43,10 +37,13 @@ abstract class Endpoint extends CallingComponent {
   Calling createCalling(BuildContext context) =>
       EndpointCalling(context as EndpointCallingBinding);
 
+  ///
   FutureOr<Message> onCall(Request request);
 }
 
+///
 class EndpointCallingBinding extends CallingBinding {
+  ///
   EndpointCallingBinding(CallingComponent component) : super(component);
 
   @override
@@ -62,7 +59,8 @@ class EndpointCallingBinding extends CallingBinding {
   //
   //   while (ancestor is! ServiceBinding && ancestor != null) {
   //     if (ancestor.component is PathSegmentBindingMixin) {
-  //       var n = ((ancestor).component as PathSegmentBindingMixin).segment.name;
+  //       var n = ((ancestor).component as PathSegmentBindingMixin)
+  //                  .segment.name;
   //       if (!(n == "*root" || n == "*unknown")) {
   //         path = n;
   //         break;
@@ -74,15 +72,16 @@ class EndpointCallingBinding extends CallingBinding {
   //
   // }
 
+  ///
   String get fullPath {
     var list = <String>[];
     var ancestorComponents = <Component>[];
     CallingBinding? ancestor;
     ancestor = this;
     while (ancestor is! ServiceBinding && ancestor != null) {
-      if (ancestor.component is PathSegmentBindingMixin) {
+      if (ancestor.component is PathSegmentMixin) {
         list.add(
-            ((ancestor).component as PathSegmentBindingMixin).segment.name);
+            ((ancestor).component as PathSegmentMixin).segment.name);
       }
       ancestorComponents.add(ancestor.component);
       ancestor = ancestor.ancestorCalling;
@@ -98,6 +97,7 @@ class EndpointCallingBinding extends CallingBinding {
 
   @override
   TreeVisitor<Binding> visitChildren(TreeVisitor<Binding> visitor) {
+    if (visitor._stopped) return visitor;
     visitor(this);
     return visitor;
   }
@@ -110,7 +110,7 @@ class EndpointCallingBinding extends CallingBinding {
 
   @override
   TreeVisitor<Calling> callingVisitor(TreeVisitor<Calling> visitor) {
-    visitor(calling);
+    if (visitor._stopped) return visitor;visitor(calling);
     return visitor;
   }
 }
@@ -122,9 +122,9 @@ class UnknownEndpoint extends Endpoint {
 
   @override
   FutureOr<Message> onCall(Request request) {
-    return request.createResponse({
+    return request.createJsonResponse({
       "reason": "route_unknown",
-      "route": request.context.pathController.current.name
+      "route": request.context.pathController.current
     });
   }
 
