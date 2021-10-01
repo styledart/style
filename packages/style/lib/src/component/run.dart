@@ -2,9 +2,32 @@ part of '../style_base.dart';
 
 ///
 void runService(Component component) {
-  var binding = component.createBinding();
-  binding._build();
+  try {
+    var binding = component.createBinding();
+    binding._build();
 
+    var results = <String>[];
+    binding.visitCallingChildren(TreeVisitor((binding) {
+      if (binding.currentValue is EndpointCalling) {
+        var path =
+            (binding.currentValue.binding as EndpointCallingBinding).fullPath;
+        if (!path.endsWith("/*root")) {
+          results.add("%$path %");
+        }
+      }
+    }));
+    print(results.join("\n"));
+
+    io.stdin.listen((event) {
+      print(binding._owner);
+      print(utf8.decode(event));
+    });
+  }
+// ignore: avoid_catches_without_on_clauses
+  catch (e, s) {
+    var trace = Trace.format(s);
+    throw Exception("Error: $e \n Stack Trace: \n $trace");
+  }
 
   // parseFile(path: path, featureSet: featureSet)
 
@@ -18,17 +41,7 @@ void runService(Component component) {
   //   """);
   // }));
   //
-  var results = <String>[];
-  binding.visitCallingChildren(TreeVisitor((binding) {
-    if (binding.currentValue is EndpointCalling) {
-      var path =
-          (binding.currentValue.binding as EndpointCallingBinding).fullPath;
-      if (!path.endsWith("/*root")) {
-        results.add("%$path %");
-      }
-    }
-  }));
-  print(results.join("\n"));
+
   //
   //
 

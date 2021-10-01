@@ -28,6 +28,9 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/style_documentor/build" />
       <excludeFolder url="file://$MODULE_DIR$/packages/style_documentor/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/packages/style_documentor/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/style_cli/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/style_cli/build" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/style_cli/.pub" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

@@ -88,10 +88,21 @@ abstract class Binding extends BuildContext {
   @override
   Component get component => _component;
 
-
   ///
   FutureOr<Message> call(Request request);
 
+  String get _errorWhere {
+    var list = <Type>[];
+
+    Binding? _anc = this;
+    while (_anc != null) {
+      if (_anc.component is! _BaseServiceComponent) {
+        list.add(_anc.component.runtimeType);
+      }
+      _anc = _anc._parent;
+    }
+    return list.reversed.join(" -> ");
+  }
 
   ///
   void attachToParent(Binding parent) {

@@ -1,0 +1,4 @@
+
+class StyleException implements Exception {
+
+}

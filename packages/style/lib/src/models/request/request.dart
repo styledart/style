@@ -124,6 +124,19 @@ abstract class Request extends Message {
 }
 
 ///
+class NoResponseRequired extends Response {
+  ///
+  NoResponseRequired({
+    required Request request,
+  }) : super(
+            contentType: io.ContentType.binary,
+            statusCode: -1,
+            body: {},
+            request: request,
+            additionalHeaders: {});
+}
+
+///
 class Response extends Message {
   /// Creates with subclasses
   Response(
@@ -199,6 +212,7 @@ class HttpRequest extends Request {
             currentContext: context,
             cause: Cause.clientRequest,
             agent: Agent.http,
+            accessToken: req.uri.queryParameters["token"],
             createContext: context,
             fullPath: req.uri.path),
         body: body);
