@@ -12,13 +12,13 @@ void runService(Component component) {
         var path =
             (binding.currentValue.binding as EndpointCallingBinding).fullPath;
         if (!path.endsWith("/*root")) {
-          results.add("%$path %");
+          results.add("% $path %");
         }
       }
     }));
     print(results.join("\n"));
 
-    io.stdin.listen((event) {
+    stdin.listen((event) {
       print(binding._owner);
       print(utf8.decode(event));
     });

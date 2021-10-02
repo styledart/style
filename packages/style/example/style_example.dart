@@ -1,9 +1,6 @@
 import 'dart:async';
-import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:stack_trace/stack_trace.dart';
-import 'package:style/src/functions/random.dart';
 import 'package:style/style.dart';
 
 /// Bu App Güzel Çalışacak
@@ -23,27 +20,46 @@ class MyServer extends StatelessComponent {
   Component build(BuildContext context) {
     return Server(
         rootName: "my_server",
+        faviconDirectory: "D:\\style\\packages\\style\\assets",
         children: [
+          Route("appointments",
+              child: RouteTo("{stylist_id}",
+                  child: RouteTo("{day}",
+                      child: CallQueue(Gateway(children: [
+                        Route("create", root: SimpleEndpoint((req) => throw 0)),
+                        Route("delete", root: SimpleEndpoint((req) => throw 0))
+                      ]))))),
           Post(),
           User(),
-          Route("api", root: SimpleAccessPoint(), handleUnknownAsRoot: true),
+          Route("c_t",
+              root: SimpleEndpoint((request) => request
+                  .createResponse({"type": request.contentType?.mimeType}))),
+          Route("api",
+              root: RequestTrigger(
+                  ensureResponded: true,
+                  child: ResponseTrigger(
+                      ensureSent: true,
+                      child: SimpleAccessPoint(),
+                      trigger: (res) {
+                        print("RES TRIGGER: ${res.body}");
+                      }),
+                  trigger: (req) {
+                    print("REQ TRIGGER: ${req.fullPath}");
+                  }),
+              handleUnknownAsRoot: true),
           Route("doc",
               handleUnknownAsRoot: true,
               root: DocumentService("D:\\style\\packages\\style\\source\\",
                   cacheAll: false)),
-
-          AuthFilterGate(
-              authRequired: true,
-              child: Route("auth", root: AuthEnd())),
-
-
-          Route("un-auth", root: UnAuthEnd()),
-          Route("favicon.ico", root: Favicon()),
+          MethodFilterGate(
+              blockedMethods: [Methods.GET],
+              child: AuthFilterGate(
+                  authRequired: true, child: Route("auth", root: AuthEnd()))),
+          Route("un-auth", root: CallQueue(UnAuthEnd())),
         ],
         rootEndpoint: UnknownEndpoint());
   }
 }
-
 
 /// For Http Deneme
 
@@ -82,15 +98,17 @@ class User extends StatelessComponent {
 
 class UnAuthEnd extends Endpoint {
   @override
-  FutureOr<Message> onCall(Request request) {
-    return request.createJsonResponse({"args": "FROM UNAUTH"});
+  FutureOr<Message> onCall(Request request) async {
+    await Future.delayed(Duration(seconds: 2));
+    print("Cevap Gitti UN");
+    return request.createResponse({"args": "FROM UNAUTH"});
   }
 }
 
 class AuthEnd extends Endpoint {
   @override
   FutureOr<Message> onCall(Request request) {
-    return request.createJsonResponse({"args": "FROM AUTH"});
+    return request.createResponse({"args": "FROM AUTH"});
   }
 }
 
@@ -121,91 +139,14 @@ class PostEnd extends Endpoint {
 
   @override
   FutureOr<Message> onCall(Request request) {
-    return request.createJsonResponse({"args": request.path.arguments});
+    return request.createResponse({"args": request.path.arguments});
   }
 }
 
 class MyUserEndpoint extends Endpoint {
   @override
   FutureOr<Message> onCall(Request request) {
-    return request.createJsonResponse({"args": "FROM LANG"});
-  }
-}
-
-class Favicon extends StatefulEndpoint {
-  @override
-  EndpointState createState() => FaviconState();
-}
-
-///
-class FaviconState extends EndpointState<Favicon> {
-  Uint8List? data;
-  late Future<void> dataLoader;
-  String? tag;
-
-  ///
-  Future<void> _loadIcon() async {
-    var entities = <FileSystemEntity>[
-      Directory("D:\\style\\packages\\style\\source")
-    ];
-
-    while (entities.isNotEmpty) {
-      for (var en in List.from(entities)) {
-        if (en is Directory) {
-          entities.addAll(en.listSync());
-          print("Dir: $en");
-        } else {
-          print("Fil: $en");
-        }
-        entities.removeAt(0);
-      }
-    }
-
-    var file = File("D:\\style\\packages\\style\\assets\\favicon.ico");
-    data = await file.readAsBytes();
-    tag = getRandomId(5);
-  }
-
-  void listenFileChanges() {
-    File("D:\\style\\packages\\style\\assets\\favicon.ico")
-        .watch()
-        .listen((event) {
-      data = null;
-      dataLoader = _loadIcon();
-    });
-  }
-
-  @override
-  void initState() {
-    dataLoader = _loadIcon();
-    listenFileChanges();
-    super.initState();
-  }
-
-  @override
-  FutureOr<Message> onCall(Request request) async {
-    var base = (request as HttpRequest).baseRequest;
-
-    if (base.headers["if-none-match"] != null &&
-        base.headers["if-none-match"] == tag) {
-      base.response.statusCode = 304;
-      base.response.contentLength = 0;
-      base.response.close();
-      return NoResponseRequired(request: request);
-    }
-
-    if (data == null) {
-      await dataLoader;
-    }
-
-    base.response.contentLength = data!.length;
-    base.response.headers
-      ..add(HttpHeaders.contentTypeHeader, ContentType.binary.mimeType)
-      ..add(HttpHeaders.cacheControlHeader, "must-revalidate")
-      ..add(HttpHeaders.etagHeader, tag!);
-    base.response.add(data!);
-    base.response.close();
-    return NoResponseRequired(request: request);
+    return request.createResponse({"args": "FROM LANG"});
   }
 }
 

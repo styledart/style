@@ -6,13 +6,13 @@ void main() async {
   while (i < 50) {
     print("Başladı");
     var cl = HttpClient();
-    var req = await cl.getUrl(Uri.parse("http://style:8080/lang"));
-    print("İstek Gitti");
-    var res = await req.close();
-    print("Cevap Geldi");
-    print(res.headers.host);
+     cl.getUrl(Uri.parse("http://localhost:8080/un-auth")).then((req) {
+       print("İstek Gitti");
+       req.close().then((res) {
+         print("Cevap Geldi");
+         print(res.statusCode);
+       });
+    });
     i++;
-
-    print("\n\n\n");
   }
 }

@@ -13,10 +13,10 @@ part of '../style_base.dart';
 abstract class Calling {
 
   ///
-  Calling({
-    required CallingBinding binding,
+  Calling(
+     CallingBinding binding,
     /*required this.name*/
-  }) : _binding = binding;
+  ) : _binding = binding;
 
   final CallingBinding _binding;
 
