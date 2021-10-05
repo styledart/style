@@ -4,14 +4,12 @@ import 'package:test/scaffolding.dart';
 
 void main() {
   test("runner", () async {
-    each.day.fromNowOn();
-
-    each.week.onWeekDay(6).atHour(23).atMinute(45);
-
-    each.month.onDay(15).atHour(9);
 
 
-    every.x(3).day.atSecond(59);
+    every.x(3).second.listen((time) {
+      print("Hello World!");
+    });
+
 
 
     var runner = CronJobController();
