@@ -1,19 +1,111 @@
 part of '../../style_base.dart';
 
 ///
+class Body<T> {
+  ///
+  Body._(this.data);
+
+  /// Body create available body types
+  ///
+  /// Json format : JsonBody,
+  /// Uint8List : BinaryBody,
+  /// Text : HtmlBody
+  ///
+  /// To ensure text use TextBody
+  ///
+  factory Body(T data) {
+    if (data is Map<String, dynamic> || data is List) {
+      return JsonBody(data) as Body<T>;
+    } else if (data is String) {
+      if (data.startsWith("<")) {
+        return HtmlBody(data) as Body<T>;
+      }
+      return TextBody(data) as Body<T>;
+    } else if (data is List<int>) {
+      return BinaryBody(data as Uint8List) as Body<T>;
+    }
+
+    return Body._(data);
+  }
+
+  ///
+  T data;
+
+  ///
+  @override
+  String toString() {
+    return data.toString();
+  }
+}
+
+///
+class JsonBody extends Body<dynamic> {
+  ///
+  JsonBody(dynamic data)
+      : assert(data is List || data is Map<String, dynamic>),
+        super._(data);
+
+  ///
+  dynamic operator [](covariant String key) {
+    throw UnimplementedError();
+  }
+
+  ///
+  void operator []=(covariant String key, dynamic value) {
+    throw UnimplementedError();
+  }
+
+  ///
+  @override
+  String toString() {
+    return json.encode(data);
+  }
+}
+
+///
+class TextBody extends Body<String> {
+  ///
+  TextBody(String data) : super._(data);
+
+  ///
+  Pattern operator [](covariant int key) {
+    return data[key];
+  }
+
+  ///
+  void operator []=(covariant int key, covariant Pattern value) {
+    // TODO: implement []=
+  }
+}
+
+///
+class HtmlBody extends TextBody {
+  ///
+  HtmlBody(String data) : super(data);
+}
+
+///
+class BinaryBody extends Body<Uint8List> {
+  ///
+  BinaryBody(Uint8List data) : super._(data);
+
+  ///
+  int operator [](covariant int key) {
+    // TODO: implement []
+    throw UnimplementedError();
+  }
+
+  ///
+  void operator []=(covariant int key, covariant int value) {
+    // TODO: implement []=
+  }
+}
+
+///
 abstract class Message {
   ///
-  Message(
-      {required this.responded,
-      required this.context,
-      required this.body,
-      required this.responseCreated}) ;
-
-  ///
-  bool responseCreated;
-
-  ///
-  bool responded;
+  Message({ContentType? contentType, required this.context, required this.body})
+      : contentType = contentType ?? Response._contentType(body);
 
   /// [RequestContext] is context of request info about handling, creating,
   /// responding
@@ -31,12 +123,12 @@ abstract class Message {
   PathController get path => context.pathController;
 
   ///
-  PathSegment get currentPath => path.current;
+  String get currentPath => path.current;
 
   /// Request Body
   /// Http requests body or web socket messages "body" values
   /// In Cron Jobs body is empty
-  Map<String, dynamic> body;
+  Body? body;
 
   /// Request [Cause].
   /// Indicates why this request is made.
@@ -45,6 +137,8 @@ abstract class Message {
   /// [Request] agent.
   /// Example: The agent of all http/(s) requests received by the server is [Agent.http]
   Agent get agent => context.agent;
+
+  ContentType? contentType;
 
   // TODO: Call Path Builder
   // TODO: Call Path
@@ -55,26 +149,31 @@ abstract class Message {
   DataAccess get dataAccess => context.currentContext.dataAccess;
 }
 
-// ///
-// mixin AgentMixin {
-//   /// Http
-//   bool get isHttp => this == Http;
-//
-//   /// Web Socket
-//   bool get isWs => this == Ws;
-//
-//   /// Internal
-//   bool get isInternal => this == Internal;
-// }
-//
-// ///
-// mixin Http implements AgentMixin {}
-//
-// ///
-// mixin Ws implements AgentMixin {}
-//
-// ///
-// mixin Internal implements AgentMixin {}
+///
+enum Methods {
+  //ignore_for_file: constant_identifier_names , public_member_api_docs
+  GET,
+  POST,
+  DELETE,
+  PUT,
+  PATCH,
+  OPTIONS,
+  HEAD,
+  CONNECT,
+  TRACE
+}
+
+var _m = [
+  "GET",
+  "POST",
+  "DELETE",
+  "PUT",
+  "PATCH",
+  "OPTIONS",
+  "HEAD",
+  "CONNECT",
+  "TRACE"
+];
 
 /// All requests from client or in-server
 /// triggered with [Request]
@@ -95,16 +194,51 @@ abstract class Message {
 abstract class Request extends Message {
   /// Creates with subclasses
   Request._(
-      {required RequestContext context, required Map<String, dynamic> body})
-      : super(
-            responded: false,
-            responseCreated: false,
-            body: body,
-            context: context);
+      {required RequestContext context,
+      ContentType? contentType,
+      dynamic body,
+      this.headers,
+      this.cookies,
+      this.method})
+      : super(body: body, context: context, contentType: contentType);
 
-  @override
-  Response createResponse(Map<String, dynamic> body, {int? statusCode, Map<String, dynamic>? additionalHeader}) {
-    return Response(request: this, body: body)..responseCreated = true;
+  ///
+  final List<Cookie>? cookies;
+
+  ///
+  final HttpHeaders? headers;
+
+  ///
+  Completer<bool>? _waiter;
+
+  bool? _responded;
+
+  /// if sending operation not resulted
+  /// sent is null
+  /// if success, sent is true
+  /// if operation failed, sent is false
+  bool? get responded => _responded;
+
+  set responded(bool? value) {
+    _responded = value!;
+    if (_waiter != null) {
+      _waiter!.complete(value);
+    }
+  }
+
+  Methods? method;
+
+  ///
+  Future<bool> ensureResponded() async {
+    if (_waiter != null) return await _waiter!.future;
+    _waiter = Completer<bool>();
+    return _waiter!.future;
+  }
+
+  ///
+  Response createResponse(dynamic body,
+      {int statusCode = 200, HttpHeaders? headers}) {
+    return Response(body: Body(body), request: this, statusCode: statusCode);
   }
 }
 
@@ -113,56 +247,136 @@ class Response extends Message {
   /// Creates with subclasses
   Response(
       {required Request request,
-      required Map<String, dynamic> body})
-      : super(
-            responded: false,
-            responseCreated: false,
-            body: body,
-            context: request.context);
+      Body? body,
+      required this.statusCode,
+      this.additionalHeaders})
+      : super(body: body, context: request.context);
 
   ///
-  // factory Response(
-  //     {required Request request, required Map<String, dynamic> body}) {
-  //   if (T == Http) {
-  //     return HttpResponse(
-  //         context: request.context,
-  //         body: body,
-  //         fullPath: request.fullPath) as Response;
-  //   } else if (T == Ws) {
-  //     return WsResponse(
-  //         context: request.context,
-  //         body: body,
-  //         fullPath: request.fullPath) as Response;
-  //   } else {
-  //     return InternalResponse(
-  //         context: request.context,
-  //         body: body,
-  //         fullPath: request.fullPath) as Response<T>;
-  //   }
-  // }
+  int statusCode;
+
+  ///
+  Map<String, dynamic>? additionalHeaders;
+
+  static ContentType? _contentType(Body? body) {
+    if (body is JsonBody) {
+      return ContentType.json;
+    } else if (body is HtmlBody) {
+      return ContentType.html;
+    } else if (body is BinaryBody) {
+      return ContentType.binary;
+    } else if (body is TextBody) {
+      return ContentType.text;
+    } else {
+      return null;
+    }
+  }
+
+  ///
+  ContentType? get contentType {
+    return _contentType(body);
+  }
+
+  ///
+  Completer<bool>? _waiter;
+
+  bool? _sent;
+
+  /// if sending operation not resulted
+  /// sent is null
+  /// if success, sent is true
+  /// if operation failed, sent is false
+  bool? get sent => _sent;
+
+  set sent(bool? value) {
+    _sent = value!;
+    if (_waiter != null) {
+      _waiter!.complete(value);
+    }
+  }
+
+  ///
+  Future<bool> ensureSent() async {
+    if (_waiter != null) return await _waiter!.future;
+    _waiter = Completer<bool>();
+    return _waiter!.future;
+  }
 }
 
 ///
-class HttpRequest extends Request {
+class HttpStyleRequest extends Request {
   ///
-  HttpRequest(
-      {required RequestContext context, required Map<String, dynamic> body})
-      : super._(context: context, body: body);
+  HttpStyleRequest(
+      {required this.baseRequest,
+      required Methods method,
+      required RequestContext context,
+      ContentType? contentType,
+      Body? body})
+      : super._(
+            context: context,
+            body: body,
+            contentType: contentType,
+            cookies: baseRequest.cookies,
+            headers: baseRequest.headers,
+            method: method);
 
-  factory HttpRequest.fromRequest(
-      {required io.HttpRequest req,
-      required Map<String, dynamic> json,
+  ///
+  final HttpRequest baseRequest;
+
+  ///
+  factory HttpStyleRequest.fromRequest(
+      {required HttpRequest req,
+      required dynamic body,
       required BuildContext context}) {
-    return HttpRequest(
+    // print("AUTH:::: "
+    //     "${req.uri.queryParameters["token"]
+    //     ?? req.headers[HttpHeaders.authorizationHeader]}");
+
+    return HttpStyleRequest(
+        baseRequest: req,
+        contentType: req.headers.contentType,
+        method: Methods.values[_m.indexOf(req.method)],
         context: RequestContext(
             requestTime: DateTime.now(),
             currentContext: context,
             cause: Cause.clientRequest,
             agent: Agent.http,
+            accessToken: req.uri.queryParameters["token"] ??
+                req.headers[HttpHeaders.authorizationHeader]?.first,
             createContext: context,
             fullPath: req.uri.path),
-        body: json);
+        body: body);
   }
+}
+
+///
+class TagRequest extends Request {
+  ///
+  TagRequest(HttpStyleRequest request)
+      : super._(
+            context: request.context,
+            body: request.body,
+            headers: request.headers,
+            cookies: request.cookies);
+}
+
+///
+class TagResponse extends Response {
+  ///
+  TagResponse(TagRequest request,
+      {required String tag, ContentType? contentType})
+      : super(request: request, statusCode: 304, additionalHeaders: {
+          HttpHeaders.contentLengthHeader: 0,
+          HttpHeaders.etagHeader: tag
+        });
+}
+
+///
+class NoResponseRequired extends Response {
+  ///
+  NoResponseRequired({
+    required Request request,
+  }) : super(statusCode: -1, request: request, additionalHeaders: {});
 }
 
 // ///
@@ -174,34 +388,36 @@ class HttpRequest extends Request {
 //       required Map<String, dynamic> body})
 //       : super(context: context, fullPath: fullPath, body: body);
 // }
-
-///
-class WsRequest extends Request {
-  ///
-  WsRequest(
-      {required RequestContext context, required Map<String, dynamic> body})
-      : super._(context: context, body: body);
-
-
-}
-
+//
 // ///
-// class WsResponse extends Response{
+// class WsRequest extends Request {
 //   ///
-//   WsResponse(
-//       {required RequestContext context,
-//       required String fullPath,
-//       required Map<String, dynamic> body})
-//       : super._(context: context, fullPath: fullPath, body: body);
+//   WsRequest(
+//       {required RequestContext context, required Map<String, dynamic> body})
+//       : super._(context: context, body: body, accepts: [ContentType.json]);
 // }
-
-///
-class InternalRequest extends Request {
-  ///
-  InternalRequest(
-      {required RequestContext context, required Map<String, dynamic> body})
-      : super._(context: context, body: body);
-}
+//
+// // ///
+// // class WsResponse extends Response{
+// //   ///
+// //   WsResponse(
+// //       {required RequestContext context,
+// //       required String fullPath,
+// //       required Map<String, dynamic> body})
+// //       : super._(context: context, fullPath: fullPath, body: body);
+// // }
+//
+// ///
+// class InternalRequest extends Request {
+//   ///
+//   InternalRequest({required RequestContext context, required dynamic body})
+//       : super._(context: context, body: body, accepts: [
+//           ContentType.json,
+//           ContentType.text,
+//           ContentType.html,
+//           ContentType.binary
+//         ]);
+// }
 
 // ///
 // class InternalResponse extends Response {

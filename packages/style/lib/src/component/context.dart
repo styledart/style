@@ -1,7 +1,8 @@
 part of '../style_base.dart';
 
+///
 abstract class BuildContext {
-  @override
+  ///
   ServiceBinding get owner => _owner!;
   ServiceBinding? _owner;
   Binding? _parent;
@@ -29,22 +30,31 @@ abstract class BuildContext {
   ///
   HttpServiceHandler get httpService => _httpService!;
 
+  ///
   T? findAncestorBindingOfType<T extends Binding>();
 
+  ///
   T? findAncestorComponentOfType<T extends Component>();
 
+  ///
   T? findAncestorServiceByName<T extends ServiceBinding>(String name);
 
+  ///
   T? findAncestorStateOfType<T extends State<StatefulComponent>>();
 
+  ///
   T? findChildService<T extends ServiceBinding>();
 
+  ///
   T? findChildState<T extends State>();
 
+  ///
   CallingBinding get findCalling;
 
+  ///
   CallingBinding? get ancestorCalling;
 
+  ///
   Binding get unknown => _unknown!;
 
   Binding? _unknown;
@@ -61,6 +71,7 @@ abstract class BuildContext {
 ///
 /// Context yalnızca build esnasında gerekli olan bilgileri taşır
 abstract class Binding extends BuildContext {
+  ///
   Binding(Component component)
       : _component = component,
         _key = component.key ?? Key.random(),
@@ -77,22 +88,24 @@ abstract class Binding extends BuildContext {
   @override
   Component get component => _component;
 
-
   ///
   FutureOr<Message> call(Request request);
 
+  String get _errorWhere {
+    var list = <Type>[];
 
+    Binding? _anc = this;
+    while (_anc != null) {
+      if (_anc.component is! _BaseServiceComponent) {
+        list.add(_anc.component.runtimeType);
+      }
+      _anc = _anc._parent;
+    }
+    return list.reversed.join(" -> ");
+  }
+
+  ///
   void attachToParent(Binding parent) {
-   //  print("""
-   //  Attaching: $this
-   // owner: ${parent._owner}
-   // parent: $parent
-   // crypt: ${parent._crypto}
-   // unknown: ${parent._unknown}
-   // http: ${parent._httpService}
-   // socket: ${parent._socketService}
-   // data: ${parent._dataAccess}
-   //  """);
     _owner = parent._owner;
     _parent = parent;
     _crypto = parent._crypto;
@@ -102,10 +115,13 @@ abstract class Binding extends BuildContext {
     _dataAccess = parent._dataAccess;
   }
 
+  ///
   TreeVisitor<Binding> visitChildren(TreeVisitor<Binding> visitor) {
+    if (visitor._stopped) return visitor;
     return visitor;
   }
 
+  ///
   TreeVisitor<Calling> visitCallingChildren(TreeVisitor<Calling> visitor);
 
   @override
@@ -194,39 +210,52 @@ abstract class Binding extends BuildContext {
   void _build();
 }
 
+///
 class TreeVisitor<T> {
+  ///
   TreeVisitor(this.visitor);
 
+  ///
   void Function(TreeVisitor<T> visitor)? visitor;
 
   bool _stopped = false;
 
+  ///
   late T currentValue;
 
+  ///
   void call(T value) {
+    if (_stopped) throw Exception("Add stop checker");
     currentValue = value;
     visitor!.call(this);
   }
 
+  ///
   void stop(T value) {
     result = value;
     _stopped = true;
   }
 
+  ///
   T? result;
 }
 
+///
 typedef BindingVisitor = void Function(Binding binding);
 
+///
 abstract class DevelopmentBinding extends Binding {
+  ///
   DevelopmentBinding(Component component) : super(component);
 
   Binding? _child;
 
+  ///
   Component build(Binding binding);
 
   @override
   TreeVisitor<Binding> visitChildren(TreeVisitor<Binding> visitor) {
+    if (visitor._stopped) return visitor;
     visitor(this);
     _child!.visitChildren(visitor);
     return visitor;
@@ -250,7 +279,9 @@ abstract class DevelopmentBinding extends Binding {
   }
 }
 
+///
 class StatelessBinding extends DevelopmentBinding {
+  ///
   StatelessBinding(StatelessComponent component) : super(component);
 
   @override
@@ -264,6 +295,7 @@ class StatelessBinding extends DevelopmentBinding {
 
   @override
   TreeVisitor<Binding> visitChildren(TreeVisitor<Binding> visitor) {
+    if (visitor._stopped) return visitor;
     visitor(this);
     _child!.visitChildren(visitor);
     return visitor;
@@ -271,15 +303,23 @@ class StatelessBinding extends DevelopmentBinding {
 
   @override
   FutureOr<Message> call(Request request) {
-    return _child!.call(request);
+    try {
+      return _child!.call(request);
+    } on Exception {
+      rethrow;
+    }
   }
 }
 
+///
 class StatefulBinding extends DevelopmentBinding {
+  ///
   StatefulBinding(StatefulComponent component) : super(component);
 
+  ///
   bool get initialized => _state != null;
 
+  ///
   State get state => _state!;
 
   State? _state;
@@ -289,6 +329,7 @@ class StatefulBinding extends DevelopmentBinding {
 
   @override
   TreeVisitor<Binding> visitChildren(TreeVisitor<Binding> visitor) {
+    if (visitor._stopped) return visitor;
     visitor(this);
     _child!.visitChildren(visitor);
     return visitor;

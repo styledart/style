@@ -51,8 +51,6 @@ ${unknown.isRedirect ? "" : unknown.full}
 """;
 
     return server;
-
-    throw UnimplementedError();
   }
 
   @override

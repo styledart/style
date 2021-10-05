@@ -10,7 +10,8 @@ class RequestContext {
       required this.cause,
       required this.agent,
       required this.createContext,
-      required String fullPath})
+      required String fullPath,
+      this.accessToken})
       : pathController = PathController(fullPath);
 
   /// Path-Call Controller
@@ -34,4 +35,10 @@ class RequestContext {
   /// [Request] agent.
   /// Example: The agent of all http/(s) requests received by the server is [Agent.http]
   Agent agent;
+
+  /// Access Token
+  ///
+  ///
+  ///
+  String? accessToken;
 }

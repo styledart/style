@@ -12,7 +12,6 @@
       "child": {
         "gate": {
           "allowed_agents": [
-            "http",
             "webSocket"
           ]
         },
