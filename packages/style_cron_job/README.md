@@ -70,9 +70,11 @@ each.day.fromNowOn(); // default DateTime.now()
 
 #### Listen
 ```dart
-each.day.onMinute(10).listen((t) {  
+var period = each.day.onMinute(10);
+period.listen((t) {  
     // do on each day 00:10
 });
+period.dispose();
 ```
 
 #### Stream
