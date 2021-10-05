@@ -303,7 +303,11 @@ class StatelessBinding extends DevelopmentBinding {
 
   @override
   FutureOr<Message> call(Request request) {
-    return _child!.call(request);
+    try {
+      return _child!.call(request);
+    } on Exception {
+      rethrow;
+    }
   }
 }
 

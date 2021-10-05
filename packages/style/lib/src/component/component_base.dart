@@ -216,7 +216,11 @@ abstract class CallingBinding extends Binding {
 
   @override
   FutureOr<Message> call(Request request) {
-    return calling.onCall(request);
+    try {
+      return calling.onCall(request);
+    } on Exception {
+      rethrow;
+    }
   }
 }
 

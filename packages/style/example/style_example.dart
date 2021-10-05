@@ -26,14 +26,23 @@ class MyServer extends StatelessComponent {
               child: RouteTo("{stylist_id}",
                   child: RouteTo("{day}",
                       child: CallQueue(Gateway(children: [
-                        Route("create", root: SimpleEndpoint((req) => throw 0)),
-                        Route("delete", root: SimpleEndpoint((req) => throw 0))
+                        Route("create", root: SimpleEndpoint((req) async {
+                          print("GELDİ");
+                          await Future.delayed(Duration(milliseconds: 500));
+                          throw Exception("unimplemented");
+                        })),
+                        Route("delete", root: SimpleEndpoint((req) async {
+                          await Future.delayed(Duration(milliseconds: 500));
+                          throw Exception("unimplemented");
+                        }))
                       ]))))),
-          Post(),
+          // Post(),
           User(),
           Route("c_t",
-              root: SimpleEndpoint((request) => request
-                  .createResponse({"type": request.contentType?.mimeType}))),
+              root: SimpleEndpoint((request) => request.createResponse({
+                    "type": request.contentType?.mimeType,
+                    "body": request.body?.data.runtimeType.toString()
+                  }))),
           Route("api",
               root: RequestTrigger(
                   ensureResponded: true,
@@ -49,7 +58,7 @@ class MyServer extends StatelessComponent {
               handleUnknownAsRoot: true),
           Route("doc",
               handleUnknownAsRoot: true,
-              root: DocumentService("D:\\style\\packages\\style\\source\\",
+              root: DocumentService("D:\\style\\packages\\style\\source\\web\\",
                   cacheAll: false)),
           MethodFilterGate(
               blockedMethods: [Methods.GET],
@@ -57,7 +66,13 @@ class MyServer extends StatelessComponent {
                   authRequired: true, child: Route("auth", root: AuthEnd()))),
           Route("un-auth", root: CallQueue(UnAuthEnd())),
         ],
-        rootEndpoint: UnknownEndpoint());
+        defaultUnknownEndpoint: SimpleEndpoint((r){
+          print("Buraya Geldi");
+          return r.createResponse({
+            "route" : "un"
+          });
+        }),
+        rootEndpoint: Redirect("http://localhost/doc/index.html"));
   }
 }
 

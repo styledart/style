@@ -17,7 +17,10 @@ class Body<T> {
     if (data is Map<String, dynamic> || data is List) {
       return JsonBody(data) as Body<T>;
     } else if (data is String) {
-      return HtmlBody(data) as Body<T>;
+      if (data.startsWith("<")) {
+        return HtmlBody(data) as Body<T>;
+      }
+      return TextBody(data) as Body<T>;
     } else if (data is List<int>) {
       return BinaryBody(data as Uint8List) as Body<T>;
     }
@@ -263,11 +266,9 @@ class Response extends Message {
     } else if (body is BinaryBody) {
       return ContentType.binary;
     } else if (body is TextBody) {
-      return ContentType.html;
+      return ContentType.text;
     } else {
       return null;
-      throw Exception("Content Type Not Defined, For Defined use type annotator "
-          "eg. Request<JsonBody>");
     }
   }
 
@@ -364,10 +365,10 @@ class TagResponse extends Response {
   ///
   TagResponse(TagRequest request,
       {required String tag, ContentType? contentType})
-      : super(
-            request: request,
-            statusCode: 304,
-            additionalHeaders: {HttpHeaders.contentLengthHeader: 0});
+      : super(request: request, statusCode: 304, additionalHeaders: {
+          HttpHeaders.contentLengthHeader: 0,
+          HttpHeaders.etagHeader: tag
+        });
 }
 
 ///

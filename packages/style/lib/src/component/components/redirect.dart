@@ -1,8 +1,5 @@
 part of '../../style_base.dart';
 
-
-
-
 ///
 class Redirect extends Endpoint {
   ///
@@ -14,8 +11,8 @@ class Redirect extends Endpoint {
   ///
   static FutureOr<Message> redirect(
       {required Request request,
-        required String? path,
-        required BuildContext context}) async {
+      required String? path,
+      required BuildContext context}) async {
     if (path == null) {
       return context.unknown.call(request);
     }
@@ -68,16 +65,22 @@ class Redirect extends Endpoint {
       var nBinding = context;
       while (segments.first == "..") {
         var n = nBinding.findAncestorBindingOfType<GatewayBinding>();
-        if (n == null) {
-          throw Exception("Path No Found");
+        var s = nBinding.findAncestorBindingOfType<ServiceBinding>();
+
+        print(n);
+        print(s);
+
+        if (n == null && s == null) {
+          throw Exception("Path No Found"
+              " : ${request.path.current} in ${nBinding.component}");
         }
-        nBinding = n;
+        nBinding = n as GatewayBinding;
         segments.removeAt(0);
       }
       request.path.notProcessedValues.addAll(segments);
       request.path.current = segments.first;
       return ((nBinding).findAncestorBindingOfType<RouteBinding>() ??
-          nBinding.findAncestorBindingOfType<ServiceBinding>()!)
+              nBinding.findAncestorBindingOfType<ServiceBinding>()!)
           .call(request);
     }
   }

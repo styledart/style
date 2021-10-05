@@ -13,7 +13,11 @@ class EndpointCalling extends Calling {
 
   @override
   FutureOr<Message> onCall(Request request) {
-    return binding.component.onCall(request);
+    try {
+      return binding.component.onCall(request);
+    } on Exception {
+      rethrow;
+    }
   }
 }
 
@@ -77,8 +81,8 @@ class EndpointCallingBinding extends CallingBinding {
     CallingBinding? ancestor;
     ancestor = this;
     while (ancestor is! ServiceBinding && ancestor != null) {
-      if (ancestor.component is PathSegmentMixin) {
-        var seg = ((ancestor).component as PathSegmentMixin).segment;
+      if (ancestor.component is PathSegmentCallingComponentMixin) {
+        var seg = ((ancestor).component as PathSegmentCallingComponentMixin).segment;
         list.add(seg is ArgumentSegment ? "{${seg.name}}" : seg.name);
       }
       ancestorComponents.add(ancestor.component);

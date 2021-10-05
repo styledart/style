@@ -9,16 +9,19 @@ environment:
 
 
 dependencies:
-  mongo_dart_query: ^1.0.2
+
   stack_trace: ^1.10.0
 #  style_interface:
 #    path: ../style_interface
-  analyzer: ^2.3.0
+  analyzer: ^2.4.0
 
 dev_dependencies:
+  style_cron_job:
+    path: ../style_cron_job
+  http: ^0.13.3
 #  style_documentor:
 #    path: ../style_documentor
-  build_runner: ^2.1.2
+  build_runner: ^2.1.4
   effective_dart: ^1.3.2
   test: ^1.17.12
 

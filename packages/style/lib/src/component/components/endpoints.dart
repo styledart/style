@@ -1,8 +1,5 @@
 part of '../../style_base.dart';
 
-
-
-
 ///
 class UnknownEndpoint extends Endpoint {
   ///
@@ -44,13 +41,24 @@ class _UnknownWrapperBinding extends StatelessBinding {
   @override
   void _build() {
     _unknown = component.unknown.createBinding();
+    _unknown!.attachToParent(this);
+    _unknown!._build();
+    var end = true;
+    _unknown!.visitChildren(TreeVisitor((visitor) {
+      if (visitor.currentValue.component is PathSegmentCallingComponentMixin) {
+        end = false;
+        visitor.stop(visitor.currentValue);
+      }
+    }));
+    if (!end) {
+      throw Exception("Unknown Must not be route");
+    }
     super._build();
   }
 
   @override
   UnknownWrapper get component => super.component as UnknownWrapper;
 }
-
 
 ///
 class SimpleEndpoint extends Endpoint {
@@ -61,7 +69,13 @@ class SimpleEndpoint extends Endpoint {
   final FutureOr<Message> Function(Request request) onRequest;
 
   @override
-  FutureOr<Message> onCall(Request request) => onRequest(request);
+  FutureOr<Message> onCall(Request request) {
+    try {
+      return onRequest(request);
+    } on Exception {
+      rethrow;
+    }
+  }
 }
 
 ///
@@ -74,9 +88,11 @@ class SimpleAccessPoint extends StatelessComponent {
     return AccessPoint((request) {
       var req = (request as HttpStyleRequest);
       return Query(
-          selector: (req.path.notProcessedValues.isNotEmpty
-              ? req.path.notProcessedValues.first
-              : null),
+          type: QueryType.delete,
+          token: request.context.accessToken ?? "",
+          // selectorBuilder: (req.path.notProcessedValues.isNotEmpty
+          //     ? req.path.notProcessedValues.first
+          //     : null),
           collection: req.currentPath);
     });
   }
@@ -85,12 +101,12 @@ class SimpleAccessPoint extends StatelessComponent {
 /// TODO: Document
 class AccessPoint extends Endpoint {
   ///
-  AccessPoint(this.dataEq) : super();
+  AccessPoint(this.queryBuilder) : super();
 
   //TODO: Permission
 
   ///
-  final FutureOr<Query> Function(Request request) dataEq;
+  final FutureOr<Query> Function(Request request) queryBuilder;
 
   @override
   FutureOr<Message> onCall(Request request) async {
@@ -98,18 +114,18 @@ class AccessPoint extends Endpoint {
     var base = (request as HttpStyleRequest).baseRequest;
 
     if (base.method == "POST") {
-      var r = await dataAccess.create(
-          await dataEq(request), (request.body as Map).cast<String, dynamic>());
+      var r = await dataAccess.create(await queryBuilder(request),
+          (request.body as Map).cast<String, dynamic>());
       return request.createResponse(r);
     } else if (base.method == "GET") {
-      var r = await dataAccess.read(await dataEq(request));
+      var r = await dataAccess.read(await queryBuilder(request));
       return request.createResponse(r);
     } else if (base.method == "PUT" || base.method == "PATCH") {
       var r = await dataAccess.update(
-          await dataEq(request), (request.body as Map<String, dynamic>));
+          await queryBuilder(request), (request.body as Map<String, dynamic>));
       return request.createResponse(r);
     } else if (base.method == "DELETE") {
-      var r = await dataAccess.delete(await dataEq(request));
+      var r = await dataAccess.delete(await queryBuilder(request));
       return request.createResponse(r);
     } else {
       return context.unknown.call(request);
@@ -191,8 +207,8 @@ class DocumentServiceEndpointState extends EndpointState<DocumentService> {
 
     var req = request.path.current +
         (not.isNotEmpty
-            ? "${Platform.pathSeparator}"
-            "${not.join(Platform.pathSeparator)}"
+            ? "/"
+                "${not.join("/")}"
             : "");
     var base = (request as HttpStyleRequest).baseRequest;
 
@@ -211,12 +227,26 @@ class DocumentServiceEndpointState extends EndpointState<DocumentService> {
       """);
       base.response.close();
     } else {
+      String c;
+
+      if (req.endsWith(".js")) {
+        c = "text/javascript";
+      } else if (req.endsWith(".css")) {
+        c = "text/css";
+      } else if (req.endsWith(".html")) {
+        c = "text/html";
+      } else if (req.endsWith(".dart")) {
+        c = "text/dart";
+      } else {
+        c = "text/plain";
+      }
+
       if (component.cacheAll) {
-        base.response.headers.contentType = ContentType.html;
+        base.response.headers.add(HttpHeaders.contentTypeHeader, c);
         base.response.write(documents![req]);
         base.response.close();
       } else {
-        base.response.headers.contentType = ContentType.html;
+        base.response.headers.add(HttpHeaders.contentTypeHeader, c);
         base.response.write((documents![req] as File).readAsStringSync());
         base.response.close();
       }
@@ -226,10 +256,8 @@ class DocumentServiceEndpointState extends EndpointState<DocumentService> {
   }
 }
 
-
 ///
 class Favicon extends StatefulEndpoint {
-
   ///
   Favicon(this.assetsPath);
 
@@ -244,8 +272,10 @@ class Favicon extends StatefulEndpoint {
 class FaviconState extends EndpointState<Favicon> {
   ///
   Uint8List? data;
+
   ///
   late Future<void> dataLoader;
+
   ///
   String? tag;
 
@@ -317,4 +347,3 @@ class FaviconState extends EndpointState<Favicon> {
     return NoResponseRequired(request: request);
   }
 }
-

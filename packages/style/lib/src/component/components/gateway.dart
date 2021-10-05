@@ -1,8 +1,5 @@
 part of '../../style_base.dart';
 
-
-
-
 ///
 class Gateway extends MultiChildCallingComponent {
   ///
@@ -65,10 +62,19 @@ class GatewayBinding extends MultiChildCallingBinding {
             "\nwhere: $_errorWhere");
       }
 
-      _callings[(_childCalling.result! as RouteCalling)
-          .binding
-          .component
-          .segment] = child;
+      var seg =
+          (_childCalling.result! as RouteCalling).binding.component.segment;
+
+      // if (seg.isRoot || seg.isUnknown) {
+      //   if (child.component is PathSegmentCallingComponentMixin) {
+      //     throw Exception("(${seg.name}) ,Root and "
+      //         "Unknown must not be a new route\n"
+      //         "${child.component}\n"
+      //         "WHERE: ${child._errorWhere}");
+      //   }
+      // }
+
+      _callings[seg] = child;
     }
 
     calling.components = _callings;
@@ -80,12 +86,6 @@ class GatewayCalling extends Calling {
   ///
   GatewayCalling({required CallingBinding binding}) : super(binding);
 
-  // components = {};
-  // for (var comp in this.binding.children) {
-  //   var seg = (comp as RouteBinding).component.segment;
-  //   components[seg] = comp;
-  // }
-
   @override
   MultiChildCallingBinding get binding =>
       super.binding as MultiChildCallingBinding;
@@ -95,7 +95,11 @@ class GatewayCalling extends Calling {
 
   @override
   FutureOr<Message> onCall(Request request) {
-    return (components[PathSegment(request.currentPath)] ?? binding.unknown)
-        .call(request);
+    try {
+      return (components[PathSegment(request.currentPath)] ?? binding.unknown)
+          .call(request);
+    } on Exception {
+      rethrow;
+    }
   }
 }
