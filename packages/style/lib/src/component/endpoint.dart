@@ -1,7 +1,5 @@
 part of '../style_base.dart';
 
-
-
 ///
 class EndpointCalling extends Calling {
   ///
@@ -15,7 +13,8 @@ class EndpointCalling extends Calling {
   FutureOr<Message> onCall(Request request) {
     try {
       return binding.component.onCall(request);
-    } on Exception {
+    }  on Exception catch(e) {
+      print("ON 3 $e");
       rethrow;
     }
   }
@@ -82,7 +81,8 @@ class EndpointCallingBinding extends CallingBinding {
     ancestor = this;
     while (ancestor is! ServiceBinding && ancestor != null) {
       if (ancestor.component is PathSegmentCallingComponentMixin) {
-        var seg = ((ancestor).component as PathSegmentCallingComponentMixin).segment;
+        var seg =
+            ((ancestor).component as PathSegmentCallingComponentMixin).segment;
         list.add(seg is ArgumentSegment ? "{${seg.name}}" : seg.name);
       }
       ancestorComponents.add(ancestor.component);

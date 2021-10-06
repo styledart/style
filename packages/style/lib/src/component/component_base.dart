@@ -218,7 +218,8 @@ abstract class CallingBinding extends Binding {
   FutureOr<Message> call(Request request) {
     try {
       return calling.onCall(request);
-    } on Exception {
+    }  on Exception catch(e) {
+      print("ON 4 $e");
       rethrow;
     }
   }

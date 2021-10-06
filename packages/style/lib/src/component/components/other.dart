@@ -1,7 +1,5 @@
 part of '../../style_base.dart';
 
-
-
 ///
 class CallQueue extends SingleChildCallingComponent {
   ///
@@ -37,23 +35,46 @@ class _QueueCalling extends Calling {
     if (isProcess) return;
     isProcess = true;
     while (callQueue.isNotEmpty) {
-      await (callQueue.removeFirst())
-          .call()
-          .timeout((binding.component as CallQueue).timeout);
+      try {
+        await (callQueue.first)
+            .call()
+            .timeout((binding.component as CallQueue).timeout);
+        callQueue.removeFirst();
+      } on Exception catch (e) {
+        callQueue.removeFirst();
+        print("ON 50 $e");
+        rethrow;
+      }
     }
     isProcess = false;
   }
 
   @override
-  FutureOr<Message> onCall(Request request) {
-    var completer = Completer<Message>();
-    callQueue.addLast(() async {
-      completer.complete(await binding.child.call(request));
-    });
-    _trigger();
-    return completer.future;
+  FutureOr<Message> onCall(Request request) async {
+    try {
+      var completer = Completer<Message>();
+      callQueue.addLast(() async {
+        try {
+          completer.complete(await binding.child.call(request));
+        } on Exception catch (e) {
+          print("ON 5 $e");
+          rethrow;
+        }
+      });
+
+      Exception? exception;
+      await _trigger().then((value) => null).onError((error, stackTrace) {
+        print("ON 32 $error");
+        exception = error as Exception;
+      }).catchError((e) {
+        exception = e;
+        print("EERRR:");
+      });
+      if (exception != null) throw exception!;
+      return completer.future;
+    } on Exception catch (e) {
+      print("ON 6 $e");
+      rethrow;
+    }
   }
 }
-
-
-

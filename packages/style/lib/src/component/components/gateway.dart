@@ -98,7 +98,8 @@ class GatewayCalling extends Calling {
     try {
       return (components[PathSegment(request.currentPath)] ?? binding.unknown)
           .call(request);
-    } on Exception {
+    }  on Exception catch(e) {
+      print("ON 8 $e");
       rethrow;
     }
   }

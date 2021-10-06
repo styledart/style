@@ -197,7 +197,6 @@ class RouteBinding extends CallingBinding {
           _rootGateway.result == null,
           "Not push gateway or new sub-route from root"
           "\nwhere: $_errorWhere");
-
     }
 
     if (childBinding != null) {
@@ -289,16 +288,32 @@ class RouteCalling extends Calling {
           .resolveFor(binding._childGateway?.components.keys.toList() ?? []);
 
       if (n.segment.isRoot) {
-        return (binding.rootBinding ?? binding.unknown).call(request);
+        try {
+          return (binding.rootBinding ?? binding.unknown).call(request);
+        } on Exception catch (e) {
+          print("ON 12 $e");
+          rethrow;
+        }
       } else if (n.segment.isUnknown) {
-        return (binding.component.handleUnknownAsRoot
-                ? binding.rootBinding!
-                : binding.unknown)
-            .call(request);
+        try {
+          return (binding.component.handleUnknownAsRoot
+                  ? binding.rootBinding!
+                  : binding.unknown)
+              .call(request);
+        } on Exception catch (e) {
+          print("ON 13 $e");
+          rethrow;
+        }
       } else {
-        return (binding._childGateway!.binding).call(request);
+        try {
+          return (binding._childGateway!.binding).call(request);
+        } on Exception catch (e) {
+          print("ON 14 $e");
+          rethrow;
+        }
       }
-    } on Exception {
+    } on Exception catch (e) {
+      print("ON 11 $e");
       rethrow;
     }
 

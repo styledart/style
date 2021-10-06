@@ -9,6 +9,7 @@ class Server extends StatefulComponent {
       this.socketService,
       this.dataAccess,
       this.cryptoService,
+      this.logger,
       String? rootName,
       Component? rootEndpoint,
       Component? defaultUnknownEndpoint,
@@ -26,6 +27,9 @@ class Server extends StatefulComponent {
 
   ///
   final String rootName;
+
+  ///
+  final Logger? logger;
 
   ///
   final CryptoService? cryptoService;
@@ -80,6 +84,11 @@ class ServiceState extends State<Server> {
 
     result = _BaseServiceComponent<HttpServiceHandler>(
         service: component.httpServiceNew, child: result);
+
+    if (component.logger != null) {
+      result = _BaseServiceComponent<Logger>(
+          service: component.logger!, child: result);
+    }
 
     if (component.cryptoService != null) {
       result = _BaseServiceComponent<CryptoService>(
@@ -223,7 +232,8 @@ class ServiceCalling extends Calling {
     try {
       request.path.resolveFor(binding._childGateway.components.keys.toList());
       return (binding.child).call(request);
-    } on Exception {
+    }  on Exception catch(e) {
+      print("ON 9 $e");
       rethrow;
     }
   }
