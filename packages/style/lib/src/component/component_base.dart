@@ -202,18 +202,6 @@ abstract class CallingBinding extends Binding {
   TreeVisitor<Calling> visitCallingChildren(TreeVisitor<Calling> visitor) {
     return callingVisitor(visitor);
   }
-
-
-
-// @override
-// FutureOr<Message> call(Request request) {
-//   try {
-//     return calling.onCall(request);
-//   }  on Exception catch(e) {
-//     print("ON 4 $e");
-//     rethrow;
-//   }
-// }
 }
 
 ///

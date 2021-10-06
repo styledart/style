@@ -1,31 +1,74 @@
 part of '../../style_base.dart';
 
 ///
-class UnknownEndpoint extends ErrorEndpoint {
-  ///
-  UnknownEndpoint() : super();
-
+class DefaultExceptionEndpoint<T extends Exception>
+    extends ExceptionEndpoint<T> {
   @override
-  FutureOr<Response> onError(Message message, StyleException exception) {
-    if (message is Request) {
-      return message.createResponse({
-        "reason": "route_unknown",
-        "route": message.context.pathController.current
-      }, statusCode: 502);
+  FutureOr<Response> onError(
+      Message message, T exception, StackTrace stackTrace) {
+    var body = JsonBody({
+      "exception": exception.toString(),
+      "stack_trace": stackTrace.toString()
+    });
+
+    var statusCode = (exception is StyleException) ? exception.statusCode : 500;
+
+    if (message is Response) {
+      return message
+        ..body = body
+        ..statusCode = statusCode;
     } else {
-      throw Exception("Unknown not handle response");
+      return (message as Request)
+          .createResponse(body.data, statusCode: statusCode);
     }
   }
 }
 
 ///
-abstract class ErrorEndpoint extends Endpoint {
+typedef ExceptionHandleEndpoint<T extends Exception> = FutureOr<Response>
+    Function(Message request, T exception, StackTrace stackTrace);
+
+///
+abstract class ExceptionEndpoint<T extends Exception> extends Endpoint {
   ///
-  FutureOr<Response> onError(Message message, StyleException exception);
+  FutureOr<Response> onError(
+      Message message, T exception, StackTrace stackTrace);
 
   @override
-  FutureOr<Message> onCall(Request request) {
-    throw UnsupportedError("Error Endpoints not calling");
+  FutureOr<Message> onCall(Request request,
+      [T? exception, StackTrace? stackTrace]) async {
+    var e = await onError(request, exception!, stackTrace!);
+    if (exception is StyleException) {
+      e.statusCode = exception.statusCode;
+    }
+    return e;
+  }
+
+  @override
+  ExceptionEndpointCallingBinding createBinding() {
+    return ExceptionEndpointCallingBinding<T>(this);
+  }
+
+  @override
+  ExceptionEndpointCalling<T> createCalling(BuildContext context) {
+    return ExceptionEndpointCalling<T>(
+        context as ExceptionEndpointCallingBinding<T>);
+  }
+}
+
+///
+class SimpleExceptionEndpoint<T extends Exception>
+    extends ExceptionEndpoint<T> {
+  ///
+  SimpleExceptionEndpoint(this.exceptionHandler);
+
+  ///
+  final ExceptionHandleEndpoint<T> exceptionHandler;
+
+  @override
+  FutureOr<Response> onError(
+      Message message, T exception, StackTrace stackTrace) {
+    return exceptionHandler(message, exception, stackTrace);
   }
 }
 
@@ -38,12 +81,10 @@ class SimpleEndpoint extends Endpoint {
   final FutureOr<Message> Function(Request request) onRequest;
 
   @override
-  FutureOr<Message> onCall(Request request) {
-    try {
-      return onRequest(request);
-    } on Exception {
-      rethrow;
-    }
+  FutureOr<Message> onCall(Request request) async {
+
+      return await onRequest(request);
+
   }
 }
 
@@ -97,7 +138,7 @@ class AccessPoint extends Endpoint {
       var r = await dataAccess.delete(await queryBuilder(request));
       return request.createResponse(r);
     } else {
-      return context.unknown.findCalling.calling.onCall(request);
+      return context.exceptionHandler.unknown.findCalling.calling(request);
     }
   }
 }

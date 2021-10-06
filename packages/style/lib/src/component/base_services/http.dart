@@ -124,7 +124,7 @@ class DefaultHttpServiceHandler extends HttpServiceHandler {
     var req = HttpStyleRequest.fromRequest(
         req: request, body: Body(_body), context: context);
     try {
-      var res = await context.owner.calling.onCall(req);
+      var res = await context.owner.calling(req);
       if (res is Response && res is! NoResponseRequired) {
         request.response.statusCode = res.statusCode;
         request.response.headers.contentType = res.contentType;

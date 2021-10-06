@@ -12,15 +12,28 @@ class Server extends StatefulComponent {
       this.logger,
       String? rootName,
       Component? rootEndpoint,
-      Component? defaultUnknownEndpoint,
       required this.children,
-      this.faviconDirectory})
+      this.faviconDirectory,
+      Map<Type, ExceptionEndpoint>? defaultExceptionEndpoints})
       : httpServiceNew = httpServiceNew ?? DefaultHttpServiceHandler(),
         rootName = rootName ?? "style_server",
-        rootEndpoint =
-            rootEndpoint ?? defaultUnknownEndpoint ?? UnknownEndpoint(),
-        unknown = defaultUnknownEndpoint ?? UnknownEndpoint(),
-        super(key: key ?? GlobalKey<ServiceState>.random());
+        defaultExceptionEndpoints = defaultExceptionEndpoints ??
+            {
+              Exception: DefaultExceptionEndpoint<InternalServerError>(),
+              NotFoundException: DefaultExceptionEndpoint<NotFoundException>()
+            },
+        super(key: key ?? GlobalKey<ServiceState>.random()) {
+    this.defaultExceptionEndpoints[Exception] ??=
+        DefaultExceptionEndpoint<Exception>();
+    this.defaultExceptionEndpoints[NotFoundException] ??=
+        DefaultExceptionEndpoint<NotFoundException>();
+
+    this.rootEndpoint =
+        rootEndpoint ?? this.defaultExceptionEndpoints[NotFoundException]!;
+  }
+
+  ///
+  final Map<Type, ExceptionEndpoint> defaultExceptionEndpoints;
 
   ///
   final String? faviconDirectory;
@@ -47,10 +60,7 @@ class Server extends StatefulComponent {
   final List<Component> children;
 
   ///
-  final Component unknown;
-
-  ///
-  final Component rootEndpoint;
+  late final Component rootEndpoint;
 
   @override
   State<StatefulComponent> createState() => ServiceState();
@@ -107,7 +117,8 @@ class ServiceState extends State<Server> {
 
     return ServiceCallingComponent(
         rootName: rootName,
-        child: UnknownWrapper(unknown: component.unknown, child: result));
+        child: ExceptionWrapper.fromMap(
+            map: component.defaultExceptionEndpoints, child: result));
   }
 }
 
@@ -228,13 +239,8 @@ class ServiceCalling extends Calling {
 
   @override
   FutureOr<Message> onCall(Request request) {
-    try {
-      request.path.resolveFor(binding._childGateway.components.keys.toList());
-      return (binding.child).findCalling.calling.onCall(request);
-    }  on Exception catch(e) {
-      print("ON 9 $e");
-      rethrow;
-    }
+    request.path.resolveFor(binding._childGateway.components.keys.toList());
+    return (binding.child).findCalling.calling(request);
   }
 }
 

@@ -1,14 +1,24 @@
 part of '../../style_base.dart';
 
-/// Unknown Wrapper set sub-context default [unknown]
 ///
-class UnknownWrapper extends StatelessComponent {
-  /// Unknown must one of endpoint in sub-tree
-  UnknownWrapper({Key? key, required this.unknown, required this.child})
-      : super(key: key);
+class ExceptionWrapper extends StatelessComponent {
+  ///
+  factory ExceptionWrapper({required Component child, Key? key}) {
+    return ExceptionWrapper.fromMap(child: child, map: {});
+  }
 
   ///
-  final Component child, unknown;
+  ExceptionWrapper.fromMap(
+      {required this.child,
+      required Map<Type, ExceptionEndpoint> map,
+      Key? key})
+      : _map = map,
+        super(key: key);
+
+  ///
+  final Component child;
+
+  final Map<Type, ExceptionEndpoint> _map;
 
   @override
   Component build(BuildContext context) {
@@ -17,86 +27,56 @@ class UnknownWrapper extends StatelessComponent {
 
   @override
   StatelessBinding createBinding() {
-    return _UnknownWrapperBinding(this);
+    return _ExceptionWrapperBinding(this);
   }
 }
 
-class _UnknownWrapperBinding extends StatelessBinding {
-  _UnknownWrapperBinding(UnknownWrapper component) : super(component);
+class _ExceptionWrapperBinding extends StatelessBinding {
+  _ExceptionWrapperBinding(ExceptionWrapper component) : super(component);
 
   @override
   void _build() {
-    _unknown = component.unknown.createBinding();
-    _unknown!.attachToParent(this);
-    _unknown!._build();
-    var r = _unknown!.visitChildren(TreeVisitor((visitor) {
-      if (visitor.currentValue.component is PathSegmentCallingComponentMixin ||
-          visitor.currentValue is GatewayBinding) {
-        visitor.stop();
-      }
-    }));
-    if (r.result != null) {
-      throw Exception("[unknown] tree must ends with Endpoint"
-          "\nAnd must not have a new route\n"
-          "Ensure unknown/unknown's any child not [Route, RouteTo, GateWay]\n"
-          "WHERE: $_errorWhere");
+    if (_exceptionHandler == null) {
+      component._map.addAll({
+        InternalServerError: DefaultExceptionEndpoint<InternalServerError>()
+      });
     }
+    var _bindings = <Type, ExceptionEndpointCallingBinding>{};
+    for (var w in component._map.entries) {
+      _bindings[w.key] = w.value.createBinding();
+    }
+    _exceptionHandler ??= ExceptionHandler({});
+    exceptionHandler._map.addAll(_bindings);
+    var p = _parent;
+    while (p != null && p._exceptionHandler == null) {
+      p._exceptionHandler = _exceptionHandler;
+      p = p._parent;
+    }
+    for (var _b in _bindings.values) {
+      _b.attachToParent(this);
+      _b._build();
+    }
+    for (var _b in _bindings.values) {
+      var r = _b.visitChildren(TreeVisitor((visitor) {
+        if (visitor.currentValue.component
+                is PathSegmentCallingComponentMixin ||
+            visitor.currentValue is GatewayBinding) {
+          visitor.stop();
+        }
+      }));
+      if (r.result != null) {
+        throw Exception("[exception] tree must ends with Endpoint"
+            "\nAnd must not have a new route\n"
+            "Ensure exception/exception's any child not [Route, RouteTo, GateWay]\n"
+            "WHERE: $_errorWhere");
+      }
+    }
+
     super._build();
   }
 
   @override
-  UnknownWrapper get component => super.component as UnknownWrapper;
-}
-
-/// Unknown Wrapper set sub-context default [unknown]
-///
-class ErrorWrapper extends StatelessComponent {
-  /// Unknown must one of endpoint in sub-tree
-  ErrorWrapper({Key? key, required this.error, required this.child})
-      : super(key: key);
-
-  ///
-  final Component child, error;
-
-  @override
-  Component build(BuildContext context) {
-    return child;
-  }
-
-  @override
-  StatelessBinding createBinding() {
-    return _ErrorWrapperBinding(this);
-  }
-}
-
-class _ErrorWrapperBinding extends StatelessBinding {
-  _ErrorWrapperBinding(ErrorWrapper component) : super(component);
-
-  @override
-  void _build() {
-    _error = component.error.createBinding();
-    _error!.attachToParent(this);
-    _error!._build();
-    var haveRoute = false;
-    var e = _error!.visitChildren(TreeVisitor((visitor) {
-      if (visitor.currentValue.component is PathSegmentCallingComponentMixin ||
-          visitor.currentValue is GatewayBinding) {
-        haveRoute = true;
-        visitor.stop();
-      } else if (visitor.currentValue.component is ErrorEndpoint) {
-        visitor.stop();
-      }
-    }));
-    if (haveRoute || e.result == null) {
-      throw Exception("[error] tree must ends with ErrorEndpoint"
-          "\nAnd must not have a new route\n"
-          "Ensure error/error's any child not [Route, RouteTo, GateWay]");
-    }
-    super._build();
-  }
-
-  @override
-  ErrorWrapper get component => super.component as ErrorWrapper;
+  ExceptionWrapper get component => super.component as ExceptionWrapper;
 }
 
 ///

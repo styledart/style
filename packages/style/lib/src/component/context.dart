@@ -64,15 +64,12 @@ abstract class BuildContext {
 
   ///
   DataAccess get dataAccess {
-    try {
+
       if (_dataAccess == null) {
-        throw Exception("AAAA");
+        throw ServiceUnavailable("data_access");
       }
       return _dataAccess!;
-    } on Exception catch (e) {
-      print("ON 1 $e");
-      rethrow;
-    }
+
   }
 
   WebSocketService? _socketService;
@@ -115,14 +112,7 @@ abstract class BuildContext {
   CallingBinding? get ancestorCalling;
 
   ///
-  Binding get unknown => _unknown!;
-
-  Binding? _unknown;
-
-  ///
-  Binding get error => _error!;
-
-  Binding? _error;
+  ExceptionHandler get exceptionHandler;
 }
 
 /// Mimari kurucusu
@@ -166,13 +156,16 @@ abstract class Binding extends BuildContext {
     return list.reversed.join(" -> ");
   }
 
+  ExceptionHandler get exceptionHandler => _exceptionHandler!;
+
+  ExceptionHandler? _exceptionHandler;
+
   ///
   void attachToParent(Binding parent) {
     _owner = parent._owner;
     _parent = parent;
     _crypto = parent._crypto;
-    _unknown = parent._unknown;
-    _error = parent._error;
+    _exceptionHandler = parent._exceptionHandler?.copyWith();
     _httpService = parent._httpService;
     _socketService = parent._socketService;
     _dataAccess = parent._dataAccess;

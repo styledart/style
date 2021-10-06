@@ -276,55 +276,22 @@ class RouteCalling extends Calling {
           .resolveFor(binding._childGateway?.components.keys.toList() ?? []);
 
       if (n.segment.isRoot) {
-        try {
-          return (binding.rootBinding ?? binding.unknown)
-              .findCalling
-              .calling
-              .onCall(request);
-        } on Exception catch (e) {
-          print("ON 12 $e");
-          rethrow;
-        }
+        return (binding.rootBinding ?? binding.exceptionHandler.unknown)
+            .findCalling
+            .calling(request);
       } else if (n.segment.isUnknown) {
-        try {
-          return (binding.component.handleUnknownAsRoot
-                  ? binding.rootBinding!
-                  : binding.unknown)
-              .findCalling
-              .calling
-              .onCall(request);
-        } on Exception catch (e) {
-          print("ON 13 $e");
-          rethrow;
-        }
+        return (binding.component.handleUnknownAsRoot
+                ? binding.rootBinding!
+                : binding.exceptionHandler.unknown)
+            .findCalling
+            .calling(request);
       } else {
-        try {
-          return (binding._childGateway!.binding)
-              .findCalling
-              .calling
-              .onCall(request);
-        } on Exception catch (e) {
-          print("ON 14 $e");
-          rethrow;
-        }
+        return (binding._childGateway!.binding).findCalling.calling(request);
       }
     } on Exception catch (e) {
-      print("ON 11 $e");
-      rethrow;
+      return binding.exceptionHandler[e.runtimeType].findCalling
+          .calling(request);
     }
-
-    // throw 0;
-    //
-    // if (n.segment is ArgumentSegment) {
-    //   return binding.childBinding!.call(request);
-    // } else if (n.segment.isRoot) {
-    //   return (binding.rootBinding ?? binding.unknown).call(request);
-    // } else {
-    //   return (binding.component.handleUnknownAsRoot
-    //           ? binding.rootBinding!
-    //           : binding.unknown)
-    //       .call(request);
-    // }
   }
 }
 

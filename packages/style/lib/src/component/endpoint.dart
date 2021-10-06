@@ -6,17 +6,32 @@ class EndpointCalling extends Calling {
   EndpointCalling(EndpointCallingBinding endpoint) : super(endpoint);
 
   @override
-  // TODO: implement binding
   EndpointCallingBinding get binding => super.binding as EndpointCallingBinding;
 
   @override
-  FutureOr<Message> onCall(Request request) {
-    try {
-      return binding.component.onCall(request);
-    }  on Exception catch(e) {
-      print("ON 3 $e");
-      rethrow;
-    }
+  FutureOr<Message> onCall(Request request) async {
+try {
+  return await binding.component.onCall(request);
+} on Exception {
+  rethrow;
+}
+  }
+}
+
+///
+class ExceptionEndpointCalling<T extends Exception> extends EndpointCalling {
+  ///
+  ExceptionEndpointCalling(ExceptionEndpointCallingBinding<T> endpoint)
+      : super(endpoint);
+
+  @override
+  ExceptionEndpointCallingBinding get binding =>
+      super.binding as ExceptionEndpointCallingBinding;
+
+  @override
+  FutureOr<Message> onCall(Request request,
+      [T? exception, StackTrace? stackTrace]) {
+    return binding.component.onCall(request, exception, stackTrace);
   }
 }
 
@@ -43,12 +58,29 @@ abstract class Endpoint extends CallingComponent {
 }
 
 ///
+class ExceptionEndpointCallingBinding<T extends Exception>
+    extends EndpointCallingBinding {
+  ///
+  ExceptionEndpointCallingBinding(ExceptionEndpoint<T> component)
+      : super(component);
+
+  @override
+  ExceptionEndpoint<T> get component => super.component as ExceptionEndpoint<T>;
+
+  @override
+  // TODO: implement calling
+  ExceptionEndpointCalling<T> get calling =>
+      super.calling as ExceptionEndpointCalling<T>;
+}
+
+///
 class EndpointCallingBinding extends CallingBinding {
   ///
   EndpointCallingBinding(CallingComponent component) : super(component);
 
   @override
   Endpoint get component => super.component as Endpoint;
+
   ///
   String get fullPath {
     var list = <String>[];

@@ -14,7 +14,7 @@ class Redirect extends Endpoint {
       required String? path,
       required BuildContext context}) async {
     if (path == null) {
-      return context.unknown.findCalling.calling.onCall(request);
+      return context.exceptionHandler.unknown.findCalling.calling(request);
     }
 
     var uri = Uri.parse(path);
@@ -59,7 +59,7 @@ class Redirect extends Endpoint {
         segments.removeAt(0);
         request.path.notProcessedValues.addAll(segments);
         request.path.current = segments.first;
-        return service.calling.onCall(request);
+        return service.calling(request);
       }
 
       var nBinding = context;
@@ -81,7 +81,7 @@ class Redirect extends Endpoint {
       request.path.current = segments.first;
       return ((nBinding).findAncestorBindingOfType<RouteBinding>() ??
               nBinding.findAncestorBindingOfType<ServiceBinding>()!)
-          .calling.onCall(request);
+          .calling(request);
     }
   }
 

@@ -42,7 +42,7 @@ class _BaseServiceStatefulBinding<B extends _BaseService>
   void attachToParent(Binding parent) {
     _owner = parent._owner;
     _parent = parent;
-    _unknown = parent._unknown;
+    _exceptionHandler = parent.exceptionHandler.copyWith();
     _setServiceToThisAndParents<B>(component.service);
   }
 

@@ -1,17 +1,14 @@
 part of '../../style_base.dart';
 
-
-
-
 ///
 class CallTrigger extends SingleChildCallingComponent {
   ///
   CallTrigger(
       {required Component child,
-        this.responseTrigger,
-        this.requestTrigger,
-        this.ensureResponded = false,
-        this.ensureSent = false})
+      this.responseTrigger,
+      this.requestTrigger,
+      this.ensureResponded = false,
+      this.ensureSent = false})
       : super(child);
 
   ///
@@ -44,14 +41,14 @@ class _CallTriggerCalling extends Calling {
   SingleChildCallingBinding get binding =>
       super.binding as SingleChildCallingBinding;
 
-  _ensureResponded(Request request) async {
+  Future<void> _ensureResponded(Request request) async {
     var responded = await request.ensureResponded();
     if (responded) {
       component.requestTrigger!.call(request);
     }
   }
 
-  _ensureSent(Message message) async {
+  Future<void> _ensureSent(Message message) async {
     var responded = message is Response && await message.ensureSent();
     if (responded) {
       component.responseTrigger!.call(message);
@@ -60,25 +57,26 @@ class _CallTriggerCalling extends Calling {
 
   @override
   FutureOr<Message> onCall(Request request) async {
-    if (component.requestTrigger != null) {
-      if (component.ensureResponded) {
-        _ensureResponded(request);
-      } else {
-        component.requestTrigger!.call(request);
-      }
-    }
 
-    if (component.responseTrigger != null) {
-      var res = await binding.child.findCalling.calling.onCall(request);
-      if (component.ensureSent) {
-        _ensureSent(res);
-      } else {
-        component.responseTrigger!.call(request);
+      if (component.requestTrigger != null) {
+        if (component.ensureResponded) {
+          _ensureResponded(request);
+        } else {
+          component.requestTrigger!.call(request);
+        }
       }
-      return res;
-    } else {
-      return binding.child.findCalling.calling.onCall(request);
-    }
+      if (component.responseTrigger != null) {
+        var res = await binding.child.findCalling.calling(request);
+        if (component.ensureSent) {
+          _ensureSent(res);
+        } else {
+          component.responseTrigger!.call(request);
+        }
+        return res;
+      } else {
+        return binding.child.findCalling.calling(request);
+      }
+
   }
 }
 
@@ -87,9 +85,9 @@ class RequestTrigger extends StatelessComponent {
   ///
   const RequestTrigger(
       {required this.child,
-        required this.trigger,
-        this.ensureResponded = false,
-        Key? key})
+      required this.trigger,
+      this.ensureResponded = false,
+      Key? key})
       : super(key: key);
 
   ///
@@ -115,9 +113,9 @@ class ResponseTrigger extends StatelessComponent {
   ///
   const ResponseTrigger(
       {required this.child,
-        required this.trigger,
-        this.ensureSent = false,
-        Key? key})
+      required this.trigger,
+      this.ensureSent = false,
+      Key? key})
       : super(key: key);
 
   ///
