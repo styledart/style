@@ -34,9 +34,13 @@ class CronJob extends StatefulComponent {
 
 ///
 class CronJobState extends State<CronJob> {
+  ///
   int totalCallCount = 0;
+
+  ///
   DateTime? lastCall;
 
+  ///
   CronTimePeriod get period => component.timePeriod;
 
   @override
@@ -47,6 +51,5 @@ class CronJobState extends State<CronJob> {
       return (await component.onCall(request, this)) ??
           NoResponseRequired(request: request);
     });
-    return UnknownEndpoint();
   }
 }

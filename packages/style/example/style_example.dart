@@ -11,7 +11,16 @@ void main() async {
         Bitti
         """);
 
-  runService(MyServer());
+  var b = runService(MyServer());
+
+  b.visitChildren(TreeVisitor((visitor) {
+    try {
+      print("${visitor.currentValue.component}"
+          " ${visitor.currentValue.httpService}");
+    } on Exception {
+      print("${visitor.currentValue.component} on Null");
+    }
+  }));
 }
 
 ///
@@ -66,11 +75,9 @@ class MyServer extends StatelessComponent {
                   authRequired: true, child: Route("auth", root: AuthEnd()))),
           Route("un-auth", root: CallQueue(UnAuthEnd())),
         ],
-        defaultUnknownEndpoint: SimpleEndpoint((r){
+        defaultUnknownEndpoint: SimpleEndpoint((r) {
           print("Buraya Geldi");
-          return r.createResponse({
-            "route" : "un"
-          });
+          return r.createResponse({"route": "un"});
         }),
         rootEndpoint: Redirect("http://localhost/doc/index.html"));
   }
@@ -114,9 +121,13 @@ class User extends StatelessComponent {
 class UnAuthEnd extends Endpoint {
   @override
   FutureOr<Message> onCall(Request request) async {
-    await Future.delayed(Duration(seconds: 2));
-    print("Cevap Gitti UN");
-    return request.createResponse({"args": "FROM UNAUTH"});
+    try {
+      print("Cevap Gitti UN: ${context.dataAccess}");
+      return request.createResponse({"args": "FROM UNAUTH"});
+    }  on Exception catch(e) {
+      print("ON 2 $e");
+      rethrow;
+    }
   }
 }
 

@@ -15,6 +15,7 @@ part 'component/base_services/base.dart';
 part 'component/base_services/crypto.dart';
 part 'component/base_services/data.dart';
 part 'component/base_services/http.dart';
+part 'component/base_services/logger.dart';
 part 'component/base_services/web_socket.dart';
 part 'component/calling.dart';
 part 'component/component_base.dart';

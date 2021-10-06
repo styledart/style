@@ -4,8 +4,53 @@ part of '../style_base.dart';
 abstract class BuildContext {
   ///
   ServiceBinding get owner => _owner!;
+
   ServiceBinding? _owner;
+
   Binding? _parent;
+
+  void _setServiceToThisAndParents<B extends _BaseService>(B newService,
+      {bool onChild = false}) {
+    print("Service $newService Setting: $component");
+    if (B == CryptoService) {
+      if (onChild && _crypto != null) return;
+      if (onChild) {
+        _crypto ??= newService as CryptoService;
+      } else {
+        _crypto = newService as CryptoService;
+      }
+    } else if (B == DataAccess) {
+      if (onChild && _dataAccess != null) return;
+      if (onChild) {
+        _dataAccess ??= newService as DataAccess;
+      } else {
+        _dataAccess = newService as DataAccess;
+      }
+    } else if (B == WebSocketService) {
+      if (onChild && _socketService != null) return;
+      if (onChild) {
+        _socketService ??= newService as WebSocketService;
+      } else {
+        _socketService = newService as WebSocketService;
+      }
+    } else if (B == HttpServiceHandler) {
+      if (onChild && _httpService != null) return;
+      if (onChild) {
+        print("HTTP TO PARENT: $component");
+        _httpService ??= newService as HttpServiceHandler;
+      } else {
+        _httpService = newService as HttpServiceHandler;
+      }
+    } else if (B == Logger) {
+      if (onChild && _logger != null) return;
+      if (onChild) {
+        _logger ??= newService as Logger;
+      } else {
+        _logger = newService as Logger;
+      }
+    } else {}
+    _parent?._setServiceToThisAndParents(newService, onChild: true);
+  }
 
   ///
   Component get component;
@@ -18,7 +63,17 @@ abstract class BuildContext {
   DataAccess? _dataAccess;
 
   ///
-  DataAccess get dataAccess => _dataAccess!;
+  DataAccess get dataAccess {
+    try{
+      if (_dataAccess == null) {
+        throw Exception("AAAA");
+      }
+      return _dataAccess!;
+    } on Exception catch(e) {
+      print("ON 1 $e");
+      rethrow;
+    }
+  }
 
   WebSocketService? _socketService;
 
@@ -29,6 +84,12 @@ abstract class BuildContext {
 
   ///
   HttpServiceHandler get httpService => _httpService!;
+
+
+  Logger? _logger;
+
+  ///
+  Logger get logger => _logger!;
 
   ///
   T? findAncestorBindingOfType<T extends Binding>();
@@ -305,7 +366,8 @@ class StatelessBinding extends DevelopmentBinding {
   FutureOr<Message> call(Request request) {
     try {
       return _child!.call(request);
-    } on Exception {
+    } on Exception catch(e) {
+      print("ON 10 $e");
       rethrow;
     }
   }

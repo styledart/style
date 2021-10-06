@@ -11,8 +11,7 @@ abstract class HttpServiceHandler extends _BaseService {
   ///
   SecurityContext? securityContext;
 
-  ///
-  late final BuildContext context;
+
 
   ///
   Future<HttpServer> get serverLoader;
