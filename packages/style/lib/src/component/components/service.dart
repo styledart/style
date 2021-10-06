@@ -180,7 +180,6 @@ class ServiceBinding extends SingleChildCallingBinding with ServiceOwnerMixin {
   @override
   void _build() {
     serviceRootName = component.rootName;
-    print("UN: ${_unknown?._errorWhere}");
     _calling = component.createCalling(this);
     _child = component.child.createBinding();
     _owner = this;
@@ -193,7 +192,7 @@ class ServiceBinding extends SingleChildCallingBinding with ServiceOwnerMixin {
     _child._build();
     _childGateway = _child.visitCallingChildren(TreeVisitor((visitor) {
       if (visitor.currentValue is GatewayCalling) {
-        visitor.stop(visitor.currentValue);
+        visitor.stop();
       }
     })).result as GatewayCalling;
   }
@@ -231,7 +230,7 @@ class ServiceCalling extends Calling {
   FutureOr<Message> onCall(Request request) {
     try {
       request.path.resolveFor(binding._childGateway.components.keys.toList());
-      return (binding.child).call(request);
+      return (binding.child).findCalling.calling.onCall(request);
     }  on Exception catch(e) {
       print("ON 9 $e");
       rethrow;

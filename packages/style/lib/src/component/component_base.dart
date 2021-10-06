@@ -1,7 +1,5 @@
 part of '../style_base.dart';
 
-
-
 /// Ana Mimarideki her bir parça
 ///
 @immutable
@@ -34,8 +32,7 @@ abstract class StatelessComponent extends Component {
   const StatelessComponent({Key? key}) : super(key: key);
 
   @override
-  StatelessBinding createBinding() =>
-      StatelessBinding(this);
+  StatelessBinding createBinding() => StatelessBinding(this);
 
   ///
   Component build(BuildContext context);
@@ -68,7 +65,6 @@ abstract class StatefulComponent extends Component {
 
 ///
 abstract class State<T extends StatefulComponent> {
-
   ///
   bool get mounted => _binding != null;
 
@@ -89,11 +85,8 @@ abstract class State<T extends StatefulComponent> {
   void initState() async {}
 }
 
-
-
 ///
 class Key {
-
   ///
   const Key(this.key);
 
@@ -106,9 +99,7 @@ class Key {
 
 ///
 @immutable
-class GlobalKey<T extends State<StatefulComponent>>
-    extends Key {
-
+class GlobalKey<T extends State<StatefulComponent>> extends Key {
   ///
   GlobalKey(String key) : super(key);
 
@@ -125,8 +116,7 @@ class GlobalKey<T extends State<StatefulComponent>>
   }
 
   ///
-  bool get mounted =>
-      binding != null && binding!._state != null;
+  bool get mounted => binding != null && binding!._state != null;
 
   @override
   bool operator ==(Object other) {
@@ -177,7 +167,6 @@ abstract class SingleChildCallingComponent extends CallingComponent {
 
 ///
 abstract class MultiChildCallingComponent extends CallingComponent {
-
   ///
   MultiChildCallingComponent(this.children);
 
@@ -214,15 +203,17 @@ abstract class CallingBinding extends Binding {
     return callingVisitor(visitor);
   }
 
-  @override
-  FutureOr<Message> call(Request request) {
-    try {
-      return calling.onCall(request);
-    }  on Exception catch(e) {
-      print("ON 4 $e");
-      rethrow;
-    }
-  }
+
+
+// @override
+// FutureOr<Message> call(Request request) {
+//   try {
+//     return calling.onCall(request);
+//   }  on Exception catch(e) {
+//     print("ON 4 $e");
+//     rethrow;
+//   }
+// }
 }
 
 ///
@@ -268,11 +259,6 @@ class SingleChildBinding extends Binding {
     // TODO: implement visitCallingChildren
     throw UnimplementedError();
   }
-
-  @override
-  FutureOr<Message> call(Request request) {
-    return child.call(request);
-  }
 }
 
 ///
@@ -305,7 +291,8 @@ class SingleChildCallingBinding extends CallingBinding {
 
   @override
   TreeVisitor<Calling> callingVisitor(TreeVisitor<Calling> visitor) {
-    if (visitor._stopped) return visitor; visitor(calling);
+    if (visitor._stopped) return visitor;
+    visitor(calling);
     return child.visitCallingChildren(visitor);
   }
 }
@@ -342,7 +329,8 @@ class MultiChildCallingBinding extends CallingBinding {
 
   @override
   TreeVisitor<Calling> callingVisitor(TreeVisitor<Calling> visitor) {
-    if (visitor._stopped) return visitor;visitor(calling);
+    if (visitor._stopped) return visitor;
+    visitor(calling);
     if (!visitor._stopped) {
       for (var child in children) {
         child.visitCallingChildren(visitor);

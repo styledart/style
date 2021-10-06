@@ -70,15 +70,15 @@ class MyServer extends StatelessComponent {
               root: DocumentService("D:\\style\\packages\\style\\source\\web\\",
                   cacheAll: false)),
           MethodFilterGate(
-              blockedMethods: [Methods.GET],
+              allowedMethods: [Methods.GET],
               child: AuthFilterGate(
                   authRequired: true, child: Route("auth", root: AuthEnd()))),
           Route("un-auth", root: CallQueue(UnAuthEnd())),
         ],
-        defaultUnknownEndpoint: SimpleEndpoint((r) {
-          print("Buraya Geldi");
-          return r.createResponse({"route": "un"});
-        }),
+        // defaultUnknownEndpoint: SimpleEndpoint((r) {
+        //   print("Buraya Geldi");
+        //   return r.createResponse({"route": "un"});
+        // }),
         rootEndpoint: Redirect("http://localhost/doc/index.html"));
   }
 }
@@ -124,7 +124,7 @@ class UnAuthEnd extends Endpoint {
     try {
       print("Cevap Gitti UN: ${context.dataAccess}");
       return request.createResponse({"args": "FROM UNAUTH"});
-    }  on Exception catch(e) {
+    } on Exception catch (e) {
       print("ON 2 $e");
       rethrow;
     }

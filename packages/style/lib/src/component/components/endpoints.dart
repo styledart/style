@@ -1,63 +1,32 @@
 part of '../../style_base.dart';
 
 ///
-class UnknownEndpoint extends Endpoint {
+class UnknownEndpoint extends ErrorEndpoint {
   ///
   UnknownEndpoint() : super();
 
   @override
-  FutureOr<Message> onCall(Request request) {
-    return request.createResponse({
-      "reason": "route_unknown",
-      "route": request.context.pathController.current
-    });
-  }
-}
-
-/// Unknown Wrapper set sub-context default [unknown]
-///
-class UnknownWrapper extends StatelessComponent {
-  /// Unknown must one of endpoint in sub-tree
-  UnknownWrapper({Key? key, required this.unknown, required this.child})
-      : super(key: key);
-
-  ///
-  final Component child, unknown;
-
-  @override
-  Component build(BuildContext context) {
-    return child;
-  }
-
-  @override
-  StatelessBinding createBinding() {
-    return _UnknownWrapperBinding(this);
-  }
-}
-
-class _UnknownWrapperBinding extends StatelessBinding {
-  _UnknownWrapperBinding(UnknownWrapper component) : super(component);
-
-  @override
-  void _build() {
-    _unknown = component.unknown.createBinding();
-    _unknown!.attachToParent(this);
-    _unknown!._build();
-    var end = true;
-    _unknown!.visitChildren(TreeVisitor((visitor) {
-      if (visitor.currentValue.component is PathSegmentCallingComponentMixin) {
-        end = false;
-        visitor.stop(visitor.currentValue);
-      }
-    }));
-    if (!end) {
-      throw Exception("Unknown Must not be route");
+  FutureOr<Response> onError(Message message, StyleException exception) {
+    if (message is Request) {
+      return message.createResponse({
+        "reason": "route_unknown",
+        "route": message.context.pathController.current
+      }, statusCode: 502);
+    } else {
+      throw Exception("Unknown not handle response");
     }
-    super._build();
   }
+}
+
+///
+abstract class ErrorEndpoint extends Endpoint {
+  ///
+  FutureOr<Response> onError(Message message, StyleException exception);
 
   @override
-  UnknownWrapper get component => super.component as UnknownWrapper;
+  FutureOr<Message> onCall(Request request) {
+    throw UnsupportedError("Error Endpoints not calling");
+  }
 }
 
 ///
@@ -128,7 +97,7 @@ class AccessPoint extends Endpoint {
       var r = await dataAccess.delete(await queryBuilder(request));
       return request.createResponse(r);
     } else {
-      return context.unknown.call(request);
+      return context.unknown.findCalling.calling.onCall(request);
     }
   }
 }

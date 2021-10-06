@@ -11,6 +11,10 @@ import 'package:style_cron_job/style_cron_job.dart';
 import 'functions/random.dart';
 import 'functions/uint8_merge.dart';
 
+
+part 'exception/style_exception.dart';
+
+
 part 'component/base_services/base.dart';
 part 'component/base_services/crypto.dart';
 part 'component/base_services/data.dart';
@@ -19,7 +23,6 @@ part 'component/base_services/logger.dart';
 part 'component/base_services/web_socket.dart';
 part 'component/calling.dart';
 part 'component/component_base.dart';
-part 'component/components.dart';
 part 'component/components/cron_job.dart';
 part 'component/components/endpoints.dart';
 part 'component/components/gate.dart';

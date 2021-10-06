@@ -33,7 +33,7 @@ class GateCalling extends Calling {
       if (gateRes is Response) {
         return gateRes;
       } else {
-        return binding.child.call(request);
+        return binding.child.findCalling.calling.onCall(request);
       }
     } on Exception {
       rethrow;

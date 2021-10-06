@@ -64,12 +64,12 @@ abstract class BuildContext {
 
   ///
   DataAccess get dataAccess {
-    try{
+    try {
       if (_dataAccess == null) {
         throw Exception("AAAA");
       }
       return _dataAccess!;
-    } on Exception catch(e) {
+    } on Exception catch (e) {
       print("ON 1 $e");
       rethrow;
     }
@@ -84,7 +84,6 @@ abstract class BuildContext {
 
   ///
   HttpServiceHandler get httpService => _httpService!;
-
 
   Logger? _logger;
 
@@ -119,6 +118,11 @@ abstract class BuildContext {
   Binding get unknown => _unknown!;
 
   Binding? _unknown;
+
+  ///
+  Binding get error => _error!;
+
+  Binding? _error;
 }
 
 /// Mimari kurucusu
@@ -149,9 +153,6 @@ abstract class Binding extends BuildContext {
   @override
   Component get component => _component;
 
-  ///
-  FutureOr<Message> call(Request request);
-
   String get _errorWhere {
     var list = <Type>[];
 
@@ -171,6 +172,7 @@ abstract class Binding extends BuildContext {
     _parent = parent;
     _crypto = parent._crypto;
     _unknown = parent._unknown;
+    _error = parent._error;
     _httpService = parent._httpService;
     _socketService = parent._socketService;
     _dataAccess = parent._dataAccess;
@@ -227,7 +229,7 @@ abstract class Binding extends BuildContext {
   T? findChildService<T extends ServiceBinding>() {
     var visiting = visitChildren(TreeVisitor<Binding>((visitor) {
       if (visitor.currentValue is T) {
-        visitor.stop(visitor.currentValue);
+        visitor.stop();
       }
     }));
 
@@ -239,7 +241,7 @@ abstract class Binding extends BuildContext {
     var visiting = visitChildren(TreeVisitor<Binding>((visitor) {
       if (visitor.currentValue is StatefulBinding &&
           (visitor.currentValue as StatefulBinding).state is T) {
-        visitor.stop(visitor.currentValue);
+        visitor.stop();
       }
     }));
 
@@ -248,10 +250,12 @@ abstract class Binding extends BuildContext {
 
   @override
   CallingBinding get findCalling {
-    return visitCallingChildren(TreeVisitor((visitor) {
-      visitor.stop(visitor.currentValue);
+    return _foundCalling ??= visitCallingChildren(TreeVisitor((visitor) {
+      visitor.stop();
     })).currentValue.binding;
   }
+
+  CallingBinding? _foundCalling;
 
   @override
   CallingBinding? get ancestorCalling {
@@ -292,8 +296,8 @@ class TreeVisitor<T> {
   }
 
   ///
-  void stop(T value) {
-    result = value;
+  void stop() {
+    result = currentValue;
     _stopped = true;
   }
 
@@ -361,16 +365,6 @@ class StatelessBinding extends DevelopmentBinding {
     _child!.visitChildren(visitor);
     return visitor;
   }
-
-  @override
-  FutureOr<Message> call(Request request) {
-    try {
-      return _child!.call(request);
-    } on Exception catch(e) {
-      print("ON 10 $e");
-      rethrow;
-    }
-  }
 }
 
 ///
@@ -407,10 +401,5 @@ class StatefulBinding extends DevelopmentBinding {
       _owner!.addState(state);
     }
     return _state!.build(binding);
-  }
-
-  @override
-  FutureOr<Message> call(Request request) {
-    return _child!.call(request);
   }
 }

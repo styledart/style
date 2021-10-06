@@ -69,7 +69,7 @@ class _CallTriggerCalling extends Calling {
     }
 
     if (component.responseTrigger != null) {
-      var res = await binding.child.call(request);
+      var res = await binding.child.findCalling.calling.onCall(request);
       if (component.ensureSent) {
         _ensureSent(res);
       } else {
@@ -77,7 +77,7 @@ class _CallTriggerCalling extends Calling {
       }
       return res;
     } else {
-      return binding.child.call(request);
+      return binding.child.findCalling.calling.onCall(request);
     }
   }
 }

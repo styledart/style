@@ -49,30 +49,6 @@ class EndpointCallingBinding extends CallingBinding {
 
   @override
   Endpoint get component => super.component as Endpoint;
-
-  // String get lastPath {
-  //
-  //   String? path;
-  //
-  //   List<Component> ancestorComponents = [];
-  //   CallingBinding? ancestor;
-  //   ancestor = this;
-  //
-  //   while (ancestor is! ServiceBinding && ancestor != null) {
-  //     if (ancestor.component is PathSegmentBindingMixin) {
-  //       var n = ((ancestor).component as PathSegmentBindingMixin)
-  //                  .segment.name;
-  //       if (!(n == "*root" || n == "*unknown")) {
-  //         path = n;
-  //         break;
-  //       }
-  //     }
-  //     ancestorComponents.add(ancestor.component);
-  //     ancestor = ancestor.ancestorCalling;
-  //   }
-  //
-  // }
-
   ///
   String get fullPath {
     var list = <String>[];
@@ -91,9 +67,7 @@ class EndpointCallingBinding extends CallingBinding {
     if (list.isEmpty) {
       throw Exception("No Service Found from: \nFrom:$ancestorComponents");
     }
-
     list.add(owner.httpService.address);
-
     return list.reversed.join("/");
   }
 

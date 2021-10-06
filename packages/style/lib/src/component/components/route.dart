@@ -159,16 +159,6 @@ class RouteBinding extends CallingBinding {
     rootBinding = component._root?.createBinding();
     childBinding = component._child?.createBinding();
 
-    // if (rootBinding != null && component.handleUnknownAsRoot) {
-    //   var unknownBinding = _unknown?.createBinding();
-    //   if ((unknownBinding is EndpointCallingBinding) &&
-    //       unknownBinding.component._context == null) {
-    //     unknownBinding._build();
-    //   }
-    // }
-
-    // _unknown = component.unknown ?? _unknown;
-
     childBinding?.attachToParent(
       this,
     );
@@ -183,12 +173,12 @@ class RouteBinding extends CallingBinding {
       var _rootGateway =
           rootBinding!.visitCallingChildren(TreeVisitor<Calling>((visitor) {
         if (visitor.currentValue is GatewayCalling) {
-          visitor.stop(visitor.currentValue);
+          visitor.stop();
           return;
         }
         if (visitor.currentValue.binding.component
             is PathSegmentCallingComponentMixin) {
-          visitor.stop(visitor.currentValue);
+          visitor.stop();
           return;
         }
       }));
@@ -203,7 +193,7 @@ class RouteBinding extends CallingBinding {
       var childGateway =
           childBinding!.visitCallingChildren(TreeVisitor<Calling>((visitor) {
         if (visitor.currentValue is GatewayCalling) {
-          visitor.stop(visitor.currentValue);
+          visitor.stop();
           return;
         }
       }));
@@ -232,8 +222,6 @@ class RouteBinding extends CallingBinding {
         """);
       }
     }
-
-    ///_unknownBinding.attachToParent(this);
   }
 
   @override
@@ -289,7 +277,10 @@ class RouteCalling extends Calling {
 
       if (n.segment.isRoot) {
         try {
-          return (binding.rootBinding ?? binding.unknown).call(request);
+          return (binding.rootBinding ?? binding.unknown)
+              .findCalling
+              .calling
+              .onCall(request);
         } on Exception catch (e) {
           print("ON 12 $e");
           rethrow;
@@ -299,14 +290,19 @@ class RouteCalling extends Calling {
           return (binding.component.handleUnknownAsRoot
                   ? binding.rootBinding!
                   : binding.unknown)
-              .call(request);
+              .findCalling
+              .calling
+              .onCall(request);
         } on Exception catch (e) {
           print("ON 13 $e");
           rethrow;
         }
       } else {
         try {
-          return (binding._childGateway!.binding).call(request);
+          return (binding._childGateway!.binding)
+              .findCalling
+              .calling
+              .onCall(request);
         } on Exception catch (e) {
           print("ON 14 $e");
           rethrow;

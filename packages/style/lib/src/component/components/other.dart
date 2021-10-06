@@ -55,7 +55,8 @@ class _QueueCalling extends Calling {
       var completer = Completer<Message>();
       callQueue.addLast(() async {
         try {
-          completer.complete(await binding.child.call(request));
+          completer.complete(
+              await binding.child.findCalling.calling.onCall(request));
         } on Exception catch (e) {
           print("ON 5 $e");
           rethrow;
