@@ -19,8 +19,8 @@ abstract class CryptoService extends _BaseService {
   }
 
   @override
-  Future<void> init() async {
-
+  Future<bool> init([bool inInterface = true]) async {
+   return true;
   }
 
 }

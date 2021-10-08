@@ -42,12 +42,12 @@ class GatewayBinding extends MultiChildCallingBinding {
     for (var child in children) {
       var _childCalling = child.visitCallingChildren(TreeVisitor((visitor) {
         if (visitor.currentValue is GatewayCalling) {
-          visitor.stop(visitor.currentValue);
+          visitor.stop();
           return;
         }
 
         if (visitor.currentValue is RouteCalling) {
-          visitor.stop(visitor.currentValue);
+          visitor.stop();
         }
       }));
 
@@ -95,12 +95,9 @@ class GatewayCalling extends Calling {
 
   @override
   FutureOr<Message> onCall(Request request) {
-    try {
-      return (components[PathSegment(request.currentPath)] ?? binding.unknown)
-          .call(request);
-    }  on Exception catch(e) {
-      print("ON 8 $e");
-      rethrow;
-    }
+    return (components[PathSegment(request.currentPath)] ??
+            binding.exceptionHandler.unknown)
+        .findCalling
+        .calling(request);
   }
 }

@@ -14,6 +14,9 @@ class Body<T> {
   /// To ensure text use TextBody
   ///
   factory Body(T data) {
+    if (data is Body<T>) {
+      return data;
+    }
     if (data is Map<String, dynamic> || data is List) {
       return JsonBody(data) as Body<T>;
     } else if (data is String) {

@@ -31,8 +31,8 @@ class SimpleCacheDataAccess extends DataAccess {
   final Map<String, Map<String, Map<String, dynamic>>> data = {};
 
   @override
-  Future<void> init() async {
-    return;
+  Future<bool> init([bool inInterface = true]) async {
+    return true;
   }
 
   @override

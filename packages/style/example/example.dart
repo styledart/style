@@ -6,7 +6,8 @@ import 'package:style/style.dart';
 /// in example
 
 void main() {
-  runService(BerberServer());
+
+
 }
 
 class BerberServer extends StatelessComponent {
@@ -14,7 +15,6 @@ class BerberServer extends StatelessComponent {
   Component build(BuildContext context) {
     return Server(
       rootName: "berber_server",
-      defaultUnknownEndpoint: BerberUnknownRequest(),
       rootEndpoint: Redirect('../home'),
       children: [
         // TODO: 

@@ -27,16 +27,12 @@ class GateCalling extends Calling {
 
   @override
   FutureOr<Message> onCall(Request request) async {
-    try {
-      var gateRes = await (binding.component as Gate).onRequest(request);
+    var gateRes = await (binding.component as Gate).onRequest(request);
 
-      if (gateRes is Response) {
-        return gateRes;
-      } else {
-        return binding.child.call(request);
-      }
-    } on Exception {
-      rethrow;
+    if (gateRes is Response) {
+      return gateRes;
+    } else {
+      return binding.child.findCalling.calling(request);
     }
   }
 }
@@ -56,13 +52,11 @@ class AuthFilterGate extends StatelessComponent {
 
   ///
   FutureOr<Message> checkAuth(Request request) {
-    //TODO
     if ((authRequired && request.context.accessToken != null) ||
         (!authRequired && request.context.accessToken == null)) {
       return request;
     } else {
-      throw Exception(
-          authRequired ? "Auth Required" : "Authorized Request not allowed");
+      throw UnauthorizedException();
     }
   }
 
@@ -117,25 +111,22 @@ class MethodFilterGate extends StatelessComponent {
   }
 }
 
-
-
-
 ///
 class ContentTypeFilterGate extends StatelessComponent {
   ///
   ContentTypeFilterGate(
       {Key? key,
-        required this.child,
-        this.allowedTypes = const [],
-        this.blockedTypes = const []})
+      required this.child,
+      this.allowedTypes = const [],
+      this.blockedTypes = const []})
       : assert(() {
-    for (var blocked in blockedTypes) {
-      if (allowedTypes.contains(blocked)) {
-        return false;
-      }
-    }
-    return true;
-  }(), "Allowed Methods Contains Blocked Methods"),
+          for (var blocked in blockedTypes) {
+            if (allowedTypes.contains(blocked)) {
+              return false;
+            }
+          }
+          return true;
+        }(), "Allowed Methods Contains Blocked Methods"),
         super(key: key);
 
   /// use mime type
@@ -164,11 +155,3 @@ class ContentTypeFilterGate extends StatelessComponent {
     return Gate(child: child, onRequest: checkMethods);
   }
 }
-
-
-
-
-
-
-
-

@@ -1,63 +1,75 @@
 part of '../../style_base.dart';
 
 ///
-class UnknownEndpoint extends Endpoint {
-  ///
-  UnknownEndpoint() : super();
-
+class DefaultExceptionEndpoint<T extends Exception>
+    extends ExceptionEndpoint<T> {
   @override
-  FutureOr<Message> onCall(Request request) {
-    return request.createResponse({
-      "reason": "route_unknown",
-      "route": request.context.pathController.current
+  FutureOr<Response> onError(
+      Message message, T exception, StackTrace stackTrace) {
+    var body = JsonBody({
+      "exception": exception.toString(),
+      "stack_trace": stackTrace.toString()
     });
+
+    var statusCode = (exception is StyleException) ? exception.statusCode : 500;
+
+    if (message is Response) {
+      return message
+        ..body = body
+        ..statusCode = statusCode;
+    } else {
+      return (message as Request)
+          .createResponse(body.data, statusCode: statusCode);
+    }
   }
 }
 
-/// Unknown Wrapper set sub-context default [unknown]
 ///
-class UnknownWrapper extends StatelessComponent {
-  /// Unknown must one of endpoint in sub-tree
-  UnknownWrapper({Key? key, required this.unknown, required this.child})
-      : super(key: key);
+typedef ExceptionHandleEndpoint<T extends Exception> = FutureOr<Response>
+    Function(Message request, T exception, StackTrace stackTrace);
+
+///
+abstract class ExceptionEndpoint<T extends Exception> extends Endpoint {
+  ///
+  FutureOr<Response> onError(
+      Message message, T exception, StackTrace stackTrace);
+
+  @override
+  FutureOr<Message> onCall(Request request,
+      [T? exception, StackTrace? stackTrace]) async {
+    var e = await onError(request, exception!, stackTrace!);
+    if (exception is StyleException) {
+      e.statusCode = exception.statusCode;
+    }
+    return e;
+  }
+
+  @override
+  ExceptionEndpointCallingBinding createBinding() {
+    return ExceptionEndpointCallingBinding<T>(this);
+  }
+
+  @override
+  ExceptionEndpointCalling<T> createCalling(BuildContext context) {
+    return ExceptionEndpointCalling<T>(
+        context as ExceptionEndpointCallingBinding<T>);
+  }
+}
+
+///
+class SimpleExceptionEndpoint<T extends Exception>
+    extends ExceptionEndpoint<T> {
+  ///
+  SimpleExceptionEndpoint(this.exceptionHandler);
 
   ///
-  final Component child, unknown;
+  final ExceptionHandleEndpoint<T> exceptionHandler;
 
   @override
-  Component build(BuildContext context) {
-    return child;
+  FutureOr<Response> onError(
+      Message message, T exception, StackTrace stackTrace) {
+    return exceptionHandler(message, exception, stackTrace);
   }
-
-  @override
-  StatelessBinding createBinding() {
-    return _UnknownWrapperBinding(this);
-  }
-}
-
-class _UnknownWrapperBinding extends StatelessBinding {
-  _UnknownWrapperBinding(UnknownWrapper component) : super(component);
-
-  @override
-  void _build() {
-    _unknown = component.unknown.createBinding();
-    _unknown!.attachToParent(this);
-    _unknown!._build();
-    var end = true;
-    _unknown!.visitChildren(TreeVisitor((visitor) {
-      if (visitor.currentValue.component is PathSegmentCallingComponentMixin) {
-        end = false;
-        visitor.stop(visitor.currentValue);
-      }
-    }));
-    if (!end) {
-      throw Exception("Unknown Must not be route");
-    }
-    super._build();
-  }
-
-  @override
-  UnknownWrapper get component => super.component as UnknownWrapper;
 }
 
 ///
@@ -69,12 +81,10 @@ class SimpleEndpoint extends Endpoint {
   final FutureOr<Message> Function(Request request) onRequest;
 
   @override
-  FutureOr<Message> onCall(Request request) {
-    try {
-      return onRequest(request);
-    } on Exception {
-      rethrow;
-    }
+  FutureOr<Message> onCall(Request request) async {
+
+      return await onRequest(request);
+
   }
 }
 
@@ -128,7 +138,7 @@ class AccessPoint extends Endpoint {
       var r = await dataAccess.delete(await queryBuilder(request));
       return request.createResponse(r);
     } else {
-      return context.unknown.call(request);
+      return context.exceptionHandler.unknown.findCalling.calling(request);
     }
   }
 }

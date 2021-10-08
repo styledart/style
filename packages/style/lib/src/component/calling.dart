@@ -1,7 +1,5 @@
 part of '../style_base.dart';
 
-
-
 /// İşlem Çağrısı
 ///
 /// Çağrı bindingler üzerinde gezinir.
@@ -11,22 +9,31 @@ part of '../style_base.dart';
 /// Kimi zaman kuyruk olarak
 ///
 abstract class Calling {
-
   ///
   Calling(
-     CallingBinding binding,
-    /*required this.name*/
+    CallingBinding binding,
   ) : _binding = binding;
-
   final CallingBinding _binding;
 
-  // String name;
-
   ///
+  @internal
+  @protected
   FutureOr<Message> onCall(Request request);
 
-
-
+  ///
+  FutureOr<Message> call(Request request) async {
+    try {
+      var r = await onCall(request);
+      return r;
+    } on Exception catch (e, s) {
+      try {
+        return _binding.exceptionHandler[e.runtimeType].calling
+            .onCall(request, e, s);
+      } on Exception {
+        rethrow;
+      }
+    }
+  }
 
   ///
   int callCount = 0;
@@ -34,4 +41,3 @@ abstract class Calling {
   ///
   CallingBinding get binding => _binding;
 }
-

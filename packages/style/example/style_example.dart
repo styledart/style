@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:stack_trace/stack_trace.dart';
 import 'package:style/style.dart';
@@ -23,20 +24,57 @@ void main() async {
   }));
 }
 
+class MyEx implements Exception {
+  @override
+  String toString() => "TEST EXCEPTION";
+}
+
+class UnauthorizedEndpoint extends ExceptionEndpoint<UnauthorizedException> {
+  @override
+  FutureOr<Response> onError(
+      Message message, UnauthorizedException exception, StackTrace stackTrace) {
+    if (message.contentType?.mimeType == ContentType.json.mimeType) {
+      return (message as Request)
+          .createResponse({"error": "unauthorized_error"});
+    } else {
+      return (message as Request).createResponse(HtmlBody("""
+<html>
+    <body>
+      <center style="vertical-align: middle;">
+        <h1>
+          You are not allowed inside
+        </h1>
+        <span style="padding-top: 20px;">
+        <p align='left'>
+        ${stackTrace.toString().split("\n").join("<br>")}
+        </p>     
+      </center>
+    </body>
+  </html>
+      """));
+    }
+  }
+}
+
 ///
 class MyServer extends StatelessComponent {
   @override
   Component build(BuildContext context) {
     return Server(
         rootName: "my_server",
+        defaultExceptionEndpoints: {
+          UnauthorizedException: UnauthorizedEndpoint(),
+        },
         faviconDirectory: "D:\\style\\packages\\style\\assets",
         children: [
+          Route("any_ex",
+              root: SimpleEndpoint((request) => throw UnauthorizedException())),
+
           Route("appointments",
               child: RouteTo("{stylist_id}",
                   child: RouteTo("{day}",
                       child: CallQueue(Gateway(children: [
                         Route("create", root: SimpleEndpoint((req) async {
-                          print("GELDİ");
                           await Future.delayed(Duration(milliseconds: 500));
                           throw Exception("unimplemented");
                         })),
@@ -52,33 +90,21 @@ class MyServer extends StatelessComponent {
                     "type": request.contentType?.mimeType,
                     "body": request.body?.data.runtimeType.toString()
                   }))),
-          Route("api",
-              root: RequestTrigger(
-                  ensureResponded: true,
-                  child: ResponseTrigger(
-                      ensureSent: true,
-                      child: SimpleAccessPoint(),
-                      trigger: (res) {
-                        print("RES TRIGGER: ${res.body}");
-                      }),
-                  trigger: (req) {
-                    print("REQ TRIGGER: ${req.fullPath}");
-                  }),
-              handleUnknownAsRoot: true),
+          Route("api", root: SimpleAccessPoint(), handleUnknownAsRoot: true),
           Route("doc",
               handleUnknownAsRoot: true,
               root: DocumentService("D:\\style\\packages\\style\\source\\web\\",
                   cacheAll: false)),
           MethodFilterGate(
-              blockedMethods: [Methods.GET],
+              allowedMethods: [Methods.GET],
               child: AuthFilterGate(
                   authRequired: true, child: Route("auth", root: AuthEnd()))),
           Route("un-auth", root: CallQueue(UnAuthEnd())),
         ],
-        defaultUnknownEndpoint: SimpleEndpoint((r) {
-          print("Buraya Geldi");
-          return r.createResponse({"route": "un"});
-        }),
+        // defaultUnknownEndpoint: SimpleEndpoint((r) {
+        //   print("Buraya Geldi");
+        //   return r.createResponse({"route": "un"});
+        // }),
         rootEndpoint: Redirect("http://localhost/doc/index.html"));
   }
 }
@@ -124,7 +150,7 @@ class UnAuthEnd extends Endpoint {
     try {
       print("Cevap Gitti UN: ${context.dataAccess}");
       return request.createResponse({"args": "FROM UNAUTH"});
-    }  on Exception catch(e) {
+    } on Exception catch (e) {
       print("ON 2 $e");
       rethrow;
     }

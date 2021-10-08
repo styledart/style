@@ -11,10 +11,8 @@ abstract class HttpServiceHandler extends _BaseService {
   ///
   SecurityContext? securityContext;
 
-
-
   ///
-  Future<HttpServer> get serverLoader;
+  Future<HttpServer> get serverBind;
 
   ///
   Map<String, dynamic>? get defaultResponseHeaders;
@@ -25,30 +23,23 @@ abstract class HttpServiceHandler extends _BaseService {
   ///
   Future<void> handleHttpRequest(HttpRequest request);
 
-  late final Completer<bool> _listeningCompleter = Completer<bool>();
-
-  ///
-  Future<bool> ensureListening() async {
-    return await _listeningCompleter.future;
-  }
-
-  ///
-  @mustCallSuper
-  Future<void> listenServer({bool inInterface = true}) async {
+  @override
+  Future<bool> init([bool inInterface = true]) async {
+    await context.logger.ensureInitialize();
     if (!inInterface) {
-      server = await serverLoader;
+      server = await serverBind;
+      if (defaultResponseHeaders != null) {
+        for (var h in defaultResponseHeaders!.entries) {
+          server.defaultResponseHeaders.add(h.key, h.value);
+        }
+      }
     }
-    _listeningCompleter.complete(true);
     if (!inInterface) {
       await for (HttpRequest request in server) {
         handleHttpRequest(request);
       }
     }
-  }
-
-  @override
-  Future<void> init() {
-    return listenServer(inInterface: false);
+    return true;
   }
 }
 
@@ -65,14 +56,8 @@ class DefaultHttpServiceHandler extends HttpServiceHandler {
   ///
   int port;
 
-  late final HttpServer server;
-
   ///
   Future<void> handleHttpRequest(HttpRequest request) async {
-
-
-
-
     var body = await request.toList();
 
     var uInt8List = mergeList(body);
@@ -98,7 +83,6 @@ class DefaultHttpServiceHandler extends HttpServiceHandler {
     } else if (request.headers.contentType?.mimeType ==
         ContentType.binary.mimeType) {
       try {
-
         _body = (uInt8List);
       } on Exception {
         _body = null;
@@ -119,12 +103,10 @@ class DefaultHttpServiceHandler extends HttpServiceHandler {
       }
     }
 
-
-
     var req = HttpStyleRequest.fromRequest(
         req: request, body: Body(_body), context: context);
     try {
-      var res = await context.owner.call(req);
+      var res = await context.owner.calling(req);
       if (res is Response && res is! NoResponseRequired) {
         request.response.statusCode = res.statusCode;
         request.response.headers.contentType = res.contentType;
@@ -158,5 +140,5 @@ class DefaultHttpServiceHandler extends HttpServiceHandler {
   String get address => "http://$_address:$port";
 
   @override
-  Future<HttpServer> get serverLoader => HttpServer.bind(_address, port);
+  Future<HttpServer> get serverBind => HttpServer.bind(_address, port);
 }

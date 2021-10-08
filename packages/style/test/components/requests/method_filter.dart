@@ -12,7 +12,7 @@ void main() async {
                 (request) => request.createResponse({"from_method"}))))
   ]));
 
-  await binding.owner.httpService.ensureListening();
+  await binding.owner.httpService.ensureInitialize();
 
   test("method", () async {
     var getRes = await get(Uri.parse("http://localhost/method_filter"));
