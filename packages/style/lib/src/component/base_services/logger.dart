@@ -54,7 +54,9 @@ abstract class Logger extends _BaseService {
 ///
 class DefaultLogger extends Logger {
   @override
-  FutureOr<void> init() {}
+  FutureOr<bool> init([bool inInterface = true]) async {
+    return true;
+  }
 
   @override
   void log(LogMessage logMessage) {

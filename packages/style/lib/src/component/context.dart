@@ -148,7 +148,7 @@ abstract class Binding extends BuildContext {
 
     Binding? _anc = this;
     while (_anc != null) {
-      if (_anc.component is! _BaseServiceComponent) {
+      if (_anc.component is! ServiceWrapper) {
         list.add(_anc.component.runtimeType);
       }
       _anc = _anc._parent;

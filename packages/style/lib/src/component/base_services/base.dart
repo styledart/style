@@ -1,9 +1,13 @@
 part of '../../style_base.dart';
 
-class _BaseServiceComponent<B extends _BaseService> extends StatelessComponent {
-  _BaseServiceComponent({required this.service, required this.child});
+///
+class ServiceWrapper<B extends _BaseService> extends StatelessComponent {
+  ///
+  ServiceWrapper({required this.service, required this.child});
 
+  ///
   final B service;
+  ///
   final Component child;
 
   @override
@@ -18,9 +22,22 @@ class _BaseServiceComponent<B extends _BaseService> extends StatelessComponent {
 abstract class _BaseService {
   late final BuildContext context;
 
-  bool initialize = false;
+  bool initialized = false;
 
-  FutureOr<void> init();
+  // ignore: avoid_positional_boolean_parameters
+  FutureOr<bool> init([bool inInterface = true]);
+
+  FutureOr<void> _init() async {
+    initialized = await init(false);
+    _initializeCompleter.complete(initialized);
+  }
+
+  late final Completer<bool> _initializeCompleter = Completer<bool>();
+
+  ///
+  Future<bool> ensureInitialize() async {
+    return await _initializeCompleter.future;
+  }
 }
 
 class _BaseServiceStatefulBinding<B extends _BaseService>
@@ -28,13 +45,12 @@ class _BaseServiceStatefulBinding<B extends _BaseService>
   _BaseServiceStatefulBinding(StatelessComponent component) : super(component);
 
   @override
-  _BaseServiceComponent<B> get component =>
-      super.component as _BaseServiceComponent<B>;
+  ServiceWrapper<B> get component => super.component as ServiceWrapper<B>;
 
   @override
   void _build() {
     component.service.context = this;
-    component.service.init();
+    component.service._init();
     super._build();
   }
 

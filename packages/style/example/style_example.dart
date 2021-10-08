@@ -75,7 +75,6 @@ class MyServer extends StatelessComponent {
                   child: RouteTo("{day}",
                       child: CallQueue(Gateway(children: [
                         Route("create", root: SimpleEndpoint((req) async {
-                          print("GELDİ");
                           await Future.delayed(Duration(milliseconds: 500));
                           throw Exception("unimplemented");
                         })),

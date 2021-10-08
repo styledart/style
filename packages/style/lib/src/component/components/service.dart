@@ -92,27 +92,27 @@ class ServiceState extends State<Server> {
       ...component.children
     ]);
 
-    result = _BaseServiceComponent<HttpServiceHandler>(
+    result = ServiceWrapper<HttpServiceHandler>(
         service: component.httpServiceNew, child: result);
 
     if (component.logger != null) {
-      result = _BaseServiceComponent<Logger>(
+      result = ServiceWrapper<Logger>(
           service: component.logger!, child: result);
     }
 
     if (component.cryptoService != null) {
-      result = _BaseServiceComponent<CryptoService>(
+      result = ServiceWrapper<CryptoService>(
           service: cryptoService, child: result);
     }
 
     if (component.socketService != null) {
-      result = _BaseServiceComponent<WebSocketService>(
+      result = ServiceWrapper<WebSocketService>(
           service: socketService, child: result);
     }
 
     if (component.dataAccess != null) {
       result =
-          _BaseServiceComponent<DataAccess>(service: dataAccess, child: result);
+          ServiceWrapper<DataAccess>(service: dataAccess, child: result);
     }
 
     return ServiceCallingComponent(

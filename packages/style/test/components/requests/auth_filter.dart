@@ -12,7 +12,7 @@ void main() async {
                 .createResponse({"token": request.context.accessToken}))))
   ]));
 
-  await binding.owner.httpService.ensureListening();
+  await binding.owner.httpService.ensureInitialize();
 
   test("auth", () async {
     var nonAuth = await get(Uri.parse("http://localhost/auth_filter"));
