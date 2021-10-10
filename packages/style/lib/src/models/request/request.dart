@@ -229,6 +229,8 @@ abstract class Request extends Message {
     }
   }
 
+  Map<String , dynamic > get arguments => path.arguments;
+
   Methods? method;
 
   ///

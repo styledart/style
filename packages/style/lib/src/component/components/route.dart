@@ -271,27 +271,46 @@ class RouteCalling extends Calling {
 
   @override
   FutureOr<Message> onCall(Request request) {
-    try {
+    // try {
       var n = request.path
           .resolveFor(binding._childGateway?.components.keys.toList() ?? []);
 
-      if (n.segment.isRoot) {
-        return (binding.rootBinding ?? binding.exceptionHandler.unknown)
-            .findCalling
-            .calling(request);
-      } else if (n.segment.isUnknown) {
-        return (binding.component.handleUnknownAsRoot
-                ? binding.rootBinding!
-                : binding.exceptionHandler.unknown)
-            .findCalling
-            .calling(request);
-      } else {
-        return (binding._childGateway!.binding).findCalling.calling(request);
+      print("ROUTE: ${n.segment} ${n.segment.isRoot}  ${binding.component.root}");
+      if (n.segment.isRoot &&
+          binding.component.root == null) {
+        throw NotFoundException();
       }
-    } on Exception catch (e) {
-      return binding.exceptionHandler[e.runtimeType].findCalling
-          .calling(request);
-    }
+      if (n.segment.isUnknown) {
+        throw NotFoundException();
+      }
+
+      if (n.segment.isRoot) {
+        return binding.rootBinding!.findCalling.calling(request);
+      }
+
+      return (binding._childGateway!.binding).findCalling.calling(request);
+
+      //
+      //
+      // binding.rootBinding.findCalling.calling(request);
+      //
+      // if (n.segment.isRoot) {
+      //   return (binding.rootBinding ?? binding.exceptionHandler.unknown)
+      //       .findCalling
+      //       .calling(request);
+      // } else if (n.segment.isUnknown) {
+      //   return (binding.component.handleUnknownAsRoot
+      //           ? binding.rootBinding!
+      //           : binding.exceptionHandler.unknown)
+      //       .findCalling
+      //       .calling(request);
+      // } else {
+      //   return (binding._childGateway!.binding).findCalling.calling(request);
+      // }
+    // } on Exception catch (e) {
+    //   return binding.exceptionHandler[e.runtimeType].findCalling
+    //       .calling(request);
+    // }
   }
 }
 

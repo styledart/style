@@ -95,9 +95,12 @@ class GatewayCalling extends Calling {
 
   @override
   FutureOr<Message> onCall(Request request) {
-    return (components[PathSegment(request.currentPath)] ??
-            binding.exceptionHandler.unknown)
-        .findCalling
-        .calling(request);
+    if (components[PathSegment(request.currentPath)] != null) {
+      return components[PathSegment(request.currentPath)]!
+          .findCalling
+          .calling(request);
+    } else {
+      throw NotFoundException();
+    }
   }
 }

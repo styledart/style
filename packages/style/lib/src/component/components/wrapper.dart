@@ -1,10 +1,13 @@
 part of '../../style_base.dart';
 
 ///
-class ExceptionWrapper extends StatelessComponent {
+class ExceptionWrapper<T extends Exception> extends StatelessComponent {
   ///
-  factory ExceptionWrapper({required Component child, Key? key}) {
-    return ExceptionWrapper.fromMap(child: child, map: {});
+  factory ExceptionWrapper(
+      {required Component child,
+      required ExceptionEndpoint<T> exceptionEndpoint,
+      Key? key}) {
+    return ExceptionWrapper.fromMap(child: child, map: {T: exceptionEndpoint});
   }
 
   ///

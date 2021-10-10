@@ -12,7 +12,7 @@ void main() async {
         Bitti
         """);
 
-  var b = runService(MyServer());
+  var b = runService(ShelfExample());
 
   b.visitChildren(TreeVisitor((visitor) {
     try {
@@ -56,6 +56,91 @@ class UnauthorizedEndpoint extends ExceptionEndpoint<UnauthorizedException> {
   }
 }
 
+/// TODO: Document
+class GetUserAppointments extends Endpoint {
+  GetUserAppointments() : super();
+
+  @override
+  FutureOr<Message> onCall(Request request) {
+    // TODO: implement onCall
+    throw UnimplementedError();
+  }
+}
+
+class ShelfExample extends StatelessComponent {
+  const ShelfExample({Key? key}) : super(key: key);
+
+  @override
+  Component build(BuildContext context) {
+    return Server(rootEndpoint: Redirect("../web/index.html"), children: [
+      // Static handler
+      // Route("web", root: DocumentService("/dir"), handleUnknownAsRoot: true),
+      ExceptionWrapper<StyleException>(
+          child: Route("time", root: Throw(Exception())),
+          exceptionEndpoint: ClientExEnd()),
+      Route("hello",
+          root: SimpleEndpoint((req) => req.createResponse("hello"))),
+      MathOperationRoute("sum", (a, b) => a + b),
+      MathOperationRoute("mul", (a, b) => a * b),
+      MathOperationRoute("div", (a, b) => a / b),
+      MathOperationRoute("dif", (a, b) => a - b)
+    ]);
+  }
+}
+
+/// TODO: Document
+class ClientExEnd extends ExceptionEndpoint<StyleException> {
+  ClientExEnd() : super();
+
+  @override
+  FutureOr<Response> onError(
+      Message message, StyleException exception, StackTrace stackTrace) {
+    return (message as Request).createResponse({
+      "err": "client_error_received",
+      "type": "${exception.runtimeType}",
+      "sup" : "${exception.superType}",
+      "st": stackTrace.toString()
+    });
+  }
+}
+
+class MathOperationRoute extends StatelessComponent {
+  MathOperationRoute(this.name, this.operation);
+
+  final String name;
+  final num Function(int a, int b) operation;
+
+  @override
+  Component build(BuildContext context) {
+    return ExceptionWrapper(
+        child: Route(name,
+            root: Throw(FormatException()),
+            child: RouteTo("{a}",
+                root: Throw(FormatException()),
+                child: RouteTo("{b}", root: SimpleEndpoint((request) {
+                  var a = int.parse(request.arguments["a"]);
+                  var b = int.parse(request.arguments["b"]);
+                  return request.createResponse({
+                    {"a": a, "b": b, name: operation(a, b)}
+                  });
+                })))),
+        exceptionEndpoint: FormatExEnd());
+  }
+}
+
+class Throw extends SimpleEndpoint {
+  Throw(Exception exception) : super((re) => throw exception);
+}
+
+class FormatExEnd extends ExceptionEndpoint<FormatException> {
+  @override
+  FutureOr<Response> onError(
+      Message message, FormatException exception, StackTrace stackTrace) {
+    return (message as Request).createResponse(
+        "please ensure path like: \"host/{sum|div|dif|mul}/{number}/{number}\"");
+  }
+}
+
 ///
 class MyServer extends StatelessComponent {
   @override
@@ -69,20 +154,52 @@ class MyServer extends StatelessComponent {
         children: [
           Route("any_ex",
               root: SimpleEndpoint((request) => throw UnauthorizedException())),
+          // AuthFilterGate(
+          //     authRequired: true,
+          //     child: Route(
+          //         "appointments",
+          //         root: GetUserAppointments(),
+          //         child: RouteTo(
+          //             "{stylist_id}",
+          //             child: RouteTo("{day}",
+          //                 child: CallQueue(
+          //                     Gateway(
+          //                       children: [
+          //
+          //                         Route(
+          //                            "create",
+          //                            root: MethodFilterGate(
+          //                                allowedMethods: [Methods.GET],
+          //                                child: SimpleEndpoint(/**/))),
+          //                         Route("delete", root: SimpleEndpoint(/**/))
+          //                       ]
+          //                     )
+          //                 )
+          //             )
+          //         )
+          //     )
+          // ),
+          AuthFilterGate(
+              authRequired: true,
+              child: Route("appointments",
+                  root: GetUserAppointments(),
+                  child: RouteTo("{stylist_id}",
+                      child: RouteTo("{day}",
+                          child: CallQueue(Gateway(children: [
+                            Route("create",
+                                root: MethodFilterGate(
+                                    allowedMethods: [Methods.GET],
+                                    child: SimpleEndpoint((req) async {
+                                      await Future.delayed(
+                                          Duration(milliseconds: 500));
+                                      throw Exception("unimplemented");
+                                    }))),
+                            Route("delete", root: SimpleEndpoint((req) async {
+                              await Future.delayed(Duration(milliseconds: 500));
+                              throw Exception("unimplemented");
+                            }))
+                          ])))))),
 
-          Route("appointments",
-              child: RouteTo("{stylist_id}",
-                  child: RouteTo("{day}",
-                      child: CallQueue(Gateway(children: [
-                        Route("create", root: SimpleEndpoint((req) async {
-                          await Future.delayed(Duration(milliseconds: 500));
-                          throw Exception("unimplemented");
-                        })),
-                        Route("delete", root: SimpleEndpoint((req) async {
-                          await Future.delayed(Duration(milliseconds: 500));
-                          throw Exception("unimplemented");
-                        }))
-                      ]))))),
           // Post(),
           User(),
           Route("c_t",

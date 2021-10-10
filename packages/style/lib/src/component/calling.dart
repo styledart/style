@@ -26,12 +26,10 @@ abstract class Calling {
       var r = await onCall(request);
       return r;
     } on Exception catch (e, s) {
-      try {
-        return _binding.exceptionHandler[e.runtimeType].calling
-            .onCall(request, e, s);
-      } on Exception {
-        rethrow;
-      }
+      return _binding.exceptionHandler
+          .getBinding(e)
+          .calling
+          .onCall(request, e, s);
     }
   }
 

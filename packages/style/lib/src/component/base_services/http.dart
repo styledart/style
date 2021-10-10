@@ -25,7 +25,7 @@ abstract class HttpServiceHandler extends _BaseService {
 
   @override
   Future<bool> init([bool inInterface = true]) async {
-    await context.logger.ensureInitialize();
+    // await context.logger.ensureInitialize();
     if (!inInterface) {
       server = await serverBind;
       if (defaultResponseHeaders != null) {
