@@ -18,10 +18,12 @@ not handled.
 
 The `Wrapper` and `Route` topics in my main article are important to explain this topic.
 
-
-```dart
-
+TEST
+```mermaid
+graph LR
+A[Square Rect] -- Link text --> B((Circle))
+A --> C(Round Rect)
+B --> D{Rhombus}
+C --> D
 ```
-
-
 
