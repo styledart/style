@@ -50,8 +50,8 @@ class _BaseServiceStatefulBinding<B extends _BaseService>
   @override
   void _build() {
     component.service.context = this;
-    component.service._init();
     super._build();
+    component.service._init();
   }
 
   @override

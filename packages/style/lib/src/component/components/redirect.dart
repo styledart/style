@@ -14,7 +14,7 @@ class Redirect extends Endpoint {
       required String? path,
       required BuildContext context}) async {
     if (path == null) {
-      return context.exceptionHandler.unknown.findCalling.calling(request);
+      throw NotFoundException();
     }
 
     var uri = Uri.parse(path);

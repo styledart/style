@@ -37,15 +37,20 @@ abstract class ExceptionEndpoint<T extends Exception> extends Endpoint {
   @override
   FutureOr<Message> onCall(Request request,
       [T? exception, StackTrace? stackTrace]) async {
-    var e = await onError(request, exception!, stackTrace!);
-    if (exception is StyleException) {
-      e.statusCode = exception.statusCode;
+    try {
+      var e = await onError(request, exception!, stackTrace!);
+      if (exception is StyleException) {
+        e.statusCode = exception.statusCode;
+      }
+      return e;
+    } on Exception catch(e,s) {
+      print("ERR WHERE: ${(context as Binding )._errorWhere}");
+      rethrow;
     }
-    return e;
   }
 
   @override
-  ExceptionEndpointCallingBinding createBinding() {
+  ExceptionEndpointCallingBinding<T> createBinding() {
     return ExceptionEndpointCallingBinding<T>(this);
   }
 
@@ -138,7 +143,7 @@ class AccessPoint extends Endpoint {
       var r = await dataAccess.delete(await queryBuilder(request));
       return request.createResponse(r);
     } else {
-      return context.exceptionHandler.unknown.findCalling.calling(request);
+      throw MethodNotAllowedException();
     }
   }
 }

@@ -1,19 +1,12 @@
 part of '../style_base.dart';
 
 ///
-class ExceptionHandler extends MapBase<Type, ExceptionEndpointCallingBinding> {
+class ExceptionHandler {
   ///
   ExceptionHandler(Map<Type, ExceptionEndpointCallingBinding> map)
       : _map = HashMap<Type, ExceptionEndpointCallingBinding>.from(map);
 
   final HashMap<Type, ExceptionEndpointCallingBinding> _map;
-
-  ///
-  Binding get unknown => this[NotFoundException];
-
-  ///
-  ServiceUnavailable get unavailableService =>
-      this[ServiceUnavailable] as ServiceUnavailable;
 
   ///
   ExceptionHandler copyWith([Map<Type, ExceptionEndpointCallingBinding>? map]) {
@@ -24,26 +17,22 @@ class ExceptionHandler extends MapBase<Type, ExceptionEndpointCallingBinding> {
     return n;
   }
 
-  @override
-  ExceptionEndpointCallingBinding operator [](covariant Type key) {
-    return _map[key] ?? _map[Exception]!;
+  ///
+  ExceptionEndpointCallingBinding getBinding(Exception e) {
+
+    print("HANDLER REQUEST:"
+        "\n${_map[e.runtimeType]}"
+        "\n${_findSuperTypes(e)}"
+        "\n${_map[Exception]}");
+
+    return _map[e.runtimeType] ?? _findSuperTypes(e) ?? _map[Exception]!;
   }
 
-  @override
-  void operator []=(Type key, ExceptionEndpointCallingBinding value) {
-    throw UnsupportedError("Not supported. Use ExceptionWrapper");
-  }
-
-  @override
-  void clear() {
-    _map.clear();
-  }
-
-  @override
-  Iterable<Type> get keys => _map.keys;
-
-  @override
-  ExceptionEndpointCallingBinding? remove(covariant Type key) {
-    return _map.remove(key);
+  ExceptionEndpointCallingBinding? _findSuperTypes<T extends Exception>(
+      Exception e) {
+    if (e is StyleException) {
+       return _map[e.superType] ?? _map[StyleException];
+    }
+    return null;
   }
 }

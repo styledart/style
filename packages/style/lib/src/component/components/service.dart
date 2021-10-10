@@ -9,27 +9,22 @@ class Server extends StatefulComponent {
       this.socketService,
       this.dataAccess,
       this.cryptoService,
-      this.logger,
+      Logger? logger,
       String? rootName,
-      Component? rootEndpoint,
+      this.rootEndpoint,
       required this.children,
       this.faviconDirectory,
       Map<Type, ExceptionEndpoint>? defaultExceptionEndpoints})
       : httpServiceNew = httpServiceNew ?? DefaultHttpServiceHandler(),
+        logger = logger ?? DefaultLogger(),
         rootName = rootName ?? "style_server",
         defaultExceptionEndpoints = defaultExceptionEndpoints ??
             {
-              Exception: DefaultExceptionEndpoint<InternalServerError>(),
-              NotFoundException: DefaultExceptionEndpoint<NotFoundException>()
+              Exception: DefaultExceptionEndpoint<Exception>(),
             },
         super(key: key ?? GlobalKey<ServiceState>.random()) {
     this.defaultExceptionEndpoints[Exception] ??=
         DefaultExceptionEndpoint<Exception>();
-    this.defaultExceptionEndpoints[NotFoundException] ??=
-        DefaultExceptionEndpoint<NotFoundException>();
-
-    this.rootEndpoint =
-        rootEndpoint ?? this.defaultExceptionEndpoints[NotFoundException]!;
   }
 
   ///
@@ -60,7 +55,7 @@ class Server extends StatefulComponent {
   final List<Component> children;
 
   ///
-  late final Component rootEndpoint;
+  final Component? rootEndpoint;
 
   @override
   State<StatefulComponent> createState() => ServiceState();
@@ -88,21 +83,20 @@ class ServiceState extends State<Server> {
     Component result = Gateway(children: [
       if (component.faviconDirectory != null)
         Route("favicon.ico", root: Favicon(component.faviconDirectory!)),
-      Route("*root", root: component.rootEndpoint),
+      if (component.rootEndpoint != null)
+        Route("*root", root: component.rootEndpoint),
       ...component.children
     ]);
 
     result = ServiceWrapper<HttpServiceHandler>(
         service: component.httpServiceNew, child: result);
-
     if (component.logger != null) {
-      result = ServiceWrapper<Logger>(
-          service: component.logger!, child: result);
+      result =
+          ServiceWrapper<Logger>(service: component.logger!, child: result);
     }
-
     if (component.cryptoService != null) {
-      result = ServiceWrapper<CryptoService>(
-          service: cryptoService, child: result);
+      result =
+          ServiceWrapper<CryptoService>(service: cryptoService, child: result);
     }
 
     if (component.socketService != null) {
@@ -111,8 +105,7 @@ class ServiceState extends State<Server> {
     }
 
     if (component.dataAccess != null) {
-      result =
-          ServiceWrapper<DataAccess>(service: dataAccess, child: result);
+      result = ServiceWrapper<DataAccess>(service: dataAccess, child: result);
     }
 
     return ServiceCallingComponent(

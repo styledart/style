@@ -112,8 +112,14 @@ class EndpointCallingBinding extends CallingBinding {
 
   @override
   void _build() {
-    component._context = this;
-    _calling = component.createCalling(this);
+    try {
+      component._context = this;
+      _calling = component.createCalling(this);
+    } catch(e,s) {
+      print(e);
+      print(_errorWhere);
+      rethrow;
+    }
   }
 
   @override
