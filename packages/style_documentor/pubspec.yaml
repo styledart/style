@@ -8,6 +8,7 @@ environment:
 
 
 dependencies:
+  http: ^0.13.4
   source_gen: ^1.1.0
   analyzer: ^2.3.0
   build: ^2.1.0

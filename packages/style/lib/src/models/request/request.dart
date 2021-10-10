@@ -205,6 +205,15 @@ abstract class Request extends Message {
       this.method})
       : super(body: body, context: context, contentType: contentType);
 
+  Request.fromRequest(Request request)
+      : headers = request.headers,
+        cookies = request.cookies,
+        method = request.method,
+        super(
+            context: request.context,
+            body: request.body,
+            contentType: request.contentType);
+
   ///
   final List<Cookie>? cookies;
 
@@ -229,7 +238,7 @@ abstract class Request extends Message {
     }
   }
 
-  Map<String , dynamic > get arguments => path.arguments;
+  Map<String, dynamic> get arguments => path.arguments;
 
   Methods? method;
 
@@ -245,6 +254,17 @@ abstract class Request extends Message {
       {int statusCode = 200, HttpHeaders? headers}) {
     return Response(body: Body(body), request: this, statusCode: statusCode);
   }
+}
+
+class _RequestFactory extends Request {
+  _RequestFactory(Request request)
+      : super._(
+            context: request.context,
+            body: request.body,
+            headers: request.headers,
+            cookies: request.cookies,
+            contentType: request.contentType,
+            method: request.method);
 }
 
 ///
@@ -357,23 +377,40 @@ class HttpStyleRequest extends Request {
 ///
 class TagRequest extends Request {
   ///
-  TagRequest(HttpStyleRequest request)
-      : super._(
-            context: request.context,
-            body: request.body,
-            headers: request.headers,
-            cookies: request.cookies);
+  TagRequest(Request request) : super.fromRequest(request);
+
+  TagResponse response(String tag) {
+    return TagResponse(this, tag: tag);
+  }
 }
 
 ///
 class TagResponse extends Response {
   ///
-  TagResponse(TagRequest request,
-      {required String tag, ContentType? contentType})
-      : super(request: request, statusCode: 304, additionalHeaders: {
-          HttpHeaders.contentLengthHeader: 0,
-          HttpHeaders.etagHeader: tag
-        });
+  TagResponse(TagRequest request, {required this.tag, ContentType? contentType})
+      : super(request: request, statusCode: 304);
+
+  String tag;
+}
+
+///
+class ModifiedSinceRequest extends Request {
+  ///
+  ModifiedSinceRequest(Request request) : super.fromRequest(request);
+
+  ModifiedSinceResponse response(DateTime lastModified) {
+    return ModifiedSinceResponse(this, lastModified: lastModified);
+  }
+}
+
+///
+class ModifiedSinceResponse extends Response {
+  ///
+  ModifiedSinceResponse(ModifiedSinceRequest request,
+      {required this.lastModified, ContentType? contentType})
+      : super(request: request, statusCode: 304);
+
+  DateTime lastModified;
 }
 
 ///
@@ -384,52 +421,9 @@ class NoResponseRequired extends Response {
   }) : super(statusCode: -1, request: request, additionalHeaders: {});
 }
 
-// ///
-// class HttpResponse extends Response {
-//   ///
-//   HttpResponse(
-//       {required RequestContext context,
-//       required String fullPath,
-//       required Map<String, dynamic> body})
-//       : super(context: context, fullPath: fullPath, body: body);
-// }
-//
-// ///
-// class WsRequest extends Request {
-//   ///
-//   WsRequest(
-//       {required RequestContext context, required Map<String, dynamic> body})
-//       : super._(context: context, body: body, accepts: [ContentType.json]);
-// }
-//
-// // ///
-// // class WsResponse extends Response{
-// //   ///
-// //   WsResponse(
-// //       {required RequestContext context,
-// //       required String fullPath,
-// //       required Map<String, dynamic> body})
-// //       : super._(context: context, fullPath: fullPath, body: body);
-// // }
-//
-// ///
-// class InternalRequest extends Request {
-//   ///
-//   InternalRequest({required RequestContext context, required dynamic body})
-//       : super._(context: context, body: body, accepts: [
-//           ContentType.json,
-//           ContentType.text,
-//           ContentType.html,
-//           ContentType.binary
-//         ]);
-// }
 
-// ///
-// class InternalResponse extends Response {
-//   ///
-//   InternalResponse(
-//       {required RequestContext context,
-//       required String fullPath,
-//       required Map<String, dynamic> body})
-//       : super._(context: context, fullPath: fullPath, body: body);
-// }
+
+
+
+
+
