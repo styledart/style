@@ -78,6 +78,9 @@ class ShelfExample extends StatelessComponent {
       ExceptionWrapper<StyleException>(
           child: Route("time", root: Throw(Exception())),
           exceptionEndpoint: ClientExEnd()),
+
+
+
       Route("hello",
           root: SimpleEndpoint((req) => req.createResponse("hello"))),
       MathOperationRoute("sum", (a, b) => a + b),
@@ -98,7 +101,7 @@ class ClientExEnd extends ExceptionEndpoint<StyleException> {
     return (message as Request).createResponse({
       "err": "client_error_received",
       "type": "${exception.runtimeType}",
-      "sup" : "${exception.superType}",
+      "sup": "${exception.superType}",
       "st": stackTrace.toString()
     });
   }

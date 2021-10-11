@@ -1,287 +1,473 @@
 
-# Feature
 
-- [ ] Microservice- Internal - External Service. Services be active or reactive with idle duration, terminal commands.
-- [ ] Style Command Line App
-- [ ] ViewEndpoint for Server Side Rendering. Endpoint built in initialize and serve views
-- [ ] DataView . MVC Pattern
-- [ ] Auto Api Documentation
-- [ ] Role Based Admin Auth
-- [ ] Differnt State for Each Client
-- [ ] Monitoring- All calling  tree statuses, service statuses, client states
-- [ ] Simple CRUD
+For more accurate information look this [article](https://itnext.io/style-backend-framework-d544bdb78a36)
 
+Development Log 1 : [Exception Handling](https://itnext.io/exception-handling-with-style-6020f01af7d8)
+
+Articles is free-read.
+
+[comment]: <> (## Components)
+
+[comment]: <> (### Create Service)
 
 
-## Components
+[comment]: <> (*[host] will be used instead of "http://host" from now on.*)
 
-### Create Service
+[comment]: <> (*All classes created as an example will begin with the prefix "My". Others are what Framework offers.*)
 
+[comment]: <> (```dart  )
 
-*[host] will be used instead of "http://host" from now on.*
+[comment]: <> (class MyServer extends StatelessComponent {  )
 
-*All classes created as an example will begin with the prefix "My". Others are what Framework offers.*
+[comment]: <> (  @override  )
 
-```dart  
-class MyServer extends StatelessComponent {  
-  @override  
-  Component build(BuildContext context) {  
-    return Server(
-		dataAccess: MyDataAccess(), // Or use style implemantation for mongo db or mysql.
-        rootName: "my_server", // for internal ops. instead of hosts  
-		children: {
-	         "about": MyAbout(),
-	         "api" : MyApiGateway()  
-		},
-		// "[host]/" is directed to
-		rootEndpoint: MyUnknownEndpoint()
-	);  
-  }  
-}
-```
-### Gateway
+[comment]: <> (  Component build&#40;BuildContext context&#41; {  )
 
-```dart
-///  
-class MyApiGateway extends StatelessComponent {  
+[comment]: <> (    return Server&#40;)
+
+[comment]: <> (		dataAccess: MyDataAccess&#40;&#41;, // Or use style implemantation for mongo db or mysql.)
+
+[comment]: <> (        rootName: "my_server", // for internal ops. instead of hosts  )
+
+[comment]: <> (		children: {)
+
+[comment]: <> (	         "about": MyAbout&#40;&#41;,)
+
+[comment]: <> (	         "api" : MyApiGateway&#40;&#41;  )
+
+[comment]: <> (		},)
+
+[comment]: <> (		// "[host]/" is directed to)
+
+[comment]: <> (		rootEndpoint: MyUnknownEndpoint&#40;&#41;)
+
+[comment]: <> (	&#41;;  )
+
+[comment]: <> (  }  )
+
+[comment]: <> (})
+
+[comment]: <> (```)
+
+[comment]: <> (### Gateway)
+
+[comment]: <> (```dart)
+
+[comment]: <> (///  )
+
+[comment]: <> (class MyApiGateway extends StatelessComponent {  )
   
-  ///  
-  const MyApiGateway({Key? key}) : super(key: key);  
+[comment]: <> (  ///  )
+
+[comment]: <> (  const MyApiGateway&#40;{Key? key}&#41; : super&#40;key: key&#41;;  )
   
-  @override  
-  Component build(BuildContext context) {  
-    return Gateway(  
-       	// "[host]/api" is directed to
-        root: MyApiDocumentation(),
-        children: {
-	        // "[host]/api/v1" is directed to
-	        "v1": MyV1Api(),
-	        // "[host]/api/v2" is directed to
-		    "v2": MyV2Api(),
-		    // "[host]/api/{api-key}" is directed to
-		    // for auto detect api version
-		    // Look upper for GeneratedRedirect explanation 
-			"{api-key}" : GeneratedRedirect()
-		});  
-  }  
-}
+[comment]: <> (  @override  )
+
+[comment]: <> (  Component build&#40;BuildContext context&#41; {  )
+
+[comment]: <> (    return Gateway&#40;  )
+
+[comment]: <> (       	// "[host]/api" is directed to)
+
+[comment]: <> (        root: MyApiDocumentation&#40;&#41;,)
+
+[comment]: <> (        children: {)
+
+[comment]: <> (	        // "[host]/api/v1" is directed to)
+
+[comment]: <> (	        "v1": MyV1Api&#40;&#41;,)
+
+[comment]: <> (	        // "[host]/api/v2" is directed to)
+
+[comment]: <> (		    "v2": MyV2Api&#40;&#41;,)
+
+[comment]: <> (		    // "[host]/api/{api-key}" is directed to)
+
+[comment]: <> (		    // for auto detect api version)
+
+[comment]: <> (		    // Look upper for GeneratedRedirect explanation )
+
+[comment]: <> (			"{api-key}" : GeneratedRedirect&#40;&#41;)
+
+[comment]: <> (		}&#41;;  )
+
+[comment]: <> (  }  )
+
+[comment]: <> (})
 
 
-// You can nest gateways.
-class MyV1Api extends StatelessComponent {  
-  const MyV1Api({Key? key}) : super(key: key);  
+[comment]: <> (// You can nest gateways.)
+
+[comment]: <> (class MyV1Api extends StatelessComponent {  )
+
+[comment]: <> (  const MyV1Api&#40;{Key? key}&#41; : super&#40;key: key&#41;;  )
   
-  @override  
-  Component build(BuildContext context) {  
-    return Gateway(  
-       	// "[host]/api/v1" is directed to
-        root: MyApiDocumentation(),
-        children: {
-	        // "[host]/api/v1/user" is directed to
-	        "user": MyUserV1(),
-	        "post" : MyPostV1()
-		});  
-  }  
-}
+[comment]: <> (  @override  )
 
-```
-### Path Route Segment
+[comment]: <> (  Component build&#40;BuildContext context&#41; {  )
 
-Let's say we have a path like "[host]/api/v1/user/{user_id}/...".
-We want to send users in trend when this path is called "[host]/api/v1/user".
-We can use a segment both as an endpoint and as a segment.
-```dart
-// You can nest gateways.
-class MyUserV1 extends StatelessComponent {  
-  const MyUserV1({Key? key}) : super(key: key);  
+[comment]: <> (    return Gateway&#40;  )
+
+[comment]: <> (       	// "[host]/api/v1" is directed to)
+
+[comment]: <> (        root: MyApiDocumentation&#40;&#41;,)
+
+[comment]: <> (        children: {)
+
+[comment]: <> (	        // "[host]/api/v1/user" is directed to)
+
+[comment]: <> (	        "user": MyUserV1&#40;&#41;,)
+
+[comment]: <> (	        "post" : MyPostV1&#40;&#41;)
+
+[comment]: <> (		}&#41;;  )
+
+[comment]: <> (  }  )
+
+[comment]: <> (})
+
+[comment]: <> (```)
+
+[comment]: <> (### Path Route Segment)
+
+[comment]: <> (Let's say we have a path like "[host]/api/v1/user/{user_id}/...".)
+
+[comment]: <> (We want to send users in trend when this path is called "[host]/api/v1/user".)
+
+[comment]: <> (We can use a segment both as an endpoint and as a segment.)
+
+[comment]: <> (```dart)
+
+[comment]: <> (// You can nest gateways.)
+
+[comment]: <> (class MyUserV1 extends StatelessComponent {  )
+
+[comment]: <> (  const MyUserV1&#40;{Key? key}&#41; : super&#40;key: key&#41;;  )
   
-  @override  
-  Component build(BuildContext context) {  
-    return PathRoute(
-	    // "[host]/api/v1/user" is called to endpoint
-		root: SimpleEndpoint(
-			onCall: (req) {
-				// do something
-				return req.response(data);
-			}
-		),
-		// And we will create sub-segments
-		child: PathRoute(
-			segment: "{user_id}",
-			// "[host]/api/v1/user/user1" is direct to
-			child: RequestTransformer(
-				onRequest : (req) {
-					/// adapt to version 2
-					return req;
-				},
-				child: Redirect("../../../v2/user")
-				//or
-				// child: Redirect("my_server/api/v2/user")
-			)
-		)
-	);  
-  }  
-}
-```
+[comment]: <> (  @override  )
 
-## Wrappers
+[comment]: <> (  Component build&#40;BuildContext context&#41; {  )
 
-### UnknownWrapper
+[comment]: <> (    return PathRoute&#40;)
 
-Unknown routes everywhere it wrappers lead to this endpoint.
-*Except under scopes in lower layers.*
+[comment]: <> (	    // "[host]/api/v1/user" is called to endpoint)
 
-```dart
-UnknownWrapper(unknown: MyMediaUnknown(), child: MyPicture()),
-```
-### Error Wrapper
+[comment]: <> (		root: SimpleEndpoint&#40;)
 
-```dart
-UnknownWrapper(error: MyErrorEndpoint(), child: MyPicture()),
+[comment]: <> (			onCall: &#40;req&#41; {)
 
-class MyErrorEndpoint extends Endpoint {
-	FutureOr<void> onError(StyleException exception, StackTrace stackTrace, Request request, BuildContext errorContext) async {
-		//response own error message/view that specified for Picture Endpoint
-	}
-}
+[comment]: <> (				// do something)
 
-```
+[comment]: <> (				return req.response&#40;data&#41;;)
 
-### DataAccess , Crypto , Logger
-Parts wrapped in these components get this implementation in the DataAccess.of(context) call.
-```dart
-DataAccess(dataAccess: MyDataAccessImplement(), child: MyPicture()),
-```
-Sub-wraps are excluded.
-Also this applies to Crypto and Logger.
+[comment]: <> (			})
 
+[comment]: <> (		&#41;,)
 
-## Redirects
+[comment]: <> (		// And we will create sub-segments)
 
-#### Simple Redirect
+[comment]: <> (		child: PathRoute&#40;)
 
-Can redirect incoming requests to the specified route
-Support path-parent relation like parent's parent's `new/path` :  `../../new/path`
-```dart
-Redirect("path/to")
-```
-Or you can find with context ancestor services root names like:
+[comment]: <> (			segment: "{user_id}",)
 
-```dart
-Redirect(context.findService("my_other_service").rootName + "/path/to")
-//or
-MyServiceState.of(context).rootName + "/path/to"
-```
+[comment]: <> (			// "[host]/api/v1/user/user1" is direct to)
 
+[comment]: <> (			child: RequestTransformer&#40;)
 
-#### GeneratedRedirect
+[comment]: <> (				onRequest : &#40;req&#41; {)
 
-```dart
-GeneratedRedirect(
-	onRequest: (req) async {
-		var keyData  = await DataAccess.of(context)
-				.read("api_keys",req.path.arguments["api-key"])
-		if (keyData["v"] == 1) {
-			req.path.fullPath = "../v1";
-		} else {
-			req.path.fullPath = "../v2";
-		}
-		req.body["api_key"] = req.path.arguments["api-key"];
-		return req;
-	}
-)
-```
+[comment]: <> (					/// adapt to version 2)
 
-#### AuthRedirect
-```dart
-AuthRedirect(
-	auth: "path/to/auth_user",
-	admin: "path/to/admin",
-	unauth: "path/to/login"
-)
-```
+[comment]: <> (					return req;)
 
-## Gates
+[comment]: <> (				},)
 
-Gates passes requests or responses through a controller.
+[comment]: <> (				child: Redirect&#40;"../../../v2/user"&#41;)
 
-#### Simple Gate
+[comment]: <> (				//or)
 
-```dart
-	// If onRequest return instance of request
-	// request sent to child
-	// or return response
-	// the response is sent to the upper layer to be sent to the client.
-	Gate(
-		onRequest : (req) {
-			// do something
-			return req;
-		},
-		child: MyOtherEndpoint()
-	)
-```
+[comment]: <> (				// child: Redirect&#40;"my_server/api/v2/user"&#41;)
 
-#### Permssion
+[comment]: <> (			&#41;)
 
-If the request does not meet the condition, it sends an permission denied error.
+[comment]: <> (		&#41;)
 
-```dart
-PermissionGate(
-	// specify permission
-	onRequestPermission : ()async {
-		return true;
-	}
-	child: MyComponent()
-)
-```
+[comment]: <> (	&#41;;  )
+
+[comment]: <> (  }  )
+
+[comment]: <> (})
+
+[comment]: <> (```)
+
+[comment]: <> (## Wrappers)
+
+[comment]: <> (### UnknownWrapper)
+
+[comment]: <> (Unknown routes everywhere it wrappers lead to this endpoint.)
+
+[comment]: <> (*Except under scopes in lower layers.*)
+
+[comment]: <> (```dart)
+
+[comment]: <> (UnknownWrapper&#40;unknown: MyMediaUnknown&#40;&#41;, child: MyPicture&#40;&#41;&#41;,)
+
+[comment]: <> (```)
+
+[comment]: <> (### Error Wrapper)
+
+[comment]: <> (```dart)
+
+[comment]: <> (UnknownWrapper&#40;error: MyErrorEndpoint&#40;&#41;, child: MyPicture&#40;&#41;&#41;,)
+
+[comment]: <> (class MyErrorEndpoint extends Endpoint {)
+
+[comment]: <> (	FutureOr<void> onError&#40;StyleException exception, StackTrace stackTrace, Request request, BuildContext errorContext&#41; async {)
+
+[comment]: <> (		//response own error message/view that specified for Picture Endpoint)
+
+[comment]: <> (	})
+
+[comment]: <> (})
+
+[comment]: <> (```)
+
+[comment]: <> (### DataAccess , Crypto , Logger)
+
+[comment]: <> (Parts wrapped in these components get this implementation in the DataAccess.of&#40;context&#41; call.)
+
+[comment]: <> (```dart)
+
+[comment]: <> (DataAccess&#40;dataAccess: MyDataAccessImplement&#40;&#41;, child: MyPicture&#40;&#41;&#41;,)
+
+[comment]: <> (```)
+
+[comment]: <> (Sub-wraps are excluded.)
+
+[comment]: <> (Also this applies to Crypto and Logger.)
 
 
-#### AuthGate
+[comment]: <> (## Redirects)
 
-If the request does not meet the condition, it sends an unauthorized error.
+[comment]: <> (#### Simple Redirect)
 
-```dart
-AuthGate(
-	// specify auth required
-	authRequired : true | false
-	child: MyComponent()
-)
-```
+[comment]: <> (Can redirect incoming requests to the specified route)
 
-#### AgentGate
+[comment]: <> (Support path-parent relation like parent's parent's `new/path` :  `../../new/path`)
 
-```dart
-AgentGate(
-	// MyComponent get only request that agent is Web Socket
-	// or internal. Not allowed Http request
-	// if het http request response with error
-	allowedAgents : [Agent.ws, Agent.internal]
-	child: MyComponent()
-)
-```
+[comment]: <> (```dart)
 
-#### Schema Gate
-```dart
-SchemaGate(
-	// in default check body
-	// you can specify to queryParameters
-	// checkQueryParameters: false
-	schema: jsonSchema
-	child: MyComponent()
-)
-```
-You can also create for response
-```dart
-/// If responded body not passed the schema, sent error to client
-ResponseSchemaGate(
-	schema: jsonSchema
-	child: MyComponent()
-)
-```
+[comment]: <> (Redirect&#40;"path/to"&#41;)
+
+[comment]: <> (```)
+
+[comment]: <> (Or you can find with context ancestor services root names like:)
+
+[comment]: <> (```dart)
+
+[comment]: <> (Redirect&#40;context.findService&#40;"my_other_service"&#41;.rootName + "/path/to"&#41;)
+
+[comment]: <> (//or)
+
+[comment]: <> (MyServiceState.of&#40;context&#41;.rootName + "/path/to")
+
+[comment]: <> (```)
 
 
+[comment]: <> (#### GeneratedRedirect)
+
+[comment]: <> (```dart)
+
+[comment]: <> (GeneratedRedirect&#40;)
+
+[comment]: <> (	onRequest: &#40;req&#41; async {)
+
+[comment]: <> (		var keyData  = await DataAccess.of&#40;context&#41;)
+
+[comment]: <> (				.read&#40;"api_keys",req.path.arguments["api-key"]&#41;)
+
+[comment]: <> (		if &#40;keyData["v"] == 1&#41; {)
+
+[comment]: <> (			req.path.fullPath = "../v1";)
+
+[comment]: <> (		} else {)
+
+[comment]: <> (			req.path.fullPath = "../v2";)
+
+[comment]: <> (		})
+
+[comment]: <> (		req.body["api_key"] = req.path.arguments["api-key"];)
+
+[comment]: <> (		return req;)
+
+[comment]: <> (	})
+
+[comment]: <> (&#41;)
+
+[comment]: <> (```)
+
+[comment]: <> (#### AuthRedirect)
+
+[comment]: <> (```dart)
+
+[comment]: <> (AuthRedirect&#40;)
+
+[comment]: <> (	auth: "path/to/auth_user",)
+
+[comment]: <> (	admin: "path/to/admin",)
+
+[comment]: <> (	unauth: "path/to/login")
+
+[comment]: <> (&#41;)
+
+[comment]: <> (```)
+
+[comment]: <> (## Gates)
+
+[comment]: <> (Gates passes requests or responses through a controller.)
+
+[comment]: <> (#### Simple Gate)
+
+[comment]: <> (```dart)
+
+[comment]: <> (	// If onRequest return instance of request)
+
+[comment]: <> (	// request sent to child)
+
+[comment]: <> (	// or return response)
+
+[comment]: <> (	// the response is sent to the upper layer to be sent to the client.)
+
+[comment]: <> (	Gate&#40;)
+
+[comment]: <> (		onRequest : &#40;req&#41; {)
+
+[comment]: <> (			// do something)
+
+[comment]: <> (			return req;)
+
+[comment]: <> (		},)
+
+[comment]: <> (		child: MyOtherEndpoint&#40;&#41;)
+
+[comment]: <> (	&#41;)
+
+[comment]: <> (```)
+
+[comment]: <> (#### Permssion)
+
+[comment]: <> (If the request does not meet the condition, it sends an permission denied error.)
+
+[comment]: <> (```dart)
+
+[comment]: <> (PermissionGate&#40;)
+
+[comment]: <> (	// specify permission)
+
+[comment]: <> (	onRequestPermission : &#40;&#41;async {)
+
+[comment]: <> (		return true;)
+
+[comment]: <> (	})
+
+[comment]: <> (	child: MyComponent&#40;&#41;)
+
+[comment]: <> (&#41;)
+
+[comment]: <> (```)
 
 
+[comment]: <> (#### AuthGate)
+
+[comment]: <> (If the request does not meet the condition, it sends an unauthorized error.)
+
+[comment]: <> (```dart)
+
+[comment]: <> (AuthGate&#40;)
+
+[comment]: <> (	// specify auth required)
+
+[comment]: <> (	authRequired : true | false)
+
+[comment]: <> (	child: MyComponent&#40;&#41;)
+
+[comment]: <> (&#41;)
+
+[comment]: <> (```)
+
+[comment]: <> (#### AgentGate)
+
+[comment]: <> (```dart)
+
+[comment]: <> (AgentGate&#40;)
+
+[comment]: <> (	// MyComponent get only request that agent is Web Socket)
+
+[comment]: <> (	// or internal. Not allowed Http request)
+
+[comment]: <> (	// if het http request response with error)
+
+[comment]: <> (	allowedAgents : [Agent.ws, Agent.internal])
+
+[comment]: <> (	child: MyComponent&#40;&#41;)
+
+[comment]: <> (&#41;)
+
+[comment]: <> (```)
+
+[comment]: <> (#### Schema Gate)
+
+[comment]: <> (```dart)
+
+[comment]: <> (SchemaGate&#40;)
+
+[comment]: <> (	// in default check body)
+
+[comment]: <> (	// you can specify to queryParameters)
+
+[comment]: <> (	// checkQueryParameters: false)
+
+[comment]: <> (	schema: jsonSchema)
+
+[comment]: <> (	child: MyComponent&#40;&#41;)
+
+[comment]: <> (&#41;)
+
+[comment]: <> (```)
+
+[comment]: <> (You can also create for response)
+
+[comment]: <> (```dart)
+
+[comment]: <> (/// If responded body not passed the schema, sent error to client)
+
+[comment]: <> (ResponseSchemaGate&#40;)
+
+[comment]: <> (	schema: jsonSchema)
+
+[comment]: <> (	child: MyComponent&#40;&#41;)
+
+[comment]: <> (&#41;)
+
+[comment]: <> (```)
 
 
+[comment]: <> (# Feature)
 
+[comment]: <> (- [ ] Microservice- Internal - External Service. Services be active or reactive with idle duration, terminal commands.)
+
+[comment]: <> (- [ ] Style Command Line App)
+
+[comment]: <> (- [ ] ViewEndpoint for Server Side Rendering. Endpoint built in initialize and serve views)
+
+[comment]: <> (- [ ] DataView . MVC Pattern)
+
+[comment]: <> (- [ ] Auto Api Documentation)
+
+[comment]: <> (- [ ] Role Based Admin Auth)
+
+[comment]: <> (- [ ] Differnt State for Each Client)
+
+[comment]: <> (- [ ] Monitoring- All calling  tree statuses, service statuses, client states)
+
+[comment]: <> (- [ ] Simple CRUD)

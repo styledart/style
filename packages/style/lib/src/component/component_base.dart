@@ -156,7 +156,7 @@ abstract class CallingComponent extends Component {
 ///
 abstract class SingleChildCallingComponent extends CallingComponent {
   ///
-  SingleChildCallingComponent(this.child);
+  SingleChildCallingComponent(this.child, {Key? key}) : super(key: key);
 
   ///
   final Component child;
