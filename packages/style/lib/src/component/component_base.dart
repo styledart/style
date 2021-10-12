@@ -58,6 +58,11 @@ abstract class StatefulComponent extends Component {
   ///
   State<StatefulComponent> createState();
 
+  @override
+  // TODO: implement key
+  GlobalKey<State<StatefulComponent>>? get key =>
+      super.key as GlobalKey<State<StatefulComponent>>?;
+
   ///
   @override
   StatefulBinding createBinding() => StatefulBinding(this);
@@ -80,6 +85,10 @@ abstract class State<T extends StatefulComponent> {
 
   ///
   StatefulBinding get context => _binding!;
+
+
+  ///
+  GlobalKey<State<T>>  get globalKey => context.key as GlobalKey<State<T>>;
 
   ///
   void initState() async {}

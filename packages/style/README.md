@@ -4,6 +4,8 @@ For more accurate information look this [article](https://itnext.io/style-backen
 
 Development Log 1 : [Exception Handling](https://itnext.io/exception-handling-with-style-6020f01af7d8)
 
+Development Log 2 : [Cache Control](https://itnext.io)
+
 Articles is free-read.
 
 [comment]: <> (## Components)

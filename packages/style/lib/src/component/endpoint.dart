@@ -10,11 +10,11 @@ class EndpointCalling extends Calling {
 
   @override
   FutureOr<Message> onCall(Request request) async {
-try {
-  return await binding.component.onCall(request);
-} on Exception {
-  rethrow;
-}
+    try {
+      return await binding.component.onCall(request);
+    } on Exception {
+      rethrow;
+    }
   }
 }
 
@@ -47,11 +47,20 @@ abstract class Endpoint extends CallingComponent {
   BuildContext get context => _context!;
 
   @override
-  CallingBinding createBinding() => EndpointCallingBinding(this);
+  CallingBinding createBinding() {
+    return EndpointCallingBinding(this);
+  }
 
   @override
-  Calling createCalling(BuildContext context) =>
-      EndpointCalling(context as EndpointCallingBinding);
+  Calling createCalling(BuildContext context) {
+    if (context.component is LastModifiedMixin) {
+      return _LastModifiedCalling(context as EndpointCallingBinding);
+    } else if (context.component is EtagMixin) {
+      return _EtagCalling(context as EndpointCallingBinding);
+    }
+
+    return EndpointCalling(context as EndpointCallingBinding);
+  }
 
   ///
   FutureOr<Message> onCall(Request request);
@@ -68,7 +77,6 @@ class ExceptionEndpointCallingBinding<T extends Exception>
   ExceptionEndpoint<T> get component => super.component as ExceptionEndpoint<T>;
 
   @override
-  // TODO: implement calling
   ExceptionEndpointCalling<T> get calling =>
       super.calling as ExceptionEndpointCalling<T>;
 }
@@ -115,9 +123,7 @@ class EndpointCallingBinding extends CallingBinding {
     try {
       component._context = this;
       _calling = component.createCalling(this);
-    } catch(e,s) {
-      print(e);
-      print(_errorWhere);
+    } on Exception {
       rethrow;
     }
   }
@@ -143,17 +149,12 @@ abstract class EndpointState<T extends StatefulEndpoint> extends State<T> {
 
   @override
   Component build(BuildContext context) {
+    if (this is LastModifiedStateMixin) {
+      return _LastModifiedState(
+          onCall, (this as LastModifiedStateMixin).lastModified);
+    } else if (this is EtagStateMixin) {
+      return _EtagState(onCall, (this as EtagStateMixin).etag);
+    }
     return _EndpointState(onCall);
-  }
-}
-
-class _EndpointState extends Endpoint {
-  _EndpointState(this.call);
-
-  final FutureOr<Message> Function(Request request) call;
-
-  @override
-  FutureOr<Message> onCall(Request request) {
-    return call(request);
   }
 }

@@ -28,6 +28,8 @@ part 'component/calling.dart';
 
 part 'component/component_base.dart';
 
+part 'component/components/cache_control.dart';
+
 part 'component/components/cron_job.dart';
 
 part 'component/components/endpoints.dart';
@@ -67,3 +69,4 @@ part 'models/request/cause.dart';
 part 'models/request/context.dart';
 
 part 'models/request/request.dart';
+

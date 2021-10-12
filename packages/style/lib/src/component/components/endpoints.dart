@@ -362,3 +362,10 @@ class FaviconState extends EndpointState<Favicon> {
     return NoResponseRequired(request: request);
   }
 }
+
+/// Always throw
+class Throw extends SimpleEndpoint {
+
+  /// Construct exception
+  Throw(Exception exception) : super((re) => throw exception);
+}

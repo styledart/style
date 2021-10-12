@@ -1,5 +1,10 @@
 part of '../../style_base.dart';
 
+
+class NullBody  extends Body<Null> {
+  NullBody() : super._(null);
+}
+
 ///
 class Body<T> {
   ///
@@ -251,8 +256,17 @@ abstract class Request extends Message {
 
   ///
   Response createResponse(dynamic body,
-      {int statusCode = 200, HttpHeaders? headers}) {
-    return Response(body: Body(body), request: this, statusCode: statusCode);
+      {int statusCode = 200,
+      Map<String, dynamic>? headers,
+      DateTime? lastModified,
+      String? etag}) {
+    return Response(
+        additionalHeaders: headers,
+        body: body == null ? NullBody() : Body(body),
+        request: this,
+        statusCode: statusCode,
+        etag: etag,
+        lastModified: lastModified);
   }
 }
 
@@ -274,8 +288,13 @@ class Response extends Message {
       {required Request request,
       Body? body,
       required this.statusCode,
-      this.additionalHeaders})
+      this.additionalHeaders,
+      this.etag,
+      this.lastModified})
       : super(body: body, context: request.context);
+
+  DateTime? lastModified;
+  String? etag;
 
   ///
   int statusCode;
@@ -399,7 +418,7 @@ class ModifiedSinceRequest extends Request {
   ModifiedSinceRequest(Request request) : super.fromRequest(request);
 
   ModifiedSinceResponse response(DateTime lastModified) {
-    return ModifiedSinceResponse(this, lastModified: lastModified);
+    return ModifiedSinceResponse(this, lastMod: lastModified);
   }
 }
 
@@ -407,10 +426,10 @@ class ModifiedSinceRequest extends Request {
 class ModifiedSinceResponse extends Response {
   ///
   ModifiedSinceResponse(ModifiedSinceRequest request,
-      {required this.lastModified, ContentType? contentType})
+      {required this.lastMod, ContentType? contentType})
       : super(request: request, statusCode: 304);
 
-  DateTime lastModified;
+  DateTime lastMod;
 }
 
 ///
@@ -420,10 +439,3 @@ class NoResponseRequired extends Response {
     required Request request,
   }) : super(statusCode: -1, request: request, additionalHeaders: {});
 }
-
-
-
-
-
-
-

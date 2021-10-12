@@ -43,7 +43,7 @@ class GateCalling extends Calling {
 
   @override
   FutureOr<Message> onCall(Request request) async {
-    var gateRes = await (binding.component as Gate).onRequest(request);
+    var gateRes = await (binding.component as GateBase).onRequest(request);
     if (gateRes is Response) {
       return gateRes;
     } else {
@@ -58,7 +58,7 @@ abstract class GateWithChild extends SingleChildCallingComponent {
   GateWithChild({required Component child}) : super(child);
 
   ///
-  FutureOr<Response> onRequest(
+  FutureOr<Message> onRequest(
       Request request, FutureOr<Message> Function(Request) childCalling);
 
   @override
@@ -66,7 +66,7 @@ abstract class GateWithChild extends SingleChildCallingComponent {
 
   @override
   Calling createCalling(BuildContext context) =>
-      GateCalling(context as SingleChildCallingBinding);
+      GateWithChildCalling(context as SingleChildCallingBinding);
 }
 
 ///
@@ -189,10 +189,11 @@ class ContentTypeFilterGate extends StatelessComponent {
   Future<Message> checkMethods(Request request) async {
     if (blockedTypes.contains(request.method!)) {
       //TODO: Detail
-      throw Exception("${request.method} Not Allowed");
+
+      throw MethodNotAllowedException();
     } else if (allowedTypes.isNotEmpty &&
         !allowedTypes.contains(request.method)) {
-      throw Exception("${request.method} Not Allowed");
+      throw MethodNotAllowedException();
     }
     return request;
   }
@@ -203,28 +204,47 @@ class ContentTypeFilterGate extends StatelessComponent {
   }
 }
 
-///
-class CacheControl extends GateBase {
-  ///
-  CacheControl({required Component child, Key? key})
-      : super(child: child, key: key);
-
-  @override
-  FutureOr<Message> onRequest(Request request) {
-    // TODO: implement onRequest
-    throw UnimplementedError();
-  }
-}
 
 ///
 class IfModifiedSince extends GateWithChild {
   ///
-  IfModifiedSince({required Component child}) : super(child: child);
+  IfModifiedSince({required Component child, this.responseMaxAge = 0})
+      : super(child: child);
+
+  ///
+  final int responseMaxAge;
+
+  FutureOr<Response> _requestNormal(Request request,
+      FutureOr<Message> Function(Request request) childCalling) async {
+    var rr2 = await childCalling(request);
+    (rr2 as Response).additionalHeaders ??= {};
+    return rr2
+      ..additionalHeaders!.addAll({
+        if (rr2.lastModified != null)
+          HttpHeaders.lastModifiedHeader: HttpDate.format(rr2.lastModified!),
+        if (rr2.lastModified != null)
+          HttpHeaders.cacheControlHeader: "must-revalidate"
+      });
+  }
 
   @override
   FutureOr<Response> onRequest(Request request,
-      FutureOr<Message> Function(Request request) childCalling) {
-    // TODO: implement onRequest
+      FutureOr<Message> Function(Request request) childCalling) async {
+    if (request.headers?.ifModifiedSince != null) {
+      // TODO: Check max age
+      var res = await childCalling(ModifiedSinceRequest(request));
+      if (res is ModifiedSinceResponse) {
+        if (res.lastMod.millisecondsSinceEpoch ~/ 1000 >
+            request.headers!.ifModifiedSince!.millisecondsSinceEpoch ~/ 1000) {
+          return _requestNormal(request, childCalling);
+        } else {
+          return (res)
+            ..statusCode = 304
+            ..body = null;
+        }
+      }
+    }
+    return _requestNormal(request, childCalling);
     throw UnimplementedError();
   }
 }
