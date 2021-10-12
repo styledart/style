@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:stack_trace/stack_trace.dart';
+import 'package:style/src/functions/random.dart';
 import 'package:style/style.dart';
 
 /// Bu App Güzel Çalışacak
@@ -14,14 +15,14 @@ void main() async {
 
   var b = runService(ShelfExample());
 
-  b.visitChildren(TreeVisitor((visitor) {
-    try {
-      print("${visitor.currentValue.component}"
-          " ${visitor.currentValue.httpService}");
-    } on Exception {
-      print("${visitor.currentValue.component} on Null");
-    }
-  }));
+  // b.visitChildren(TreeVisitor((visitor) {
+  //   try {
+  //     print("${visitor.currentValue.component}"
+  //         " ${visitor.currentValue.httpService}");
+  //   } on Exception {
+  //     print("${visitor.currentValue.component} on Null");
+  //   }
+  // }));
 }
 
 class MyEx implements Exception {
@@ -67,27 +68,95 @@ class GetUserAppointments extends Endpoint {
   }
 }
 
+class OpenId extends StatefulComponent {
+  const OpenId({GlobalKey? key}) : super(key: key);
+
+  @override
+  OpenIdState createState() => OpenIdState();
+}
+
+class OpenIdState extends State<OpenId> {
+  int data = 0;
+
+  @override
+  Component build(BuildContext context) {
+    return RouteTo("openid",
+        root: EndP(), child: RouteTo("returns", root: EndP()));
+  }
+}
+
+///
+class EndP extends Endpoint {
+  EndP() : super();
+
+  @override
+  FutureOr<Message> onCall(Request request) {
+    /// Key üzerinden de ulaşılabilir.
+    var st = context.findAncestorStateOfType<OpenIdState>()!;
+    st.data = 10;
+    throw UnimplementedError();
+  }
+}
+
 class ShelfExample extends StatelessComponent {
   const ShelfExample({Key? key}) : super(key: key);
 
   @override
   Component build(BuildContext context) {
-    return Server(rootEndpoint: Redirect("../web/index.html"), children: [
-      // Static handler
-      // Route("web", root: DocumentService("/dir"), handleUnknownAsRoot: true),
-      ExceptionWrapper<StyleException>(
-          child: Route("time", root: Throw(Exception())),
-          exceptionEndpoint: ClientExEnd()),
+    return Server(
+        dataAccess: SimpleCacheDataAccess(),
+        rootEndpoint: Redirect("../web/index.html"),
+        children: [
+          // Static handler
+          // Route("web", root: DocumentService("/dir"), handleUnknownAsRoot: true),
+
+          Route("auth", child: OpenId()),
+
+          Route("time", root: SimpleEndpoint((request) {
+            var time = DateTime.now();
+            return request.createResponse({
+              "offset": time.timeZoneOffset.toString(),
+              "toUtc": time.toUtc().toString(),
+              "toStr": time.toString(),
+              "iso": time.toIso8601String(),
+              "local": time.toLocal().toString(),
+              "mayGmt": time.subtract(time.timeZoneOffset).toString(),
+              "http_format": HttpDate.format(time)
+            });
+          })),
+
+          CacheControl(
+              cacheability: Cacheability.private(),
+              expiration: Expiration.maxAge(Duration(seconds: 150)),
+              revalidation:
+                  Revalidation.mustRevalidate(IfNoneMatchMethod()),
+              child: Route("modified", root: MyIfNoneMatchEnd())),
 
 
 
-      Route("hello",
-          root: SimpleEndpoint((req) => req.createResponse("hello"))),
-      MathOperationRoute("sum", (a, b) => a + b),
-      MathOperationRoute("mul", (a, b) => a * b),
-      MathOperationRoute("div", (a, b) => a / b),
-      MathOperationRoute("dif", (a, b) => a - b)
-    ]);
+
+          Route("hello", root: SimpleEndpoint((req) {
+            return req.createResponse({
+              "headers": (req as HttpStyleRequest)
+                  .baseRequest
+                  .headers[HttpHeaders.cacheControlHeader]
+                  .toString(),
+              "type": (req)
+                  .baseRequest
+                  .headers[HttpHeaders.cacheControlHeader]
+                  .runtimeType
+                  .toString(),
+              "length": (req)
+                  .baseRequest
+                  .headers[HttpHeaders.cacheControlHeader]!
+                  .length
+            });
+          })),
+          MathOperationRoute("sum", (a, b) => a + b),
+          MathOperationRoute("mul", (a, b) => a * b),
+          MathOperationRoute("div", (a, b) => a / b),
+          MathOperationRoute("dif", (a, b) => a - b)
+        ]);
   }
 }
 
@@ -104,6 +173,53 @@ class ClientExEnd extends ExceptionEndpoint<StyleException> {
       "sup": "${exception.superType}",
       "st": stackTrace.toString()
     });
+  }
+}
+
+/// TODO: Document
+class MyIfNoneMatchEnd extends StatefulEndpoint {
+  MyIfNoneMatchEnd() : super();
+
+  @override
+  EndpointState<StatefulEndpoint> createState() => _EndState();
+}
+
+class _EndState extends EndpointState<MyIfNoneMatchEnd> with EtagStateMixin {
+  ///
+  DateTime last = DateTime.now();
+
+  late String val = getRandomId(30);
+
+  @override
+  void initState() {
+    Timer.periodic(Duration(seconds: 20), (timer) {
+      print("Değişti");
+      val = getRandomId(30);
+      last = DateTime.now();
+    });
+    super.initState();
+  }
+
+  @override
+  FutureOr<Message> onCall(Request request) {
+    return request.createResponse(
+      {
+        "val": val,
+        "last": last.toString()
+      }, /*headers: {HttpHeaders.etagHeader: val}*/
+    );
+  }
+
+  // @override
+  // FutureOr<ValidationResponse<DateTime>> lastModified(
+  //     ValidationRequest<DateTime> request) {
+  //   return request.validate(last);
+  // }
+
+  @override
+  FutureOr<ValidationResponse<String>> etag(ValidationRequest<String> request) {
+    print("ETAG REQ");
+    return request.validate(val);
   }
 }
 
@@ -131,10 +247,7 @@ class MathOperationRoute extends StatelessComponent {
   }
 }
 
-class Throw extends SimpleEndpoint {
-  Throw(Exception exception) : super((re) => throw exception);
-}
-
+///
 class FormatExEnd extends ExceptionEndpoint<FormatException> {
   @override
   FutureOr<Response> onError(

@@ -11,7 +11,7 @@ class ServiceWrapper<B extends _BaseService> extends StatelessComponent {
   final Component child;
 
   @override
-  StatelessBinding createBinding() => _BaseServiceStatefulBinding<B>(this);
+  StatelessBinding createBinding() => _BaseServiceBinding<B>(this);
 
   @override
   Component build(BuildContext context) {
@@ -40,9 +40,9 @@ abstract class _BaseService {
   }
 }
 
-class _BaseServiceStatefulBinding<B extends _BaseService>
+class _BaseServiceBinding<B extends _BaseService>
     extends StatelessBinding {
-  _BaseServiceStatefulBinding(StatelessComponent component) : super(component);
+  _BaseServiceBinding(ServiceWrapper<B> component) : super(component);
 
   @override
   ServiceWrapper<B> get component => super.component as ServiceWrapper<B>;
@@ -60,6 +60,8 @@ class _BaseServiceStatefulBinding<B extends _BaseService>
     _parent = parent;
     _exceptionHandler = parent.exceptionHandler.copyWith();
     _setServiceToThisAndParents<B>(component.service);
+    print("COM SERVICE: ${component.service}");
+    super.attachToParent(parent);
   }
 
   @override

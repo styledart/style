@@ -37,7 +37,7 @@ class Server extends StatefulComponent {
   final String rootName;
 
   ///
-  final Logger? logger;
+  final Logger logger;
 
   ///
   final CryptoService? cryptoService;
@@ -78,6 +78,9 @@ class ServiceState extends State<Server> {
   ///
   HttpServiceHandler get httpServiceNew => component.httpServiceNew;
 
+  ///
+  Logger get logger => component.logger;
+
   @override
   Component build(BuildContext context) {
     Component result = Gateway(children: [
@@ -88,12 +91,10 @@ class ServiceState extends State<Server> {
       ...component.children
     ]);
 
-    result = ServiceWrapper<HttpServiceHandler>(
-        service: component.httpServiceNew, child: result);
-    if (component.logger != null) {
-      result =
-          ServiceWrapper<Logger>(service: component.logger!, child: result);
-    }
+    result = ServiceWrapper<Logger>(
+        service: logger,
+        child: ServiceWrapper<HttpServiceHandler>(
+            service: httpServiceNew, child: result));
     if (component.cryptoService != null) {
       result =
           ServiceWrapper<CryptoService>(service: cryptoService, child: result);

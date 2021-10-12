@@ -44,6 +44,20 @@ abstract class HttpServiceHandler extends _BaseService {
 }
 
 ///
+extension HttpHeadersMap on HttpHeaders {
+  ///
+  Map<String, dynamic> toMap() {
+    var m = <String, List<String>>{};
+
+    forEach((name, values) {
+      m[name] = values;
+    });
+
+    return m;
+  }
+}
+
+///
 class DefaultHttpServiceHandler extends HttpServiceHandler {
   ///
   DefaultHttpServiceHandler()
@@ -110,13 +124,14 @@ class DefaultHttpServiceHandler extends HttpServiceHandler {
       if (res is Response && res is! NoResponseRequired) {
         request.response.statusCode = res.statusCode;
         request.response.headers.contentType = res.contentType;
+
         for (var head in res.additionalHeaders?.entries.toList() ??
             <MapEntry<String, dynamic>>[]) {
           request.response.headers.add(head.key, head.value);
         }
         if (res.body != null && res.contentType == ContentType.binary) {
           request.response.add((res.body as BinaryBody).data);
-        } else {
+        } else if (res.body is! NullBody) {
           request.response.write(res.body);
         }
 
@@ -124,10 +139,11 @@ class DefaultHttpServiceHandler extends HttpServiceHandler {
         res.sent = true;
       }
     } on Exception catch (e) {
-      request.response.statusCode = 400;
-      request.response.headers.contentType = ContentType.json;
-      request.response.write(json.encode({"error": e.toString()}));
-      request.response.close();
+      print(e);
+      // request.response.statusCode = 400;
+      // request.response.headers.contentType = ContentType.json;
+      // request.response.write(json.encode({"error": e.toString()}));
+      // request.response.close();
     }
 
     return;

@@ -11,7 +11,6 @@ abstract class BuildContext {
 
   void _setServiceToThisAndParents<B extends _BaseService>(B newService,
       {bool onChild = false}) {
-    print("Service $newService Setting: $component");
     if (B == CryptoService) {
       if (onChild && _crypto != null) return;
       if (onChild) {
@@ -36,7 +35,6 @@ abstract class BuildContext {
     } else if (B == HttpServiceHandler) {
       if (onChild && _httpService != null) return;
       if (onChild) {
-        print("HTTP TO PARENT: $component");
         _httpService ??= newService as HttpServiceHandler;
       } else {
         _httpService = newService as HttpServiceHandler;
@@ -48,8 +46,9 @@ abstract class BuildContext {
       } else {
         _logger = newService as Logger;
       }
-    } else {}
-    _parent?._setServiceToThisAndParents(newService, onChild: true);
+      print("Logger Settings : $newService");
+    }
+    _parent?._setServiceToThisAndParents<B>(newService, onChild: true);
   }
 
   ///
@@ -64,12 +63,10 @@ abstract class BuildContext {
 
   ///
   DataAccess get dataAccess {
-
-      if (_dataAccess == null) {
-        throw ServiceUnavailable("data_access");
-      }
-      return _dataAccess!;
-
+    if (_dataAccess == null) {
+      throw ServiceUnavailable("data_access");
+    }
+    return _dataAccess!;
   }
 
   WebSocketService? _socketService;
@@ -169,6 +166,9 @@ abstract class Binding extends BuildContext {
     _httpService = parent._httpService;
     _socketService = parent._socketService;
     _dataAccess = parent._dataAccess;
+    _logger = parent._logger;
+    print(
+        "Parent Attached in With ${parent._logger}   : ${parent._httpService}  : ${parent._dataAccess}");
   }
 
   ///

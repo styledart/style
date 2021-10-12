@@ -55,11 +55,13 @@ abstract class Logger extends _BaseService {
 class DefaultLogger extends Logger {
   @override
   FutureOr<bool> init([bool inInterface = true]) async {
+    print("Logger initialize");
     return true;
   }
 
   @override
   void log(LogMessage logMessage) {
+    print(logMessage.name);
     // TODO: implement log
   }
 }
