@@ -1,135 +1,56 @@
 part of '../../style_base.dart';
 
 ///
-enum QueryType {
+class AccessEvent {
   ///
-  read,
+  AccessEvent(
+      {required this.access,
+      required this.context,
+      this.token,
+      required this.request})
+      : createTime = DateTime.now(),
+        type = _getDbOpType(access.type);
 
   ///
-  readMultiple,
-
-  ///
-  create,
-
-  ///
-  update,
-
-  ///
-  exists,
-
-  ///
-  listen,
-
-  ///
-  delete,
-
-  ///
-  count,
-}
-
-///
-abstract class Query {
-  ///
-  Query._(
-      {required this.collection,
-      required this.token,
-      required this.queryType,
-      this.documentId,
-      this.query,
-      this.fields,
-      this.filter,
-      this.limit,
-      this.offset,
-      this.sort,
-      this.document});
-
-  ///
-  factory Query(
-      {required QueryType type,
-      required String collection,
-      required String token,
-      Map<String, dynamic>? document,
-      String? documentId,
-      Map<String, dynamic>? query,
-      Map<String, dynamic>? fields,
-      Map<String, dynamic>? filter,
-      int? limit,
-      int? offset,
-      Map<String, dynamic>? sort}) {
+  static DbOperationType _getDbOpType(AccessType type) {
     switch (type) {
-      case QueryType.read:
-        // TODO: Handle this case.
-        break;
-      case QueryType.readMultiple:
-        // TODO: Handle this case.
-        break;
-      case QueryType.create:
-        return CreateQuery(
-          document: document!,
-          collection: collection,
-          token: token,
-        );
-      case QueryType.update:
-        // TODO: Handle this case.
-        break;
-      case QueryType.exists:
-        // TODO: Handle this case.
-        break;
-      case QueryType.listen:
-        // TODO: Handle this case.
-        break;
-      case QueryType.delete:
-        // TODO: Handle this case.
-        break;
-      case QueryType.count:
-        // TODO: Handle this case.
-        break;
+      case AccessType.read:
+        return DbOperationType.read;
+      case AccessType.readMultiple:
+        return DbOperationType.read;
+      case AccessType.create:
+        return DbOperationType.create;
+      case AccessType.update:
+        return DbOperationType.update;
+      case AccessType.exists:
+        return DbOperationType.read;
+      case AccessType.listen:
+        return DbOperationType.read;
+      case AccessType.delete:
+        return DbOperationType.delete;
+      case AccessType.count:
+        return DbOperationType.read;
     }
-
-    throw 0;
   }
 
   ///
-  final String collection;
+  Access access;
 
   ///
-  final QueryType queryType;
+  final AccessToken? token;
 
   ///
-  String? documentId;
+  DbOperationType type;
 
   ///
-  String? token;
+  Request request;
 
   ///
-  Map<String, dynamic>? query, filter, sort, fields, document;
+  BuildContext context;
 
   ///
-  int? limit, offset;
+  final DateTime createTime;
 
   ///
-  dynamic build() {}
-}
-
-///
-class CreateQuery extends Query {
-  ///
-  CreateQuery(
-      {required String collection,
-      required String token,
-      required Map<String, dynamic> document,
-      String? documentId})
-      : super._(
-            queryType: QueryType.create,
-            collection: collection,
-            token: token,
-            documentId: documentId,
-            document: document);
-
-  ///
-  @override
-  Map<String, dynamic> build() {
-    // TODO: implement build
-    throw UnimplementedError();
-  }
+  Map<String, dynamic>? before, after;
 }

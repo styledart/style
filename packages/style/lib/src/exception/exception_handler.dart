@@ -19,12 +19,6 @@ class ExceptionHandler {
 
   ///
   ExceptionEndpointCallingBinding getBinding(Exception e) {
-
-    print("HANDLER REQUEST:"
-        "\n${_map[e.runtimeType]}"
-        "\n${_findSuperTypes(e)}"
-        "\n${_map[Exception]}");
-
     return _map[e.runtimeType] ?? _findSuperTypes(e) ?? _map[Exception]!;
   }
 

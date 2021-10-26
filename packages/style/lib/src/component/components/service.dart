@@ -5,13 +5,14 @@ class Server extends StatefulComponent {
   ///
   Server(
       {GlobalKey? key,
-      HttpServiceHandler? httpServiceNew,
+      HttpService? httpServiceNew,
       this.socketService,
       this.dataAccess,
       this.cryptoService,
       Logger? logger,
       String? rootName,
       this.rootEndpoint,
+      this.authorization,
       required this.children,
       this.faviconDirectory,
       Map<Type, ExceptionEndpoint>? defaultExceptionEndpoints})
@@ -37,10 +38,10 @@ class Server extends StatefulComponent {
   final String rootName;
 
   ///
-  final Logger logger;
+  final Logger? logger;
 
   ///
-  final CryptoService? cryptoService;
+  final Crypto? cryptoService;
 
   ///
   final DataAccess? dataAccess;
@@ -49,7 +50,10 @@ class Server extends StatefulComponent {
   final WebSocketService? socketService;
 
   ///
-  final HttpServiceHandler httpServiceNew;
+  final HttpService httpServiceNew;
+
+  ///
+  final Authorization? authorization;
 
   ///
   final List<Component> children;
@@ -67,7 +71,7 @@ class ServiceState extends State<Server> {
   String get rootName => component.rootName;
 
   ///
-  CryptoService get cryptoService => component.cryptoService!;
+  Crypto get cryptoService => component.cryptoService!;
 
   ///
   DataAccess get dataAccess => component.dataAccess!;
@@ -76,10 +80,10 @@ class ServiceState extends State<Server> {
   WebSocketService get socketService => component.socketService!;
 
   ///
-  HttpServiceHandler get httpServiceNew => component.httpServiceNew;
+  HttpService get httpServiceNew => component.httpServiceNew;
 
   ///
-  Logger get logger => component.logger;
+  Authorization get authorization => component.authorization!;
 
   @override
   Component build(BuildContext context) {
@@ -91,13 +95,14 @@ class ServiceState extends State<Server> {
       ...component.children
     ]);
 
-    result = ServiceWrapper<Logger>(
-        service: logger,
-        child: ServiceWrapper<HttpServiceHandler>(
-            service: httpServiceNew, child: result));
-    if (component.cryptoService != null) {
+    result = ServiceWrapper<HttpService>(
+        service: component.httpServiceNew, child: result);
+    if (component.logger != null) {
       result =
-          ServiceWrapper<CryptoService>(service: cryptoService, child: result);
+          ServiceWrapper<Logger>(service: component.logger!, child: result);
+    }
+    if (component.cryptoService != null) {
+      result = ServiceWrapper<Crypto>(service: cryptoService, child: result);
     }
 
     if (component.socketService != null) {
@@ -107,6 +112,11 @@ class ServiceState extends State<Server> {
 
     if (component.dataAccess != null) {
       result = ServiceWrapper<DataAccess>(service: dataAccess, child: result);
+    }
+
+    if (component.authorization != null) {
+      result =
+          ServiceWrapper<Authorization>(service: authorization, child: result);
     }
 
     return ServiceCallingComponent(
@@ -233,7 +243,8 @@ class ServiceCalling extends Calling {
 
   @override
   FutureOr<Message> onCall(Request request) {
-    request.path.resolveFor(binding._childGateway.components.keys.toList());
+    request.path
+        .resolveFor(binding._childGateway.childrenBinding.keys.toList());
     return (binding.child).findCalling.calling(request);
   }
 }

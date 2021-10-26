@@ -1,11 +1,11 @@
-import 'package:style/src/style_base.dart';
+import 'package:style_dart/style_dart.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
 
 void main() {
   var path = "/a/b/c";
 
-  var controller = PathController(path);
+  var controller = PathController.fromFullPath(path);
 
   test("description", () {
     var p = controller.resolveFor([
@@ -14,11 +14,6 @@ void main() {
       PathSegment("z"),
       PathSegment("a")
     ]);
-    expect(
-        p.segment,
-        PathSegment("a"));
-
-
-
+    expect(p.segment, PathSegment("a"));
   });
 }

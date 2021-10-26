@@ -83,6 +83,17 @@ class ForbiddenUnauthorizedException extends ClientError {
 
 ///
 class NotFoundException extends ClientError {
+  ///
+  NotFoundException([this.route]);
+
+  @override
+  String toString(){
+      return "$route not found"    ;
+  }
+
+  ///
+  String? route;
+
   @override
   int get statusCode => 404;
 }

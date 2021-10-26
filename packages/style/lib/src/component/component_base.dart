@@ -243,9 +243,7 @@ class SingleChildBinding extends Binding {
   void _build() {
     _child = component.child.createBinding();
 
-    // print("Single Child Building: comp: ${component.runtimeType}\n"
-    //     "_child: $_child\n"
-    //     "_childComps: $_child");
+
 
     _child.attachToParent(this);
     _child._build();
@@ -278,9 +276,6 @@ class SingleChildCallingBinding extends CallingBinding {
     _calling = component.createCalling(this);
     _child = component.child.createBinding();
 
-    // print("Single Child Building: comp: ${component.runtimeType}\n"
-    //     "_child: $_child\n"
-    //     "_childComps: $_child");
 
     _child.attachToParent(this);
     _child._build();

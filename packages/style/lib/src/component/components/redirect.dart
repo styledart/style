@@ -6,16 +6,14 @@ class Redirect extends Endpoint {
   Redirect(this.path);
 
   ///
-  final String? path;
+  final String path;
 
   ///
   static FutureOr<Message> redirect(
       {required Request request,
-      required String? path,
+      required String path,
       required BuildContext context}) async {
-    if (path == null) {
-      throw NotFoundException();
-    }
+
 
     var uri = Uri.parse(path);
 
@@ -66,10 +64,6 @@ class Redirect extends Endpoint {
       while (segments.first == "..") {
         var n = nBinding.findAncestorBindingOfType<GatewayBinding>();
         var s = nBinding.findAncestorBindingOfType<ServiceBinding>();
-
-        print(n);
-        print(s);
-
         if (n == null && s == null) {
           throw Exception("Path No Found"
               " : ${request.path.current} in ${nBinding.component}");
@@ -97,7 +91,7 @@ class GeneratedRedirect extends Endpoint {
   GeneratedRedirect({required this.generate});
 
   ///
-  final Future<String?> Function(Request request) generate;
+  final Future<String> Function(Request request) generate;
 
   @override
   FutureOr<Message> onCall(Request request) async {

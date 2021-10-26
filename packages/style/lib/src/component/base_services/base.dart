@@ -24,11 +24,10 @@ abstract class _BaseService {
 
   bool initialized = false;
 
-  // ignore: avoid_positional_boolean_parameters
-  FutureOr<bool> init([bool inInterface = true]);
+  FutureOr<bool> init();
 
   FutureOr<void> _init() async {
-    initialized = await init(false);
+    initialized = await init();
     _initializeCompleter.complete(initialized);
   }
 
@@ -60,7 +59,6 @@ class _BaseServiceBinding<B extends _BaseService>
     _parent = parent;
     _exceptionHandler = parent.exceptionHandler.copyWith();
     _setServiceToThisAndParents<B>(component.service);
-    print("COM SERVICE: ${component.service}");
     super.attachToParent(parent);
   }
 

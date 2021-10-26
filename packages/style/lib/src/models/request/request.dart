@@ -55,12 +55,12 @@ class JsonBody extends Body<dynamic> {
 
   ///
   dynamic operator [](covariant String key) {
-    throw UnimplementedError();
+    return data[key];
   }
 
   ///
   void operator []=(covariant String key, dynamic value) {
-    throw UnimplementedError();
+    data[key] = value;
   }
 
   ///
@@ -74,16 +74,6 @@ class JsonBody extends Body<dynamic> {
 class TextBody extends Body<String> {
   ///
   TextBody(String data) : super._(data);
-
-  ///
-  Pattern operator [](covariant int key) {
-    return data[key];
-  }
-
-  ///
-  void operator []=(covariant int key, covariant Pattern value) {
-    // TODO: implement []=
-  }
 }
 
 ///
@@ -99,13 +89,12 @@ class BinaryBody extends Body<Uint8List> {
 
   ///
   int operator [](covariant int key) {
-    // TODO: implement []
-    throw UnimplementedError();
+    return data[key];
   }
 
   ///
   void operator []=(covariant int key, covariant int value) {
-    // TODO: implement []=
+    data[key] = value;
   }
 }
 
@@ -201,7 +190,7 @@ var _m = [
 ///
 abstract class Request extends Message {
   /// Creates with subclasses
-  Request._(
+  Request(
       {required RequestContext context,
       ContentType? contentType,
       dynamic body,
@@ -210,20 +199,11 @@ abstract class Request extends Message {
       this.method})
       : super(body: body, context: context, contentType: contentType);
 
-  Request.fromRequest(Request request)
-      : headers = request.headers,
-        cookies = request.cookies,
-        method = request.method,
-        super(
-            context: request.context,
-            body: request.body,
-            contentType: request.contentType);
-
   ///
   final List<Cookie>? cookies;
 
   ///
-  final HttpHeaders? headers;
+  final Map<String, List<String>>? headers;
 
   ///
   Completer<bool>? _waiter;
@@ -255,30 +235,14 @@ abstract class Request extends Message {
   }
 
   ///
-  Response createResponse(dynamic body,
-      {int statusCode = 200,
-      Map<String, dynamic>? headers,
-      DateTime? lastModified,
-      String? etag}) {
+  Response response(dynamic body,
+      {int? statusCode, Map<String, dynamic>? headers}) {
     return Response(
-        additionalHeaders: headers,
-        body: body == null ? NullBody() : Body(body),
+        body: body is Body ? body : Body(body),
         request: this,
-        statusCode: statusCode,
-        etag: etag,
-        lastModified: lastModified);
+        statusCode: statusCode ?? 200,
+        additionalHeaders: headers);
   }
-}
-
-class _RequestFactory extends Request {
-  _RequestFactory(Request request)
-      : super._(
-            context: request.context,
-            body: request.body,
-            headers: request.headers,
-            cookies: request.cookies,
-            contentType: request.contentType,
-            method: request.method);
 }
 
 ///
@@ -288,13 +252,8 @@ class Response extends Message {
       {required Request request,
       Body? body,
       required this.statusCode,
-      this.additionalHeaders,
-      this.etag,
-      this.lastModified})
+      this.additionalHeaders})
       : super(body: body, context: request.context);
-
-  DateTime? lastModified;
-  String? etag;
 
   ///
   int statusCode;
@@ -356,13 +315,22 @@ class HttpStyleRequest extends Request {
       required RequestContext context,
       ContentType? contentType,
       Body? body})
-      : super._(
+      : super(
             context: context,
             body: body,
             contentType: contentType,
             cookies: baseRequest.cookies,
-            headers: baseRequest.headers,
+            headers: _getHeaders(baseRequest.headers),
             method: method);
+
+  static Map<String, List<String>> _getHeaders(HttpHeaders headers) {
+    var m = <String, List<String>>{};
+    headers.forEach((name, values) {
+      m[name] = values;
+    });
+
+    return m;
+  }
 
   ///
   final HttpRequest baseRequest;
@@ -376,6 +344,7 @@ class HttpStyleRequest extends Request {
     //     "${req.uri.queryParameters["token"]
     //     ?? req.headers[HttpHeaders.authorizationHeader]}");
 
+    var q = req.uri.queryParameters;
     return HttpStyleRequest(
         baseRequest: req,
         contentType: req.headers.contentType,
@@ -385,10 +354,11 @@ class HttpStyleRequest extends Request {
             currentContext: context,
             cause: Cause.clientRequest,
             agent: Agent.http,
-            accessToken: req.uri.queryParameters["token"] ??
-                req.headers[HttpHeaders.authorizationHeader]?.first,
+            accessToken: req.headers[HttpHeaders.authorizationHeader]?.first ??
+                q["token"],
+            // TODO: Look cookies for token
             createContext: context,
-            fullPath: req.uri.path),
+            pathController: PathController.fromHttpRequest(req)),
         body: body);
   }
 }
@@ -396,40 +366,23 @@ class HttpStyleRequest extends Request {
 ///
 class TagRequest extends Request {
   ///
-  TagRequest(Request request) : super.fromRequest(request);
-
-  TagResponse response(String tag) {
-    return TagResponse(this, tag: tag);
-  }
+  TagRequest(HttpStyleRequest request)
+      : super(
+            context: request.context,
+            body: request.body,
+            headers: request.headers,
+            cookies: request.cookies);
 }
 
 ///
 class TagResponse extends Response {
   ///
-  TagResponse(TagRequest request, {required this.tag, ContentType? contentType})
-      : super(request: request, statusCode: 304);
-
-  String tag;
-}
-
-///
-class ModifiedSinceRequest extends Request {
-  ///
-  ModifiedSinceRequest(Request request) : super.fromRequest(request);
-
-  ModifiedSinceResponse response(DateTime lastModified) {
-    return ModifiedSinceResponse(this, lastMod: lastModified);
-  }
-}
-
-///
-class ModifiedSinceResponse extends Response {
-  ///
-  ModifiedSinceResponse(ModifiedSinceRequest request,
-      {required this.lastMod, ContentType? contentType})
-      : super(request: request, statusCode: 304);
-
-  DateTime lastMod;
+  TagResponse(TagRequest request,
+      {required String tag, ContentType? contentType})
+      : super(request: request, statusCode: 304, additionalHeaders: {
+          HttpHeaders.contentLengthHeader: 0,
+          HttpHeaders.etagHeader: tag
+        });
 }
 
 ///
@@ -439,3 +392,53 @@ class NoResponseRequired extends Response {
     required Request request,
   }) : super(statusCode: -1, request: request, additionalHeaders: {});
 }
+
+// ///
+// class HttpResponse extends Response {
+//   ///
+//   HttpResponse(
+//       {required RequestContext context,
+//       required String fullPath,
+//       required Map<String, dynamic> body})
+//       : super(context: context, fullPath: fullPath, body: body);
+// }
+//
+// ///
+// class WsRequest extends Request {
+//   ///
+//   WsRequest(
+//       {required RequestContext context, required Map<String, dynamic> body})
+//       : super._(context: context, body: body, accepts: [ContentType.json]);
+// }
+//
+// // ///
+// // class WsResponse extends Response{
+// //   ///
+// //   WsResponse(
+// //       {required RequestContext context,
+// //       required String fullPath,
+// //       required Map<String, dynamic> body})
+// //       : super._(context: context, fullPath: fullPath, body: body);
+// // }
+//
+// ///
+// class InternalRequest extends Request {
+//   ///
+//   InternalRequest({required RequestContext context, required dynamic body})
+//       : super._(context: context, body: body, accepts: [
+//           ContentType.json,
+//           ContentType.text,
+//           ContentType.html,
+//           ContentType.binary
+//         ]);
+// }
+
+// ///
+// class InternalResponse extends Response {
+//   ///
+//   InternalResponse(
+//       {required RequestContext context,
+//       required String fullPath,
+//       required Map<String, dynamic> body})
+//       : super._(context: context, fullPath: fullPath, body: body);
+// }

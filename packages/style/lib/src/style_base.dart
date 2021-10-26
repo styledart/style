@@ -15,9 +15,10 @@ import 'functions/uint8_merge.dart';
 part 'component/base_services/base.dart';
 
 part 'component/base_services/crypto.dart';
-
-part 'component/base_services/data.dart';
-
+part 'component/base_services/authorization.dart';
+part 'component/base_services/data_access/data.dart';
+part 'component/base_services/data_access/permission.dart';
+part 'component/base_services/data_access/trigger.dart';
 part 'component/base_services/http.dart';
 
 part 'component/base_services/logger.dart';
@@ -61,6 +62,7 @@ part 'exception/exception_handler.dart';
 part 'exception/style_exception.dart';
 
 part 'models/query/query.dart';
+part 'models/query/collection.dart';
 
 part 'models/request/agent.dart';
 
@@ -69,4 +71,4 @@ part 'models/request/cause.dart';
 part 'models/request/context.dart';
 
 part 'models/request/request.dart';
-
+part 'models/request/token.dart';

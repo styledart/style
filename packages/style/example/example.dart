@@ -1,14 +1,8 @@
 import 'dart:async';
 
-import 'package:style/style.dart';
-
+import 'package:style_dart/style_dart.dart';
 
 /// in example
-
-void main() {
-
-
-}
 
 class BerberServer extends StatelessComponent {
   @override
@@ -17,22 +11,16 @@ class BerberServer extends StatelessComponent {
       rootName: "berber_server",
       rootEndpoint: Redirect('../home'),
       children: [
-        // TODO: 
+        // TODO:
       ],
     );
   }
 }
 
-
-
 class BerberUnknownRequest extends Endpoint {
-
   @override
   FutureOr<Message> onCall(Request request) {
     // TODO: implement onCall
     throw UnimplementedError();
   }
 }
-
-
-      

@@ -6,13 +6,11 @@ class RequestContext {
   /// Not use
   RequestContext(
       {required this.requestTime,
-      required this.currentContext,
       required this.cause,
       required this.agent,
       required this.createContext,
-      required String fullPath,
-      this.accessToken})
-      : pathController = PathController(fullPath);
+      required  this.pathController,
+      this.accessToken}) : currentContext = createContext;
 
   /// Path-Call Controller
   PathController pathController;

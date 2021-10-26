@@ -39,6 +39,7 @@ class GatewayBinding extends MultiChildCallingBinding {
     super._build();
 
     var _callings = <PathSegment, Binding>{};
+    PathSegment? arg ;
     for (var child in children) {
       var _childCalling = child.visitCallingChildren(TreeVisitor((visitor) {
         if (visitor.currentValue is GatewayCalling) {
@@ -57,7 +58,7 @@ class GatewayBinding extends MultiChildCallingBinding {
       }
 
       if (_childCalling.result == null) {
-        throw UnsupportedError("Each Gateway child (Service child) must have"
+        throw UnsupportedError("Each Gateway child (or Service child) must have"
             "[Route] in the tree."
             "\nwhere: $_errorWhere");
       }
@@ -65,19 +66,19 @@ class GatewayBinding extends MultiChildCallingBinding {
       var seg =
           (_childCalling.result! as RouteCalling).binding.component.segment;
 
-      // if (seg.isRoot || seg.isUnknown) {
-      //   if (child.component is PathSegmentCallingComponentMixin) {
-      //     throw Exception("(${seg.name}) ,Root and "
-      //         "Unknown must not be a new route\n"
-      //         "${child.component}\n"
-      //         "WHERE: ${child._errorWhere}");
-      //   }
-      // }
-
+      if (seg.isArgument) {
+        if (arg != null) {
+          throw Exception(
+              "Gateways allow only once argument segment. \nbut found $arg and"
+                  " $seg\nWHERE: $_errorWhere");
+        } else {
+          arg = seg;
+        }
+      }
       _callings[seg] = child;
     }
 
-    calling.components = _callings;
+    calling.childrenBinding = _callings;
   }
 }
 
@@ -91,16 +92,16 @@ class GatewayCalling extends Calling {
       super.binding as MultiChildCallingBinding;
 
   ///
-  late final Map<PathSegment, Binding> components;
+  late final Map<PathSegment, Binding> childrenBinding;
 
   @override
   FutureOr<Message> onCall(Request request) {
-    if (components[PathSegment(request.currentPath)] != null) {
-      return components[PathSegment(request.currentPath)]!
+    if (childrenBinding[PathSegment(request.currentPath)] != null) {
+      return childrenBinding[PathSegment(request.currentPath)]!
           .findCalling
           .calling(request);
     } else {
-      throw NotFoundException();
+      throw NotFoundException(request.currentPath);
     }
   }
 }

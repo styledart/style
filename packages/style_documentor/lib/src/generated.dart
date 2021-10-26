@@ -27,7 +27,7 @@ class GenerateServerBuilder extends Builder {
     var server = """
 import 'dart:async';
 
-import 'package:style/style.dart';
+import 'package:style/style_dart.dart';
 
 void main() {
   runService($sName());

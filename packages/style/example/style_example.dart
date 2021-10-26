@@ -2,8 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:stack_trace/stack_trace.dart';
-import 'package:style/src/functions/random.dart';
-import 'package:style/style.dart';
+import 'package:style_dart/style_dart.dart';
 
 /// Bu App Güzel Çalışacak
 void main() async {
@@ -35,10 +34,9 @@ class UnauthorizedEndpoint extends ExceptionEndpoint<UnauthorizedException> {
   FutureOr<Response> onError(
       Message message, UnauthorizedException exception, StackTrace stackTrace) {
     if (message.contentType?.mimeType == ContentType.json.mimeType) {
-      return (message as Request)
-          .createResponse({"error": "unauthorized_error"});
+      return (message as Request).response({"error": "unauthorized_error"});
     } else {
-      return (message as Request).createResponse(HtmlBody("""
+      return (message as Request).response(HtmlBody("""
 <html>
     <body>
       <center style="vertical-align: middle;">
@@ -68,95 +66,41 @@ class GetUserAppointments extends Endpoint {
   }
 }
 
-class OpenId extends StatefulComponent {
-  const OpenId({GlobalKey? key}) : super(key: key);
-
-  @override
-  OpenIdState createState() => OpenIdState();
-}
-
-class OpenIdState extends State<OpenId> {
-  int data = 0;
-
-  @override
-  Component build(BuildContext context) {
-    return RouteTo("openid",
-        root: EndP(), child: RouteTo("returns", root: EndP()));
-  }
-}
-
-///
-class EndP extends Endpoint {
-  EndP() : super();
-
-  @override
-  FutureOr<Message> onCall(Request request) {
-    /// Key üzerinden de ulaşılabilir.
-    var st = context.findAncestorStateOfType<OpenIdState>()!;
-    st.data = 10;
-    throw UnimplementedError();
-  }
-}
-
 class ShelfExample extends StatelessComponent {
   const ShelfExample({Key? key}) : super(key: key);
 
   @override
   Component build(BuildContext context) {
-    return Server(
-        dataAccess: SimpleCacheDataAccess(),
-        rootEndpoint: Redirect("../web/index.html"),
-        children: [
-          // Static handler
-          // Route("web", root: DocumentService("/dir"), handleUnknownAsRoot: true),
-
-          Route("auth", child: OpenId()),
-
-          Route("time", root: SimpleEndpoint((request) {
-            var time = DateTime.now();
-            return request.createResponse({
-              "offset": time.timeZoneOffset.toString(),
-              "toUtc": time.toUtc().toString(),
-              "toStr": time.toString(),
-              "iso": time.toIso8601String(),
-              "local": time.toLocal().toString(),
-              "mayGmt": time.subtract(time.timeZoneOffset).toString(),
-              "http_format": HttpDate.format(time)
-            });
-          })),
-
-          CacheControl(
-              cacheability: Cacheability.private(),
-              expiration: Expiration.maxAge(Duration(seconds: 150)),
-              revalidation:
-                  Revalidation.mustRevalidate(IfNoneMatchMethod()),
-              child: Route("modified", root: MyIfNoneMatchEnd())),
-
-
-
-
-          Route("hello", root: SimpleEndpoint((req) {
-            return req.createResponse({
-              "headers": (req as HttpStyleRequest)
-                  .baseRequest
-                  .headers[HttpHeaders.cacheControlHeader]
-                  .toString(),
-              "type": (req)
-                  .baseRequest
-                  .headers[HttpHeaders.cacheControlHeader]
-                  .runtimeType
-                  .toString(),
-              "length": (req)
-                  .baseRequest
-                  .headers[HttpHeaders.cacheControlHeader]!
-                  .length
-            });
-          })),
-          MathOperationRoute("sum", (a, b) => a + b),
-          MathOperationRoute("mul", (a, b) => a * b),
-          MathOperationRoute("div", (a, b) => a / b),
-          MathOperationRoute("dif", (a, b) => a - b)
-        ]);
+    return Server(children: [
+      Route("*root",
+          root: SimpleEndpoint((request) => request.response("unk"))),
+      Route("{a}", root: SimpleEndpoint((request) => request.response("body"))),
+      // Route("{b}",
+      //     root: SimpleEndpoint((request) => request.createResponse("body2")))
+      //     ,
+      // Static handler
+      // Route("web", root: DocumentService("/dir"), handleUnknownAsRoot: true),
+      ExceptionWrapper<StyleException>(
+          child: Route("time", root: Throw(Exception())),
+          exceptionEndpoint: ClientExEnd()),
+      Route("hello", root: SimpleEndpoint((req) => req.response("hello"))),
+      MathOperationRoute("sum", (a, b) => a + b),
+      MathOperationRoute("mul", (a, b) => a * b),
+      MathOperationRoute("div", (a, b) => a / b),
+      MathOperationRoute("dif", (a, b) => a - b),
+      Route("json", root: SimpleEndpoint((request) {
+        print(
+            "REQ: ${request.fullPath}\nQUERY:${request.path.queryParameters}");
+        return request.response({
+          "q": request.path.queryParameters,
+          "enc": json.decode(request.path.queryParameters["q"]),
+          "fr": json
+              .decode(request.path.queryParameters["q"])["from"]
+              .runtimeType
+              .toString()
+        });
+      })),
+    ]);
   }
 }
 
@@ -167,7 +111,7 @@ class ClientExEnd extends ExceptionEndpoint<StyleException> {
   @override
   FutureOr<Response> onError(
       Message message, StyleException exception, StackTrace stackTrace) {
-    return (message as Request).createResponse({
+    return (message as Request).response({
       "err": "client_error_received",
       "type": "${exception.runtimeType}",
       "sup": "${exception.superType}",
@@ -239,7 +183,7 @@ class MathOperationRoute extends StatelessComponent {
                 child: RouteTo("{b}", root: SimpleEndpoint((request) {
                   var a = int.parse(request.arguments["a"]);
                   var b = int.parse(request.arguments["b"]);
-                  return request.createResponse({
+                  return request.response({
                     {"a": a, "b": b, name: operation(a, b)}
                   });
                 })))),
@@ -252,7 +196,7 @@ class FormatExEnd extends ExceptionEndpoint<FormatException> {
   @override
   FutureOr<Response> onError(
       Message message, FormatException exception, StackTrace stackTrace) {
-    return (message as Request).createResponse(
+    return (message as Request).response(
         "please ensure path like: \"host/{sum|div|dif|mul}/{number}/{number}\"");
   }
 }
@@ -319,11 +263,11 @@ class MyServer extends StatelessComponent {
           // Post(),
           User(),
           Route("c_t",
-              root: SimpleEndpoint((request) => request.createResponse({
+              root: SimpleEndpoint((request) => request.response({
                     "type": request.contentType?.mimeType,
                     "body": request.body?.data.runtimeType.toString()
                   }))),
-          Route("api", root: SimpleAccessPoint(), handleUnknownAsRoot: true),
+          SimpleAccessPoint("api"),
           Route("doc",
               handleUnknownAsRoot: true,
               root: DocumentService("D:\\style\\packages\\style\\source\\web\\",
@@ -382,7 +326,7 @@ class UnAuthEnd extends Endpoint {
   FutureOr<Message> onCall(Request request) async {
     try {
       print("Cevap Gitti UN: ${context.dataAccess}");
-      return request.createResponse({"args": "FROM UNAUTH"});
+      return request.response({"args": "FROM UNAUTH"});
     } on Exception catch (e) {
       print("ON 2 $e");
       rethrow;
@@ -393,7 +337,7 @@ class UnAuthEnd extends Endpoint {
 class AuthEnd extends Endpoint {
   @override
   FutureOr<Message> onCall(Request request) {
-    return request.createResponse({"args": "FROM AUTH"});
+    return request.response({"args": "FROM AUTH"});
   }
 }
 
@@ -424,14 +368,14 @@ class PostEnd extends Endpoint {
 
   @override
   FutureOr<Message> onCall(Request request) {
-    return request.createResponse({"args": request.path.arguments});
+    return request.response({"args": request.path.arguments});
   }
 }
 
 class MyUserEndpoint extends Endpoint {
   @override
   FutureOr<Message> onCall(Request request) {
-    return request.createResponse({"args": "FROM LANG"});
+    return request.response({"args": "FROM LANG"});
   }
 }
 

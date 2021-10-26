@@ -272,41 +272,44 @@ class RouteCalling extends Calling {
   @override
   FutureOr<Message> onCall(Request request) {
     // try {
-      var n = request.path
-          .resolveFor(binding._childGateway?.components.keys.toList() ?? []);
+    var n = request.path
+        .resolveFor(binding._childGateway?.childrenBinding.keys.toList() ?? []);
 
-      print("ROUTE: ${n.segment} ${n.segment.isRoot}  ${binding.component.root}");
-      if (n.segment.isRoot &&
-          binding.component.root == null) {
-        throw NotFoundException();
-      }
-      if (n.segment.isUnknown) {
-        throw NotFoundException();
-      }
-
-      if (n.segment.isRoot) {
+    if (n.segment.isRoot && binding.component.root == null) {
+      throw NotFoundException(
+          "/${request.path.processed.last.segment.name}/$n");
+    }
+    if (n.segment.isUnknown) {
+      if (binding.component.handleUnknownAsRoot) {
         return binding.rootBinding!.findCalling.calling(request);
       }
+      throw NotFoundException(
+          "${request.path.current} : /${request.path.processed.last.segment.name}");
+    }
 
-      return (binding._childGateway!.binding).findCalling.calling(request);
+    if (n.segment.isRoot) {
+      return binding.rootBinding!.findCalling.calling(request);
+    }
 
-      //
-      //
-      // binding.rootBinding.findCalling.calling(request);
-      //
-      // if (n.segment.isRoot) {
-      //   return (binding.rootBinding ?? binding.exceptionHandler.unknown)
-      //       .findCalling
-      //       .calling(request);
-      // } else if (n.segment.isUnknown) {
-      //   return (binding.component.handleUnknownAsRoot
-      //           ? binding.rootBinding!
-      //           : binding.exceptionHandler.unknown)
-      //       .findCalling
-      //       .calling(request);
-      // } else {
-      //   return (binding._childGateway!.binding).findCalling.calling(request);
-      // }
+    return (binding._childGateway!.binding).findCalling.calling(request);
+
+    //
+    //
+    // binding.rootBinding.findCalling.calling(request);
+    //
+    // if (n.segment.isRoot) {
+    //   return (binding.rootBinding ?? binding.exceptionHandler.unknown)
+    //       .findCalling
+    //       .calling(request);
+    // } else if (n.segment.isUnknown) {
+    //   return (binding.component.handleUnknownAsRoot
+    //           ? binding.rootBinding!
+    //           : binding.exceptionHandler.unknown)
+    //       .findCalling
+    //       .calling(request);
+    // } else {
+    //   return (binding._childGateway!.binding).findCalling.calling(request);
+    // }
     // } on Exception catch (e) {
     //   return binding.exceptionHandler[e.runtimeType].findCalling
     //       .calling(request);
@@ -352,6 +355,9 @@ abstract class PathSegment {
     }
   }
 
+  ///
+  bool get isArgument => this is ArgumentSegment;
+
   const PathSegment._(this.name);
 
   /// Path Segment Name
@@ -393,7 +399,7 @@ class NamedSegment extends PathSegment {
 
   @override
   String toString() {
-    return "NamedSegment($name)";
+    return "$name";
   }
 }
 
@@ -409,7 +415,7 @@ class ArgumentSegment extends PathSegment {
 
   @override
   String toString() {
-    return "ArgSegment($name)";
+    return "{$name}";
   }
 }
 
@@ -494,13 +500,26 @@ mixin PathSegmentCallingComponentMixin on CallingComponent {
 ///
 class PathController {
   ///
-  PathController(this.calledPath)
-      : notProcessedValues = calledPath
-            .split("/")
-            .where((element) => element.isNotEmpty)
-            .toList() {
+  PathController(
+    this.calledPath,
+    this.queryParameters,
+  ) : notProcessedValues = List.from(Uri.parse(calledPath).pathSegments);
+
+  ///
+  PathController.fromFullPath(this.calledPath)
+      : notProcessedValues = List.from(Uri.parse(calledPath).pathSegments) {
     current = notProcessedValues.isEmpty ? "*root" : notProcessedValues.first;
+    queryParameters = Uri.parse(calledPath).queryParameters;
   }
+
+  ///
+  PathController.fromHttpRequest(HttpRequest request)
+      : notProcessedValues = List.from(request.uri.pathSegments),
+        calledPath = request.uri.path,
+        queryParameters = request.uri.queryParameters;
+
+  ///
+  late final Map<String, dynamic> queryParameters;
 
   /// Called full path
   final String calledPath;

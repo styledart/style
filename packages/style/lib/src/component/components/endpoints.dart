@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2021. This code was written by Mehmet Yaz. Mehmet Yaz does not
+ * accept the problems that may arise due to these codes.
+ */
+
 part of '../../style_base.dart';
 
 ///
@@ -18,8 +23,7 @@ class DefaultExceptionEndpoint<T extends Exception>
         ..body = body
         ..statusCode = statusCode;
     } else {
-      return (message as Request)
-          .createResponse(body.data, statusCode: statusCode);
+      return (message as Request).response(body.data, statusCode: statusCode);
     }
   }
 }
@@ -43,8 +47,7 @@ abstract class ExceptionEndpoint<T extends Exception> extends Endpoint {
         e.statusCode = exception.statusCode;
       }
       return e;
-    } on Exception catch(e,s) {
-      print("ERR WHERE: ${(context as Binding )._errorWhere}");
+    } on Exception {
       rethrow;
     }
   }
@@ -83,33 +86,155 @@ class SimpleEndpoint extends Endpoint {
   SimpleEndpoint(this.onRequest);
 
   ///
+  SimpleEndpoint.static(dynamic body) : onRequest = _static(body);
+
+  static FutureOr<Response> Function(Request req) _static(dynamic body) {
+    var _body = Body(body);
+    return (req) {
+      return req.response(_body);
+    };
+  }
+
+  ///
   final FutureOr<Message> Function(Request request) onRequest;
 
   @override
   FutureOr<Message> onCall(Request request) async {
-
-      return await onRequest(request);
-
+    return await onRequest(request);
   }
 }
 
+/// Access data with context's DataAccess
+///
+/// Supported Operations
+///
+///
+///
+/// ## Operations
+/// ### Get
+/// * read once : "/collection/identifier"
+/// * read multiple: "/collection"
+/// or "/collection/q?{query}"
+///
+///
+/// ## Query
+///
 ///
 class SimpleAccessPoint extends StatelessComponent {
   ///
-  const SimpleAccessPoint({Key? key}) : super(key: key);
+  const SimpleAccessPoint(this.route,
+      {Key? key, this.identifierMapper = const <String, String>{}})
+      : super(key: key);
+
+  ///
+  final String route;
+
+  ///
+  final Map<String, String> identifierMapper;
+
+  ///
+  Access _create(Request request) {
+    try {
+      return Access(
+          type: AccessType.create,
+          collection: request.path.current,
+          data: (request.body?.data) as Map<String, dynamic>);
+    } on Exception {
+      rethrow;
+    }
+  }
+
+  ///
+  Access _read(Request request) {
+    try {
+      //TODO: check not processed is not empty
+      return Access(
+          type: AccessType.read,
+          collection: request.path.current,
+          identifier: request.path.notProcessedValues.first);
+    } on Exception {
+      rethrow;
+    }
+  }
+
+  ///
+  Access _readList(Request request) {
+    try {
+      return Access(
+          type: AccessType.readMultiple, collection: request.path.current);
+    } on Exception {
+      rethrow;
+    }
+  }
+
+  ///
+  Access _update(Request request) {
+    try {
+      return Access(
+          type: AccessType.update,
+          collection: request.path.current,
+          data: (request.body?.data) as Map<String, dynamic>);
+    } on Exception {
+      rethrow;
+    }
+  }
+
+  ///
+  Access _delete(Request request) {
+    try {
+      //TODO: check not processed is not empty
+      return Access(
+          type: AccessType.update,
+          collection: request.path.current,
+          identifier: request.path.notProcessedValues.first);
+    } on Exception {
+      rethrow;
+    }
+  }
 
   @override
   Component build(BuildContext context) {
-    return AccessPoint((request) {
-      var req = (request as HttpStyleRequest);
-      return Query(
-          type: QueryType.delete,
-          token: request.context.accessToken ?? "",
-          // selectorBuilder: (req.path.notProcessedValues.isNotEmpty
-          //     ? req.path.notProcessedValues.first
-          //     : null),
-          collection: req.currentPath);
-    });
+    return Route(route, handleUnknownAsRoot: true,
+        root: AccessPoint((request) async {
+      var method = request.method;
+      Access access;
+
+      if (method == null) {
+        throw MethodNotAllowedException();
+      } else if (method == Methods.POST) {
+        if (request.body is! JsonBody) {
+          throw BadRequests();
+        }
+        access = _create(request);
+      } else if (method == Methods.GET) {
+        if (request.path.notProcessedValues.isEmpty) {
+          access = _readList(request);
+        } else {
+          access = _read(request);
+        }
+      } else if (method == Methods.PUT || method == Methods.PATCH) {
+        if (request.path.notProcessedValues.isEmpty) {
+          throw UnimplementedError();
+        } else {
+          access = _update(request);
+        }
+      } else if (method == Methods.DELETE) {
+        if (request.path.notProcessedValues.isEmpty) {
+          throw UnimplementedError();
+        } else {
+          access = _delete(request);
+        }
+      } else {
+        throw MethodNotAllowedException();
+      }
+
+      return AccessEvent(
+        access: access,
+        context: context,
+        token: null,
+        request: request,
+      );
+    }));
   }
 }
 
@@ -121,30 +246,41 @@ class AccessPoint extends Endpoint {
   //TODO: Permission
 
   ///
-  final FutureOr<Query> Function(Request request) queryBuilder;
+  final FutureOr<AccessEvent> Function(Request request) queryBuilder;
 
   @override
   FutureOr<Message> onCall(Request request) async {
     var dataAccess = context.dataAccess;
-    var base = (request as HttpStyleRequest).baseRequest;
-
-    if (base.method == "POST") {
-      var r = await dataAccess.create(await queryBuilder(request),
-          (request.body as Map).cast<String, dynamic>());
-      return request.createResponse(r);
-    } else if (base.method == "GET") {
-      var r = await dataAccess.read(await queryBuilder(request));
-      return request.createResponse(r);
-    } else if (base.method == "PUT" || base.method == "PATCH") {
-      var r = await dataAccess.update(
-          await queryBuilder(request), (request.body as Map<String, dynamic>));
-      return request.createResponse(r);
-    } else if (base.method == "DELETE") {
-      var r = await dataAccess.delete(await queryBuilder(request));
-      return request.createResponse(r);
-    } else {
-      throw MethodNotAllowedException();
+    var acc = await queryBuilder(request);
+    DbResult result;
+    switch (acc.access.type) {
+      case AccessType.read:
+        result = ((await dataAccess.read(acc)));
+        break;
+      case AccessType.readMultiple:
+        result = ((await dataAccess.readList(acc)));
+        break;
+      case AccessType.create:
+        result = ((await dataAccess.create(acc)));
+        break;
+      case AccessType.update:
+        result = ((await dataAccess.update(acc)));
+        break;
+      case AccessType.exists:
+        result = ((await dataAccess.exists(acc)));
+        break;
+      case AccessType.listen:
+        result = ((await dataAccess.listen(acc.access.query!)));
+        break;
+      case AccessType.delete:
+        result = ((await dataAccess.delete(acc)));
+        break;
+      case AccessType.count:
+        result = ((await dataAccess.count(acc)));
+        break;
     }
+    return request.response(result.data,
+        headers: result.headers, statusCode: result.statusCode);
   }
 }
 
@@ -179,7 +315,6 @@ class DocumentServiceEndpointState extends EndpointState<DocumentService> {
       for (var en in List.from(entities)) {
         if (en is Directory) {
           entities.addAll(en.listSync());
-          print("Dir: $en");
         } else if (en is File) {
           var p = en.path
               .replaceFirst(component.directory, "")
@@ -189,8 +324,6 @@ class DocumentServiceEndpointState extends EndpointState<DocumentService> {
         entities.removeAt(0);
       }
     }
-
-    print("DOCS : $docs");
 
     if (component.cacheAll) {
       var cachedDocs = <String, dynamic>{};
@@ -306,10 +439,7 @@ class FaviconState extends EndpointState<Favicon> {
       for (var en in List.from(entities)) {
         if (en is Directory) {
           entities.addAll(en.listSync());
-          print("Dir: $en");
-        } else {
-          print("Fil: $en");
-        }
+        } else {}
         entities.removeAt(0);
       }
     }

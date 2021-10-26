@@ -11,12 +11,12 @@ abstract class BuildContext {
 
   void _setServiceToThisAndParents<B extends _BaseService>(B newService,
       {bool onChild = false}) {
-    if (B == CryptoService) {
+    if (B == Crypto) {
       if (onChild && _crypto != null) return;
       if (onChild) {
-        _crypto ??= newService as CryptoService;
+        _crypto ??= newService as Crypto;
       } else {
-        _crypto = newService as CryptoService;
+        _crypto = newService as Crypto;
       }
     } else if (B == DataAccess) {
       if (onChild && _dataAccess != null) return;
@@ -32,12 +32,12 @@ abstract class BuildContext {
       } else {
         _socketService = newService as WebSocketService;
       }
-    } else if (B == HttpServiceHandler) {
+    } else if (B == HttpService) {
       if (onChild && _httpService != null) return;
       if (onChild) {
-        _httpService ??= newService as HttpServiceHandler;
+        _httpService ??= newService as HttpService;
       } else {
-        _httpService = newService as HttpServiceHandler;
+        _httpService = newService as HttpService;
       }
     } else if (B == Logger) {
       if (onChild && _logger != null) return;
@@ -46,24 +46,49 @@ abstract class BuildContext {
       } else {
         _logger = newService as Logger;
       }
-      print("Logger Settings : $newService");
-    }
-    _parent?._setServiceToThisAndParents<B>(newService, onChild: true);
+    } else if (B == Authorization) {
+      if (onChild && _authorization != null) return;
+      if (onChild) {
+        _authorization ??= newService as Authorization;
+      } else {
+        _authorization = newService as Authorization;
+      }
+    } else {}
+    _parent?._setServiceToThisAndParents(newService, onChild: true);
   }
 
   ///
   Component get component;
 
-  CryptoService? _crypto;
+  Crypto? _crypto;
 
   ///
-  CryptoService get crypto => _crypto!;
+  Crypto get crypto => _crypto!;
+
+  ///
+  bool hasService<T extends _BaseService>() {
+    if (T == DataAccess) {
+      return _dataAccess != null;
+    } else if (T == WebSocketService) {
+      return _socketService != null;
+    } else if (T == HttpService) {
+      return _httpService != null;
+    } else if (T == Crypto) {
+      return _crypto != null;
+    } else if (T == Logger) {
+      return _logger != null;
+    } else if (T == Authorization) {
+      return _authorization != null;
+    } else {
+      return false;
+    }
+  }
 
   DataAccess? _dataAccess;
 
   ///
   DataAccess get dataAccess {
-    if (_dataAccess == null) {
+    if (_dataAccess == null || !_dataAccess!.initialized) {
       throw ServiceUnavailable("data_access");
     }
     return _dataAccess!;
@@ -72,17 +97,45 @@ abstract class BuildContext {
   WebSocketService? _socketService;
 
   ///
-  WebSocketService get socketService => _socketService!;
+  WebSocketService get socketService {
+    if (_socketService == null || !_socketService!.initialized) {
+      throw ServiceUnavailable("socket_service");
+    }
 
-  HttpServiceHandler? _httpService;
+    return _socketService!;
+  }
+
+  Authorization? _authorization;
 
   ///
-  HttpServiceHandler get httpService => _httpService!;
+  Authorization get authorization {
+    if (_authorization == null || !_authorization!.initialized) {
+      throw ServiceUnavailable("authorization");
+    }
+
+    return _authorization!;
+  }
+
+  ///
+  HttpService? _httpService;
+
+  ///
+  HttpService get httpService {
+    if (_httpService == null || !_httpService!.initialized) {
+      throw ServiceUnavailable("http_service");
+    }
+    return _httpService!;
+  }
 
   Logger? _logger;
 
   ///
-  Logger get logger => _logger!;
+  Logger get logger {
+    if (_logger == null || !_logger!.initialized) {
+      throw ServiceUnavailable("logger");
+    }
+    return _logger!;
+  }
 
   ///
   T? findAncestorBindingOfType<T extends Binding>();
@@ -161,14 +214,14 @@ abstract class Binding extends BuildContext {
   void attachToParent(Binding parent) {
     _owner = parent._owner;
     _parent = parent;
-    _crypto = parent._crypto;
     _exceptionHandler = parent._exceptionHandler?.copyWith();
+
+    /// Base services
+    _crypto = parent._crypto;
     _httpService = parent._httpService;
     _socketService = parent._socketService;
     _dataAccess = parent._dataAccess;
-    _logger = parent._logger;
-    print(
-        "Parent Attached in With ${parent._logger}   : ${parent._httpService}  : ${parent._dataAccess}");
+    _authorization = parent._authorization;
   }
 
   ///

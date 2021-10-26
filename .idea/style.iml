@@ -34,6 +34,12 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/style_cron_job/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/packages/style_cron_job/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/packages/style_cron_job/build" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/style_test/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/style_test/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/style_test/build" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/style_data_access/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/style_data_access/build" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/style_data_access/.dart_tool" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
