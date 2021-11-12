@@ -9,8 +9,9 @@ environment:
 
 
 dependencies:
-  test: ^1.19.1
+  test: ^1.19.3
   meta: ^1.7.0
+  json_schema2: ^2.0.0+3
   style_dart:
     path: ../style
 #   path: ^1.8.0

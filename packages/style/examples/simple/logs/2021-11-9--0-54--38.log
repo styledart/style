@@ -1,0 +1,37 @@
+started dart pub run build_runner watch --output build --define build_web_compilers:entrypoint=compiler=dartdevc --use-polling-watcher --delete-conflicting-outputs
+[INFO] Generating build script...
+[INFO] Generating build script completed, took 549ms
+
+[INFO] Setting up file watchers...
+[INFO] Setting up file watchers completed, took 10ms
+
+[INFO] Waiting for all file watchers to be ready...
+[INFO] Waiting for all file watchers to be ready completed, took 42ms
+
+[INFO] Initializing inputs
+[INFO] Reading cached asset graph...
+[INFO] Reading cached asset graph completed, took 230ms
+
+[INFO] Checking for updates since last build...
+[INFO] Checking for updates since last build completed, took 593ms
+
+[INFO] Running build...
+[INFO] Running build completed, took 336ms
+
+[INFO] Caching finalized dependency graph...
+[INFO] Caching finalized dependency graph completed, took 210ms
+
+[INFO] Reading manifest at build\.build.manifest...
+[INFO] Reading manifest at build\.build.manifest completed, took 0ms
+
+[INFO] Deleting previous outputs in `build`...
+[INFO] Deleting previous outputs in `build` completed, took 0ms
+
+[INFO] Creating merged output dir `build`...
+[INFO] Creating merged output dir `build` completed, took 1.8s
+
+[INFO] Writing asset manifest...
+[INFO] Writing asset manifest completed, took 8ms
+
+[INFO] Succeeded after 2.4s with 1 outputs (2 actions)
+

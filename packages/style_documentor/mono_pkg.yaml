@@ -1,9 +1,0 @@
-dart:
-  - 2.12.0
-  - dev
-
-stages:
-  - analyzer_and_format:
-      - group:
-          - format
-          - analyze: --fatal-infos .

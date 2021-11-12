@@ -1,3 +1,20 @@
+/*
+ * Copyright 2021 styledart.dev - Mehmet Yaz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 part of '../../style_base.dart';
 
 ///
@@ -26,7 +43,7 @@ class GatewayBinding extends MultiChildCallingBinding {
     super.attachToParent(parent);
 
     var _route = findAncestorBindingOfType<RouteBinding>();
-    var _service = findAncestorBindingOfType<ServiceBinding>();
+    var _service = findAncestorBindingOfType<ServerBinding>();
 
     if (_route == null && _service == null) {
       throw UnsupportedError("Each Gateway must ancestor of Service or Route"
@@ -37,47 +54,62 @@ class GatewayBinding extends MultiChildCallingBinding {
   @override
   void _build() {
     super._build();
-
     var _callings = <PathSegment, Binding>{};
-    PathSegment? arg ;
+    PathSegment? arg;
     for (var child in children) {
       var _childCalling = child.visitCallingChildren(TreeVisitor((visitor) {
         if (visitor.currentValue is GatewayCalling) {
           visitor.stop();
           return;
         }
-
         if (visitor.currentValue is RouteCalling) {
           visitor.stop();
         }
       }));
-
-      if (_childCalling.result is GatewayCalling) {
-        throw UnsupportedError("There must be a route between the two gateways."
-            "\nwhere: $_errorWhere");
-      }
-
       if (_childCalling.result == null) {
         throw UnsupportedError("Each Gateway child (or Service child) must have"
             "[Route] in the tree."
-            "\nwhere: $_errorWhere");
+            "\nwhere: child ${child.component} in $_errorWhere");
       }
+      if (_childCalling.result is GatewayCalling) {
+        var segments = ((_childCalling.result! as GatewayCalling).binding
+                as GatewayBinding)
+            .calling
+            .childrenBinding;
 
-      var seg =
-          (_childCalling.result! as RouteCalling).binding.component.segment;
-
-      if (seg.isArgument) {
-        if (arg != null) {
-          throw Exception(
-              "Gateways allow only once argument segment. \nbut found $arg and"
+        for (var seg in segments.entries) {
+          if (seg.key.isArgument) {
+            if (arg != null) {
+              throw Exception(
+                  "Gateways allow only once argument segment."
+                      "\nbut found $arg and"
                   " $seg\nWHERE: $_errorWhere");
-        } else {
-          arg = seg;
+            } else {
+              arg = seg.key;
+            }
+          }
+          _callings[seg.key] = child;
         }
-      }
-      _callings[seg] = child;
-    }
+      } else {
+        var seg =
+            (_childCalling.result! as RouteCalling).binding.component.segment;
 
+        if (seg.isArgument) {
+          if (arg != null) {
+            throw Exception(
+                "Gateways allow only once argument segment."
+                    " \nbut found $arg and"
+                " $seg\nWHERE: $_errorWhere");
+          } else {
+            arg = seg;
+          }
+        }
+        _callings[seg] = child;
+      }
+    }
+    //
+    // print(
+    //     "${_callings.map((key, value) => MapEntry(key, value.))}");
     calling.childrenBinding = _callings;
   }
 }
@@ -96,12 +128,13 @@ class GatewayCalling extends Calling {
 
   @override
   FutureOr<Message> onCall(Request request) {
-    if (childrenBinding[PathSegment(request.currentPath)] != null) {
-      return childrenBinding[PathSegment(request.currentPath)]!
+
+    if (childrenBinding[PathSegment(request.nextPathSegment)] != null) {
+      return childrenBinding[PathSegment(request.nextPathSegment)]!
           .findCalling
           .calling(request);
     } else {
-      throw NotFoundException(request.currentPath);
+      throw NotFoundException(request.nextPathSegment);
     }
   }
 }

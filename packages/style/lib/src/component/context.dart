@@ -1,11 +1,28 @@
+/*
+ * Copyright 2021 styledart.dev - Mehmet Yaz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 part of '../style_base.dart';
 
 ///
 abstract class BuildContext {
   ///
-  ServiceBinding get owner => _owner!;
+  ServerBinding get owner => _owner!;
 
-  ServiceBinding? _owner;
+  ServerBinding? _owner;
 
   Binding? _parent;
 
@@ -88,7 +105,7 @@ abstract class BuildContext {
 
   ///
   DataAccess get dataAccess {
-    if (_dataAccess == null || !_dataAccess!.initialized) {
+    if (_dataAccess == null) {
       throw ServiceUnavailable("data_access");
     }
     return _dataAccess!;
@@ -98,7 +115,7 @@ abstract class BuildContext {
 
   ///
   WebSocketService get socketService {
-    if (_socketService == null || !_socketService!.initialized) {
+    if (_socketService == null) {
       throw ServiceUnavailable("socket_service");
     }
 
@@ -109,7 +126,7 @@ abstract class BuildContext {
 
   ///
   Authorization get authorization {
-    if (_authorization == null || !_authorization!.initialized) {
+    if (_authorization == null) {
       throw ServiceUnavailable("authorization");
     }
 
@@ -121,7 +138,7 @@ abstract class BuildContext {
 
   ///
   HttpService get httpService {
-    if (_httpService == null || !_httpService!.initialized) {
+    if (_httpService == null) {
       throw ServiceUnavailable("http_service");
     }
     return _httpService!;
@@ -131,7 +148,7 @@ abstract class BuildContext {
 
   ///
   Logger get logger {
-    if (_logger == null || !_logger!.initialized) {
+    if (_logger == null) {
       throw ServiceUnavailable("logger");
     }
     return _logger!;
@@ -144,13 +161,17 @@ abstract class BuildContext {
   T? findAncestorComponentOfType<T extends Component>();
 
   ///
-  T? findAncestorServiceByName<T extends ServiceBinding>(String name);
+  T? findAncestorServiceByName<T extends ServerBinding>(String name);
 
   ///
   T? findAncestorStateOfType<T extends State<StatefulComponent>>();
 
   ///
-  T? findChildService<T extends ServiceBinding>();
+  T? findAncestorStateOfKey<T extends GlobalKey<State<StatefulComponent>>>(
+      String key);
+
+  ///
+  T? findChildService<T extends ServerBinding>();
 
   ///
   T? findChildState<T extends State>();
@@ -222,6 +243,7 @@ abstract class Binding extends BuildContext {
     _socketService = parent._socketService;
     _dataAccess = parent._dataAccess;
     _authorization = parent._authorization;
+    _logger = parent._logger;
   }
 
   ///
@@ -252,7 +274,7 @@ abstract class Binding extends BuildContext {
   }
 
   @override
-  T? findAncestorServiceByName<T extends ServiceBinding>(String name) {
+  T? findAncestorServiceByName<T extends ServerBinding>(String name) {
     Binding? ancestor = _owner;
     while (ancestor != null &&
         !(ancestor is T && ((ancestor).serviceRootName == name))) {
@@ -272,7 +294,20 @@ abstract class Binding extends BuildContext {
   }
 
   @override
-  T? findChildService<T extends ServiceBinding>() {
+  T? findAncestorStateOfKey<T extends GlobalKey<State<StatefulComponent>>>(
+      String key) {
+    var ancestor = _parent;
+    while (ancestor != null &&
+        !(ancestor is StatefulBinding &&
+            ancestor.state.key is T &&
+            ancestor.state.key.key == key)) {
+      ancestor = ancestor._parent;
+    }
+    return (ancestor as StatefulBinding?)?.state.key as T?;
+  }
+
+  @override
+  T? findChildService<T extends ServerBinding>() {
     var visiting = visitChildren(TreeVisitor<Binding>((visitor) {
       if (visitor.currentValue is T) {
         visitor.stop();
@@ -307,7 +342,7 @@ abstract class Binding extends BuildContext {
   CallingBinding? get ancestorCalling {
     Binding? result;
     var ancestor = _parent;
-    while (ancestor != null && result == null && ancestor is! ServiceBinding) {
+    while (ancestor != null && result == null && ancestor is! ServerBinding) {
       if (ancestor is CallingBinding) {
         result = ancestor;
         break;
@@ -319,6 +354,42 @@ abstract class Binding extends BuildContext {
   }
 
   void _build();
+
+  ///
+  // Map<String, dynamic> toMapShort() => {
+  //       "component": component.runtimeType.toString(),
+  //       "key": key.key,
+  //       "type": runtimeType.toString(),
+  //     };
+  //
+  // ///
+  // Map<String, dynamic> toMapOwn() => {
+  //       "calling": _foundCalling?.toMapShort(),
+  //       "services": [
+  //         if (hasService<DataAccess>())
+  //           {"type": "data_access", "name": dataAccess.runtimeType
+//           .toString()},
+  //         if (hasService<Logger>())
+  //           {"type": "logger", "name": logger.runtimeType.toString()},
+  //         if (hasService<HttpService>())
+  //           {
+  //             "type": "http_service",
+  //             "name": httpService.runtimeType.toString()
+  //           },
+  //         if (hasService<WebSocketService>())
+  //           {
+  //             "type": "web_socket",
+  //             "name": socketService.runtimeType.toString()
+  //           },
+  //         if (hasService<Crypto>())
+  //           {"type": "crypto", "name": crypto.runtimeType.toString()},
+  //         if (hasService<Authorization>())
+  //           {
+  //             "type": "authorization",
+  //             "name": authorization.runtimeType.toString()
+  //           },
+  //       ]
+  //     };
 }
 
 ///
@@ -444,6 +515,7 @@ class StatefulBinding extends DevelopmentBinding {
     _state!._binding = this;
     _state!.initState();
     if (binding._owner != null && binding.key is GlobalKey) {
+      (binding.key as GlobalKey).binding = this;
       _owner!.addState(state);
     }
     return _state!.build(binding);

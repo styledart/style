@@ -1,3 +1,20 @@
+/*
+ * Copyright 2021 styledart.dev - Mehmet Yaz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 part of '../../style_base.dart';
 
 /// Adds a new single sub-path or endpoint segment to parent path
@@ -57,14 +74,14 @@ part of '../../style_base.dart';
 ///
 /// ### Detailed
 ///
-/// [Route] component helps to
+/// [RouteBase] component helps to
 /// * Adding new single child segments to calling tree
 /// * Adding unknown endpoint to this segment
 /// * Adding root endpoint to this segment a
-class Route extends CallingComponent with PathSegmentCallingComponentMixin {
+class RouteBase extends CallingComponent with PathSegmentCallingComponentMixin {
   /// For argument segments use segment with "{segment}" .
   /// [child], [root] and [unknown]
-  Route.withPathSegment(
+  RouteBase.withPathSegment(
       {required PathSegment segment,
       Component? child,
       Component? root,
@@ -79,9 +96,9 @@ class Route extends CallingComponent with PathSegmentCallingComponentMixin {
   /// For argument segments use segment with "{segment}" .
   /// [child], [root] and [unknown] is parent [unknown] in default
   /// for custom [PathSegment] to use constructor [PathRouter.withPathSegment]
-  factory Route(String segment,
+  factory RouteBase(String segment,
       {Component? child, Component? root, bool? handleUnknownAsRoot}) {
-    return Route.withPathSegment(
+    return RouteBase.withPathSegment(
         segment: PathSegment(segment),
         child: child,
         root: root,
@@ -120,7 +137,7 @@ class Route extends CallingComponent with PathSegmentCallingComponentMixin {
 ///
 class RouteBinding extends CallingBinding {
   ///
-  RouteBinding(Route component) : super(component);
+  RouteBinding(RouteBase component) : super(component);
 
   @override
   void attachToParent(Binding parent) {
@@ -257,7 +274,7 @@ class RouteBinding extends CallingBinding {
   }
 
   @override
-  Route get component => super.component as Route;
+  RouteBase get component => super.component as RouteBase;
 }
 
 /// [RouteCalling] call on request this segment.
@@ -271,10 +288,8 @@ class RouteCalling extends Calling {
 
   @override
   FutureOr<Message> onCall(Request request) {
-    // try {
     var n = request.path
         .resolveFor(binding._childGateway?.childrenBinding.keys.toList() ?? []);
-
     if (n.segment.isRoot && binding.component.root == null) {
       throw NotFoundException(
           "/${request.path.processed.last.segment.name}/$n");
@@ -284,14 +299,12 @@ class RouteCalling extends Calling {
         return binding.rootBinding!.findCalling.calling(request);
       }
       throw NotFoundException(
-          "${request.path.current} : /${request.path.processed.last.segment.name}");
+          "${request.path.next} : /${request.path.processed.last.segment.name}");
     }
-
     if (n.segment.isRoot) {
       return binding.rootBinding!.findCalling.calling(request);
     }
-
-    return (binding._childGateway!.binding).findCalling.calling(request);
+    return binding.childBinding!.findCalling.calling(request);
 
     //
     //
@@ -508,7 +521,7 @@ class PathController {
   ///
   PathController.fromFullPath(this.calledPath)
       : notProcessedValues = List.from(Uri.parse(calledPath).pathSegments) {
-    current = notProcessedValues.isEmpty ? "*root" : notProcessedValues.first;
+    next = notProcessedValues.isEmpty ? "*root" : notProcessedValues.first;
     queryParameters = Uri.parse(calledPath).queryParameters;
   }
 
@@ -516,25 +529,26 @@ class PathController {
   PathController.fromHttpRequest(HttpRequest request)
       : notProcessedValues = List.from(request.uri.pathSegments),
         calledPath = request.uri.path,
-        queryParameters = request.uri.queryParameters;
+        queryParameters = request.uri.queryParameters {
+    next = notProcessedValues.isEmpty ? "*root" : notProcessedValues.first;
+  }
 
   ///
-  late final Map<String, dynamic> queryParameters;
+  late final Map<String, String> queryParameters;
 
   /// Called full path
   final String calledPath;
 
   /// Store path arguments like:
-  ///
-  /// path : "user/{user_id}/path"
+  /// <br> <br>
+  /// path : "user/{user_id}/path"<br>
   /// call : "user/user1/path"
-  ///
+  /// <br> <br>
   /// arguments stored key value pair:
   ///
-  /// ```
+  /// ```json
   /// {
   ///   "user_id" : "user1"
-  ///   // others
   /// }
   /// ```
   ///
@@ -544,7 +558,9 @@ class PathController {
   final List<CallingPathSegment> processed = [];
 
   /// First segment to be processed
-  late String current;
+  String next = "";
+
+
 
   /// Next segments to be processed,
   /// include current
@@ -558,9 +574,9 @@ class PathController {
       result =
           CallingPathSegment(segment: PathSegment("*root"), value: "*root");
     } else {
-      current = notProcessedValues.first;
-      if (segments.contains(PathSegment(current))) {
-        var seg = segments.firstWhere((element) => element.name == current);
+      next = notProcessedValues.first;
+      if (segments.contains(PathSegment(next))) {
+        var seg = segments.firstWhere((element) => element.name == next);
         result = NamedCallingSegment(segment: seg as NamedSegment);
       } else {
         var argSeg = segments.firstWhere(
@@ -572,10 +588,10 @@ class PathController {
           result = NamedCallingSegment(segment: NamedSegment("*unknown"));
         } else {
           result = ArgumentCallingSegment(
-              value: current, segment: argSeg as ArgumentSegment);
+              value: next, segment: argSeg as ArgumentSegment);
 
-          arguments[argSeg.name] = current;
-          current = "{${argSeg.name}}";
+          arguments[argSeg.name] = next;
+          next = "{${argSeg.name}}";
         }
       }
       processed.add(result);
@@ -583,12 +599,19 @@ class PathController {
     }
     return result;
   }
+
+  ///
+  Map<String,dynamic> toMap() => {
+    "path" : calledPath,
+    "query_parameters" : queryParameters,
+    "arguments" : arguments
+  };
 }
 
 ///
-class RouteTo extends StatelessComponent {
+class SubRoute extends StatelessComponent {
   ///
-  RouteTo(this.segment, {this.child, this.handleUnknownAsRoot, this.root});
+  SubRoute(this.segment, {this.child, this.handleUnknownAsRoot, this.root});
 
   ///
   final String segment;
@@ -605,8 +628,56 @@ class RouteTo extends StatelessComponent {
   @override
   Component build(BuildContext context) {
     return Gateway(children: [
-      Route(segment,
+      RouteBase(segment,
           root: root, handleUnknownAsRoot: handleUnknownAsRoot, child: child)
     ]);
+  }
+}
+
+///
+class Route extends StatelessComponent {
+  ///
+  Route(
+    this.route, {
+    this.handleUnknownAsRoot = false,
+    this.child,
+    this.root,
+  });
+
+  ///
+  final String route;
+
+  ///
+  final Component? root;
+
+  ///
+  final Component? child;
+
+  ///
+  final bool handleUnknownAsRoot;
+
+  Binding _findAncestorGatewayOrRoute(BuildContext context) {
+    var _ancestor = context._parent;
+    while (_ancestor != null &&
+        (_ancestor is! GatewayBinding && _ancestor is! RouteBinding)) {
+      _ancestor = _ancestor._parent;
+    }
+    if (_ancestor == null) {
+      throw Exception("Put Cron Job to route or routeTo or gateway");
+    }
+    return _ancestor;
+  }
+
+  @override
+  Component build(BuildContext context) {
+    var _anc = _findAncestorGatewayOrRoute(context);
+
+    if (_anc is GatewayBinding) {
+      return RouteBase(route,
+          root: root, child: child, handleUnknownAsRoot: handleUnknownAsRoot);
+    } else {
+      return SubRoute(route,
+          root: root, child: child, handleUnknownAsRoot: handleUnknownAsRoot);
+    }
   }
 }

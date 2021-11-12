@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="c0b85bb3-485e-491e-849a-d8730ca14ecf" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../../../.idea/markdown.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style/data/greeters.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style/example/cache_control_example.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style/example/data_access/simple_data_access.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style/examples/simple/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style/examples/simple/analysis_options.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style/examples/simple/assets/favicon.ico" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style/examples/simple/bin/main.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style/examples/simple/lib/server.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style/examples/simple/pubspec.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style/types.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style_cli/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style_cli/.idea/libraries/Dart_Packages.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style_cli/.idea/libraries/Dart_SDK.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style_cli/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style_cli/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style_cli/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style_cli/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style_cli/LICENSE" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style_cli/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style_cli/bin/file.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style_cli/bin/style_cli.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style_cli/example/example/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style_cli/example/example/analysis_options.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style_cli/example/example/assets/favicon.ico" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style_cli/example/example/bin/main.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style_cli/example/example/lib/server.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style_cli/example/example/pubspec.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style_cli/lib/src/create.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style_cli/lib/src/template_generator.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style_cli/lib/src/templates/simple_server.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style_cli/lib/style_cli.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style_cli/pubspec.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style_cli/test/style_cli_test.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style_cron_job/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style_cron_job/.idea/style_cron_job.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style_cron_job/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../packages/style_cron_job/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Dart.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/markdown.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/META-INF/plugin.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/META-INF/pluginIcon.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/liveTemplates/styledart.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/dev/styledart/liveTemplates/StyleDartContext.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/styledart.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/styledart.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../vs_code/styledart/images/pluginIcon.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../vs_code/styledart/images/pluginIcon.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../vs_code/styledart/package.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../vs_code/styledart/styledart-0.0.1.vsix" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../vs_code/styledart/styledart.code-snippets" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../../settings.zip" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../.idea/copyright/Mehmet_Yaz.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../.idea/copyright/Mehmet_Yaz.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../.idea/copyright/profiles_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../.idea/copyright/profiles_settings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../.idea/libraries/Dart_Packages.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../.idea/style.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../.idea/style.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/.gradle/6.8/executionHistory/executionHistory.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/.gradle/6.8/fileChanges/last-build.bin" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/.gradle/6.8/fileHashes/fileHashes.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/.gradle/6.8/gc.properties" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/documentation/data_access/data_access.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/.gradle/buildOutputCleanup/cache.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/.gradle/checksums/checksums.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/.gradle/configuration-cache/gc.properties" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/example/aa/b.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/.gradle/vcs-1/gc.properties" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/example/c_type.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/analysis_options.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/analysis_options.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/assets/favicon.ico" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/assets/favicon.ico" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/bin/main.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/bin/main2.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/bin/server" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/documentation/simple_access_point.md" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/documentation/data_access/simple_access_point.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/example/access_example.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/example/access_example.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/example/example.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/example/example.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/example/style_example.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/example/style_example.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/json/example.json" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/json/example.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/json/server_schema.json" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/json/server_schema.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/component/backup.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/component/backup.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/component/base_services/authorization.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/component/base_services/authorization.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/component/base_services/base.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/component/base_services/base.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/component/base_services/crypto.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/component/base_services/crypto.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/component/base_services/data_access/data.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/component/base_services/data_access/data.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/component/base_services/data_access/permission.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/component/base_services/data_access/permission.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/component/base_services/data_access/trigger.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/component/base_services/data_access/trigger.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/component/base_services/http.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/component/base_services/http.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/component/base_services/logger.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/component/base_services/logger.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/component/base_services/web_socket.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/component/base_services/web_socket.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/component/calling.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/component/calling.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/component/component_base.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/component/component_base.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/component/components/cache_control.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/component/components/cache_control.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/component/components/cron_job.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/component/components/cron_job.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/component/components/endpoints.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/component/components/endpoints.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/component/components/gate.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/component/components/gate.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/component/components/gateway.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/component/components/gateway.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/component/components/other.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/component/components/other.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/component/components/redirect.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/component/components/redirect.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/component/components/route.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/component/components/route.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/component/components/service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/component/components/service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/component/components/trigger.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/component/components/trigger.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/component/components/wrapper.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/component/components/wrapper.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/component/context.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/component/context.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/component/endpoint.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/component/endpoint.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/component/run.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/component/run.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/exception/exception_handler.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/exception/exception_handler.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/exception/style_exception.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/exception/style_exception.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/functions/random.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/functions/random.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/functions/uint8_merge.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/functions/uint8_merge.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/models/query/collection.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/models/query/collection.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/models/query/query.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/models/query/query.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/models/request/agent.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/models/request/agent.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/models/request/cache_control.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/models/request/cache_control.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/models/request/cause.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/models/request/cause.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/models/request/context.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/models/request/context.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/models/request/http_time_format.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/models/request/http_time_format.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/models/request/request.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/models/request/request.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/models/request/token.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/models/request/token.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/src/style_base.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/src/style_base.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/lib/style_dart.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/lib/style_dart.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/pubspec.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/source/a.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/source/b.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/source/c.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/source/d.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/source/my_col/a.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/source/my_col/b.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/source/my_col/c.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/source/my_col/d.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/source/web/index.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/source/web/main.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/source/web/main.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/source/web/my_core.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/source/web/other.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/source/web/other.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/source/web/other_page/component.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/source/web/other_page/other.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/source/web/other_page/other.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/source/web/styles.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/style.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/test/call_segments.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/test/call_segments.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/test/components/requests/auth_filter.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/test/components/requests/auth_filter.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/test/components/requests/method_filter.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/test/components/requests/method_filter.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/test/cron.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/test/cron.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/test/data_access/data_access.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/test/data_access/data_access.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/test/data_access/permission.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/test/data_access/permission.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/test/data_access/trigger.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/test/data_access/trigger.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/test/multipart.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/test/multipart.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/test/req_re.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/test/req_re.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/test/services.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/test/services.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/test/services/auth.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/test/services/auth.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/test/services/auth_backup.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/test/services/auth_backup.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style/test/style_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style/test/style_test.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style_cron_job/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style_cron_job/CHANGELOG.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style_cron_job/example/style_cron_job_example.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style_cron_job/example/style_cron_job_example.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style_cron_job/lib/src/style_cron_job_base.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style_cron_job/lib/src/style_cron_job_base.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style_cron_job/lib/style_cron_job.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style_cron_job/lib/style_cron_job.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style_cron_job/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style_cron_job/pubspec.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style_cron_job/test/style_cron_job_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style_cron_job/test/style_cron_job_test.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style_documentor/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style_documentor/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style_cli/CHANGELOG.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style_documentor/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style_documentor/analysis_options.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style_cli/analysis_options.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style_documentor/build.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style_documentor/example/style_documentor_example.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style_documentor/lib/src/documentation.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style_documentor/lib/src/endpoint_generator.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style_documentor/lib/src/generated.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style_documentor/lib/style_documentor.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style_documentor/mono_pkg.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style_documentor/pubspec.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style_documentor/test/style_documentor_test.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style_test/example/style_test_example.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style_test/example/style_test_example.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style_test/lib/src/matchers.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style_test/lib/src/matchers.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style_test/lib/src/requests.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style_test/lib/src/requests.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style_test/lib/src/style_test_base.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style_test/lib/src/style_test_base.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style_test/lib/src/test_response.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style_test/lib/src/test_response.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style_test/lib/style_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style_test/lib/style_test.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../packages/style_test/test/style_test_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../../../packages/style_test/test/style_test_test.dart" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CodeInsightWorkspaceSettings">
+    <option name="optimizeImportsOnTheFly" value="true" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../../.." />
+  </component>
+  <component name="LogFilters">
+    <option name="FILTER_ERRORS" value="false" />
+    <option name="FILTER_WARNINGS" value="false" />
+    <option name="FILTER_INFO" value="true" />
+    <option name="FILTER_DEBUG" value="true" />
+    <option name="CUSTOM_FILTER" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="203P5hgCnl0Jd3oy233G4GOVyFl" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
+    <property name="Downloaded.Files.Path.Enabled" value="false" />
+    <property name="Repository.Attach.Annotations" value="false" />
+    <property name="Repository.Attach.JavaDocs" value="true" />
+    <property name="Repository.Attach.Sources" value="true" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="UI_DESIGNER_EDITOR_MODE.PaletteManager.STATE" value="right" />
+    <property name="UI_DESIGNER_EDITOR_MODE.PaletteManager.WIDTH" value="297" />
+    <property name="UI_DESIGNER_EDITOR_MODE.UIDesignerToolWindowManager.STATE" value="left" />
+    <property name="UI_DESIGNER_EDITOR_MODE.UIDesignerToolWindowManager.WIDTH" value="367" />
+    <property name="dart.analysis.tool.window.visible" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/lib/dart-plugin/Dart.jar" />
+    <property name="project.structure.last.edited" value="Modules" />
+    <property name="project.structure.proportion" value="0.15" />
+    <property name="project.structure.side.proportion" value="0.2" />
+    <property name="settings.editor.selected.configurable" value="configurable.group.appearance" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\style\plugins\intellij\styledart\resources" />
+      <recent name="D:\style\plugins\intellij\styledart" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\style\plugins\intellij\styledart\resources\META-INF" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="Plugin" type="#org.jetbrains.idea.devkit.run.PluginConfigurationType">
+      <module name="styledart" />
+      <option name="VM_PARAMETERS" value="-Xmx512m -Xms256m -ea" />
+      <option name="PROGRAM_PARAMETERS" />
+      <predefined_log_file enabled="true" id="idea.log" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="#org.jetbrains.idea.devkit.run.PluginConfigurationType">
+      <module name="styledart" />
+      <option name="VM_PARAMETERS" value="-Xmx512m -Xms256m -ea" />
+      <option name="PROGRAM_PARAMETERS" />
+      <predefined_log_file enabled="true" id="idea.log" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="c0b85bb3-485e-491e-849a-d8730ca14ecf" name="Changes" comment="" />
+      <created>1635270116759</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1635270116759</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+  </component>
+</project>

@@ -1,3 +1,20 @@
+/*
+ * Copyright 2021 styledart.dev - Mehmet Yaz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 part of '../../style_base.dart';
 
 ///
@@ -55,8 +72,7 @@ class Expiration extends CacheControlDirective {
       : _name = "stale-while-revalidation";
 
   ///
-  const Expiration.staleIfError(this.duration)
-      : _name = "stale-if-error";
+  const Expiration.staleIfError(this.duration) : _name = "stale-if-error";
 
   ///
   final Duration duration;
@@ -75,23 +91,16 @@ class Revalidation extends CacheControlDirective {
   const Revalidation(this._name, this.method);
 
   ///
-  const Revalidation.mustRevalidate(this.method)
-      : _name = "must-revalidate";
+  const Revalidation.mustRevalidate(this.method) : _name = "must-revalidate";
 
   ///
-  const Revalidation.proxyRevalidate(this.method)
-      : _name = "proxy-revalidate";
-
-  ///
-  const Revalidation.immutable()
-      : method = null,
-        _name = "immutable";
+  const Revalidation.proxyRevalidate(this.method) : _name = "proxy-revalidate";
 
   ///
   final String _name;
 
   ///
-  final RevalidationMethod? method;
+  final RevalidationMethod method;
 
   @override
   String get name => _name;
@@ -100,21 +109,26 @@ class Revalidation extends CacheControlDirective {
 ///
 class ValidationResult {
   ///
-  const ValidationResult.ok({required this.headers, required this.statusCode})
-      : validate = true,
+  const ValidationResult.ok(
+      {this.contentType, required this.headers, required this.statusCode})
+      : valid = true,
         assert((statusCode != null && headers != null));
 
   ///
   const ValidationResult.not()
-      : validate = false,
+      : valid = false,
         statusCode = null,
+        contentType = null,
         headers = null;
 
   ///
-  final bool validate;
+  final bool valid;
 
   ///
   final int? statusCode;
+
+  ///
+  final ContentType? contentType;
 
   ///
   final Map<String, dynamic>? headers;
@@ -126,29 +140,45 @@ abstract class RevalidationMethod<T> {
   late BuildContext context;
 
   ///
-  FutureOr<ValidationResult> validate(
-      ValidationRequest<T> request, ValidationResponse<T> validationResponse);
+  ValidationResult validate(ValidationRequest<T> request, T? data);
+
+  ///
+  ValidationRequest<T> createRequest(Request request);
 
   FutureOr<Message> _validateAndReturn(Request request,
       FutureOr<Message> Function(Request request) childCalling) async {
-    var f = ValidationRequest.create(request);
-    if (f == null || f is! ValidationRequest<T>) {
-      return childCalling(request);
+    if (T == dynamic) {
+      throw Exception();
     }
-    var res = await childCalling(f);
+
+    var valReq = createRequest(request);
+
+    var rrrR = request.path.calledPath ==
+        "/packages/build_web_compilers/src/dev_compiler_stack_trace/stack_trace_mapper.dart.js";
+
+    if (rrrR) {
+      print("Child Calling with $valReq");
+    }
+    var res = await childCalling(valReq);
+    if (rrrR) {
+      print("Child res: $res");
+    }
     if (res is ValidationResponse<T>) {
-      var val = await validate(f, res);
-      if (val.validate) {
-        return request.createResponse(null,
-            statusCode: val.statusCode!, headers: val.headers);
-      } else {
-        var c = await childCalling(request);
-        return (c);
+      return res;
+    } else if (res is ResponseWithCacheControl<T>) {
+      var val = valReq.validate(res.validationData);
+      if (val.valid) {
+        return request.response(null,
+            contentType: val.contentType,
+            headers: val.headers,
+            statusCode: val.statusCode);
       }
+      return request.response(res.body,
+          statusCode: res.statusCode,
+          headers: res.additionalHeaders,
+          contentType: res.contentType);
     } else {
-      context.logger
-          .warn(context, "Validation Request requested but not handled");
-      return childCalling(request);
+      return res;
     }
   }
 }
@@ -156,112 +186,163 @@ abstract class RevalidationMethod<T> {
 ///
 class IfModifiedSinceMethod extends RevalidationMethod<DateTime> {
   @override
-  FutureOr<ValidationResult> validate(ValidationRequest<DateTime> request,
-      covariant ValidationResponse<DateTime> validationResponse) {
-    if (validationResponse.value.millisecondsSinceEpoch ~/ 1000 >
-        request.headers!.ifModifiedSince!.millisecondsSinceEpoch ~/ 1000) {
+  ValidationResult validate(
+      covariant ValidationRequest<DateTime> request, covariant DateTime? data) {
+    if (data == null || request.validationData == null) {
+      return ValidationResult.not();
+    }
+    if (data.millisecondsSinceEpoch ~/ 1000 >
+        request.validationData!.millisecondsSinceEpoch ~/ 1000) {
       return ValidationResult.not();
     } else {
-      return ValidationResult.ok(headers: {
-        HttpHeaders.lastModifiedHeader:
-            HttpDate.format(validationResponse.value),
-        HttpHeaders.contentLengthHeader: 0
-      }, statusCode: 304);
+      return ValidationResult.ok(
+          // contentType: validationResponse.contentType,
+          headers: {
+            HttpHeaders.lastModifiedHeader: HttpDate.format(data),
+            HttpHeaders.contentLengthHeader: 0
+          }, statusCode: 304);
     }
+  }
+
+  static DateTime? _getIfModifiedSince(Map<String, List<String>>? headers) {
+    var h = HttpHeaders.ifModifiedSinceHeader;
+    if (headers != null && headers[h] != null && headers[h]!.isNotEmpty) {
+      return HttpDate.parse(headers[h]!.first);
+    }
+  }
+
+  @override
+  ValidationRequest<DateTime> createRequest(Request request) {
+    var rrrR = request.path.calledPath ==
+        "/packages/build_web_compilers/src/dev_compiler_stack_trace/stack_trace_mapper.dart.js";
+
+    if (rrrR) {
+      print("REQ CREATING $request");
+    }
+    return ValidationRequest<DateTime>.fromRequest(
+        request, _getIfModifiedSince(request.headers), this);
   }
 }
 
 ///
 class IfNoneMatchMethod extends RevalidationMethod<String> {
   @override
-  FutureOr<ValidationResult> validate(ValidationRequest<String> request,
-      covariant ValidationResponse<String> validationResponse) {
-    if (request.validationData == validationResponse.value) {
-      return ValidationResult.ok(headers: {
-        HttpHeaders.etagHeader: validationResponse.value,
-        HttpHeaders.contentLengthHeader: 0
-      }, statusCode: 304);
-    } else {
+  ValidationResult validate(
+      covariant ValidationRequest<String> request, covariant String? data) {
+    if (data == null || request.validationData == null) {
       return ValidationResult.not();
     }
+    if (data != request.validationData) {
+      return ValidationResult.not();
+    } else {
+      return ValidationResult.ok(
+          // contentType: validationResponse.contentType,
+          headers: {
+            HttpHeaders.etagHeader: data,
+            HttpHeaders.contentLengthHeader: 0
+          }, statusCode: 304);
+    }
+    //
+    // if (request.validationData == validationResponse.value) {
+    //   return ValidationResult.ok(headers: {
+    //     HttpHeaders.etagHeader: validationResponse.value,
+    //     HttpHeaders.contentLengthHeader: 0
+    //   }, statusCode: 304);
+    // } else {
+    //   return ValidationResult.not();
+    // }
+  }
+
+  @override
+  ValidationRequest<String> createRequest(Request request) {
+    return ValidationRequest.fromRequest(
+        request, request.headers![HttpHeaders.ifNoneMatchHeader]?.first, this);
   }
 }
 
 ///
 class ValidationRequest<T> extends Request {
   ///
-  ValidationRequest.fromRequest(Request request, this.validationData)
+  ValidationRequest.fromRequest(
+      Request request, this.validationData, this.revalidationMethod)
       : super.fromRequest(request);
 
   ///
-  T validationData;
+  T? validationData;
 
   ///
-  static ValidationRequest? create(Request request) {
-    if (request.headers?.ifModifiedSince != null) {
-      return ValidationRequest<DateTime>.fromRequest(
-          request, request.headers!.ifModifiedSince!);
-    } else if (request.headers?[HttpHeaders.ifMatchHeader] != null) {
-      return ValidationRequest<String>.fromRequest(
-          request, request.headers![HttpHeaders.ifMatchHeader]!.first);
-    } else if (request.headers?[HttpHeaders.ifNoneMatchHeader] != null) {
-      return ValidationRequest<String>.fromRequest(
-          request, request.headers![HttpHeaders.ifNoneMatchHeader]!.first);
-    } else if (request.headers?[HttpHeaders.ifRangeHeader] != null) {
-      return ValidationRequest<String>.fromRequest(
-          request, request.headers![HttpHeaders.ifRangeHeader]!.first);
-    } else if (request.headers?[HttpHeaders.ifUnmodifiedSinceHeader] != null) {
-      return ValidationRequest<DateTime>.fromRequest(
-          request,
-          HttpDate.parse(
-              request.headers![HttpHeaders.ifUnmodifiedSinceHeader]!.first));
-    }
+  // static ValidationRequest<TT>? create<TT>(
+  //     Request request, BuildContext context, RevalidationMethod<TT> method) {
+  //   if (_getIfModifiedSince(request.headers) != null && TT == DateTime) {
+  //     return ValidationRequest<DateTime>.fromRequest(
+  //         request,
+  //         _getIfModifiedSince(request.headers)!,
+  //         method as RevalidationMethod<DateTime>) as ValidationRequest<TT>;
+  //   } else if (request.headers?[HttpHeaders.ifMatchHeader] != null &&
+  //       TT == String) {
+  //     return ValidationRequest<String>.fromRequest(
+  //         request,
+  //         request.headers![HttpHeaders.ifMatchHeader]!.first,
+  //         method as RevalidationMethod<String>) as ValidationRequest<TT>;
+  //   } else if (request.headers?[HttpHeaders.ifNoneMatchHeader] != null &&
+  //       TT == String) {
+  //     return ValidationRequest<String>.fromRequest(
+  //         request,
+  //         request.headers![HttpHeaders.ifNoneMatchHeader]!.first,
+  //         method as RevalidationMethod<String>) as ValidationRequest<TT>;
+  //   } else if (request.headers?[HttpHeaders.ifRangeHeader] != null &&
+  //       TT == String) {
+  //     return ValidationRequest<String>.fromRequest(
+  //         request,
+  //         request.headers![HttpHeaders.ifRangeHeader]!.first,
+  //         method as RevalidationMethod<String>) as ValidationRequest<TT>;
+  //   } else if (request.headers?[HttpHeaders.ifUnmodifiedSinceHeader]
+  //   != null &&
+  //       TT == DateTime) {
+  //     return ValidationRequest<DateTime>.fromRequest(
+  //         request,
+  //         HttpDate.parse(
+  //             request.headers![HttpHeaders.ifUnmodifiedSinceHeader]!.first),
+  //         method as RevalidationMethod<DateTime>) as ValidationRequest<TT>;
+  //   }
+  // }
+
+  ////
+  RevalidationMethod<T> revalidationMethod;
+
+  /// Return true the client has valid data
+  /// Not need sent data.
+  ///
+  /// If valid return etag or last-modified
+  ValidationResult validate(T? value) {
+    return revalidationMethod.validate(this, value);
   }
-
-  ///
-  ValidationResponse<T> validate(T value) =>
-      ValidationResponse.fromRequest(this, value);
 }
 
 ///
-class ValidationResponse<T> extends Request {
+typedef ValidationCallback<T> = bool Function(T? value);
+
+///
+class ValidationResponse<T> extends ResponseWithCacheControl<T> {
   ///
-  ValidationResponse.fromRequest(ValidationRequest<T> request, this.value)
-      : super.fromRequest(request);
+  ValidationResponse(
+      {required ValidationRequest<T> request,
+      required this.value,
+      required ValidationResult result,
+      Map<String, dynamic>? additionalHeaders,
+      int? statusCode,
+      ContentType? contentType})
+      : super._(null,
+            request: request,
+            validationData: value,
+            additionalHeaders: (additionalHeaders ?? <String, dynamic>{})
+              ..addAll(result.headers ?? {}),
+            contentType: contentType,
+            statusCode: statusCode ?? result.statusCode);
 
   ///
-  T value;
+  T? value;
 }
-
-// ///
-// class EtagRequest extends ValidationRequest<String> {
-//   ///
-//   EtagRequest(Request request, String etag) : super.fromRequest(request, etag);
-//   ///
-//   EtagRequest validate(String value) =>
-//       EtagResponse(this, value) as ValidationRequest<String>;
-// }
-//
-// ///
-// class EtagResponse extends ValidationResponse<String> {
-//   ///
-//   EtagResponse(EtagRequest request, String value)
-//       : super.fromRequest(request, value);
-// }
-//
-// ///
-// class LastModifiedRequest extends ValidationRequest<DateTime> {
-//   ///
-//   LastModifiedRequest(Request request, DateTime validationData)
-//       : super.fromRequest(request, validationData);
-// }
-//
-// ///
-// class LastModifiedResponse extends ValidationResponse<DateTime> {
-//   ///
-//   LastModifiedResponse(ValidationRequest<DateTime> request, DateTime value)
-//       : super.fromRequest(request, value);
-// }
 
 ///
 class CacheControlBuilder {
@@ -292,16 +373,25 @@ class CacheControlBuilder {
 ///
 class CacheControl extends GateWithChild {
   ///
-  CacheControl(
+  factory CacheControl(
       {Cacheability? cacheability,
       Revalidation? revalidation,
       Expiration? expiration,
-      required Component child})
-      : cacheControl = CacheControlBuilder(
-            expiration: expiration,
-            cacheability: cacheability,
-            revalidation: revalidation),
-        super(child: child);
+      required Component child}) {
+    var cc = CacheControlBuilder(
+        expiration: expiration,
+        cacheability: cacheability,
+        revalidation: revalidation);
+    if (revalidation != null) {
+      return _CacheControlWithRevalidation(child: child, cacheControl: cc);
+    }
+
+    return CacheControl._(cacheControl: cc, child: child);
+  }
+
+  ///
+  CacheControl._({required this.cacheControl, required Component child})
+      : super(child: child);
 
   ///
   final CacheControlBuilder cacheControl;
@@ -309,26 +399,139 @@ class CacheControl extends GateWithChild {
   @override
   SingleChildCallingBinding createBinding() => _CacheControlBinding(this);
 
+  ///
+  void addHeaders(Message response) {
+    if (response is Response) {
+      response.additionalHeaders ??= {};
+      response.additionalHeaders!.addAll(cacheControl.headers);
+    }
+  }
+
   @override
   FutureOr<Message> onRequest(Request request,
       FutureOr<Message> Function(Request p1) childCalling) async {
-    if (cacheControl.revalidation != null) {
-      var r = await cacheControl.revalidation!.method!
-          ._validateAndReturn(request, childCalling);
-      if (r is Response) {
-        r.additionalHeaders ??= {};
-        r.additionalHeaders!.addAll(cacheControl.headers);
-      }
-      return r;
-    } else {
-      var r = await childCalling(request);
-      if (r is Response) {
-        r.additionalHeaders ??= {};
-        r.additionalHeaders!.addAll(cacheControl.headers);
-      }
-      return r;
+
+    var rrrR = request.path.calledPath ==
+        "/packages/build_web_compilers/src/dev_compiler_stack_trace/stack_trace_mapper.dart.js";
+
+    if (rrrR) {
+      print("BURADAAAA");
     }
+
+
+    var res = await childCalling(request);
+    addHeaders(res);
+    return res;
   }
+}
+
+///
+class _CacheControlWithRevalidation extends CacheControl {
+  _CacheControlWithRevalidation(
+      {required Component child, required CacheControlBuilder cacheControl})
+      : assert(cacheControl.revalidation != null),
+        super._(child: child, cacheControl: cacheControl);
+
+  @override
+  FutureOr<Message> onRequest(Request request,
+      FutureOr<Message> Function(Request p1) childCalling) async {
+
+    var rrrR = request.path.calledPath ==
+        "/packages/build_web_compilers/src/dev_compiler_stack_trace/stack_trace_mapper.dart.js";
+
+    if (rrrR) {
+      print("BURADAAAA2");
+    }
+
+    var r = await cacheControl.revalidation!.method
+        ._validateAndReturn(request, childCalling);
+    addHeaders(r);
+    return r;
+  }
+}
+
+///
+abstract class ResponseWithCacheControl<T> extends Response {
+  ///
+  factory ResponseWithCacheControl(dynamic body,
+      {required Request request, required T data}) {
+    if (T == String) {
+      return ResponseWithEtag(body, request: request, etag: data as String)
+          as ResponseWithCacheControl<T>;
+    }
+    if (T == DateTime) {
+      return ResponseWithLastModified(body,
+          request: request,
+          lastModified: data as DateTime) as ResponseWithCacheControl<T>;
+    }
+    throw UnimplementedError("Only String or DateTime implemented");
+  }
+
+  ///
+  ResponseWithCacheControl._(dynamic body,
+      {required this.validationData,
+      required Map<String, dynamic>? additionalHeaders,
+      required Request request,
+      int? statusCode,
+      ContentType? contentType})
+      : super(
+            request: request,
+            statusCode: statusCode ?? 200,
+            additionalHeaders: additionalHeaders,
+            body: body,
+            contentType: contentType);
+
+  ///
+  T? validationData;
+}
+
+///
+class ResponseWithLastModified extends ResponseWithCacheControl<DateTime> {
+  ///
+  ResponseWithLastModified(dynamic body,
+      {Map<String, dynamic>? additionalHeaders,
+      required Request request,
+      required DateTime? lastModified,
+      int? statusCode,
+      ContentType? contentType})
+      : super._(
+            body is Body
+                ? body
+                : body != null
+                    ? Body(body)
+                    : null,
+            validationData: lastModified,
+            request: request,
+            contentType: contentType,
+            statusCode: statusCode ?? 200,
+            additionalHeaders: (additionalHeaders ?? <String, dynamic>{})
+              ..addAll({
+                if (lastModified != null)
+                  HttpHeaders.lastModifiedHeader: HttpDate.format(lastModified)
+              }));
+}
+
+///
+class ResponseWithEtag extends ResponseWithCacheControl<String> {
+  ///
+  ResponseWithEtag(dynamic body,
+      {Map<String, dynamic>? additionalHeaders,
+      required Request request,
+      required String? etag,
+      int? statusCode,
+      ContentType? contentType})
+      : super._(
+            body is Body
+                ? body
+                : body != null
+                    ? Body(body)
+                    : null,
+            validationData: etag,
+            request: request,
+            contentType: contentType,
+            statusCode: statusCode ?? 200,
+            additionalHeaders: (additionalHeaders ?? <String, dynamic>{})
+              ..addAll({if (etag != null) HttpHeaders.etagHeader: etag}));
 }
 
 ///
@@ -336,119 +539,101 @@ class _CacheControlBinding extends SingleChildCallingBinding {
   _CacheControlBinding(CacheControl component) : super(component);
 
   @override
+  CacheControl get component => super.component as CacheControl;
+
+  @override
+  void _build() {
+    super._build();
+
+    if (component.cacheControl.revalidation?.method != null) {
+      var ends = <EndpointCallingBinding>[];
+
+      visitChildren(TreeVisitor((visitor) {
+        if (visitor.currentValue is EndpointCallingBinding) {
+          ends.add(visitor.currentValue as EndpointCallingBinding);
+        }
+      }));
+
+      if (component.cacheControl.revalidation?.method
+          is RevalidationMethod<DateTime>) {
+        var nonCaches = ends.where((e) => e.component is! LastModifiedEndpoint);
+        if (nonCaches.isNotEmpty) {
+          throw UnsupportedError("All cache control's children on "
+              "the tree must be cache control endpoint."
+              " You can define cache control endpoint with use mixins:"
+              "Also endpoints cache control types must "
+              "match revalidation method"
+              "\nLastModifiedMixin\nLastModifiedStateMixin"
+              "\nEtagMixin\nEtagStateMixin"
+              "\n${nonCaches.map((e) => e.component).toList()} "
+              "is not cache control or type not match");
+        }
+      }
+
+      if (component.cacheControl.revalidation?.method
+          is RevalidationMethod<String>) {
+        var nonCaches = ends.where((e) => e.component is! EtagEndpoint);
+        if (nonCaches.isNotEmpty) {
+          throw UnsupportedError("All cache control's children on "
+              "the tree must be cache control endpoint."
+              " You can define cache control endpoint with use mixins:"
+              "Also endpoints cache control types must "
+              "match revalidation method"
+              "\nLastModifiedMixin\nLastModifiedStateMixin"
+              "\nEtagMixin\nEtagStateMixin"
+              "\n${nonCaches.map((e) => e.component).toList()}"
+              " is not cache control or type not match");
+        }
+      }
+    }
+  }
+
+  @override
   void attachToParent(Binding parent) {
-    print("CACHE CONTROL ATTACH : $_logger");
-    (component as CacheControl).cacheControl.revalidation?.method?.context =
-        this;
+    (component).cacheControl.revalidation?.method.context = this;
     super.attachToParent(parent);
   }
 }
 
-class _EndpointState extends Endpoint {
-  _EndpointState(this.call);
-
-  final FutureOr<Message> Function(Request request) call;
-
-  @override
-  FutureOr<Message> onCall(Request request) {
-    return call(request);
-  }
-}
-
-class _LastModifiedState extends Endpoint with LastModifiedMixin {
-  _LastModifiedState(this.call, this._lastModified);
-
-  final FutureOr<Message> Function(Request request) call;
-  final FutureOr<ValidationResponse<DateTime>> Function(
-      ValidationRequest<DateTime> request) _lastModified;
-
-  @override
-  FutureOr<Message> onCall(Request request) {
-    return call(request);
-  }
-
-  @override
-  FutureOr<ValidationResponse<DateTime>> lastModified(
-          ValidationRequest<DateTime> request) =>
-      _lastModified(request);
-}
-
-class _EtagState extends Endpoint with EtagMixin {
-  _EtagState(this.call, this._etag);
-
-  final FutureOr<Message> Function(Request request) call;
-
-  ///
-  final FutureOr<ValidationResponse<String>> Function(
-      ValidationRequest<String> request) _etag;
-
-  @override
-  FutureOr<Message> onCall(Request request) {
-    return call(request);
-  }
-
-  @override
-  FutureOr<ValidationResponse<String>> etag(
-          ValidationRequest<String> request) =>
-      _etag(request);
-}
-
 ///
-mixin LastModifiedStateMixin<T extends StatefulEndpoint> on EndpointState<T> {
-  ///
-  FutureOr<ValidationResponse<DateTime>> lastModified(
-      ValidationRequest<DateTime> request);
-}
-
-///
-mixin EtagStateMixin<T extends StatefulEndpoint> on EndpointState<T> {
-  ///
-  FutureOr<ValidationResponse<String>> etag(ValidationRequest<String> request);
-}
-
-///
-abstract class EndpointCallingWithCacheControl<T> extends EndpointCalling {
-  ///
-  EndpointCallingWithCacheControl(
-      EndpointCallingBinding endpoint, this.validate)
-      : super(endpoint);
-
-  ///
-  FutureOr<ValidationResponse<T>> Function(ValidationRequest<T> request)
-  validate;
-
-  @override
-  FutureOr<Message> onCall(Request request) async {
-    try {
-      if (request is ValidationRequest<T>) {
-        return validate(request);
-      }
-      return await binding.component.onCall(request);
-    } on Exception {
-      rethrow;
-    }
-  }
-}
-
-class _LastModifiedCalling extends EndpointCallingWithCacheControl<DateTime> {
-  _LastModifiedCalling(EndpointCallingBinding endpoint)
-      : super(endpoint, (endpoint.component as LastModifiedMixin).lastModified);
-}
-
-class _EtagCalling extends EndpointCallingWithCacheControl<String> {
-  _EtagCalling(EndpointCallingBinding endpoint)
-      : super(endpoint, (endpoint.component as EtagMixin).etag);
-}
-
-///
-mixin LastModifiedMixin on Endpoint {
-  ///
-  FutureOr<ValidationResponse<DateTime>> lastModified(
-      ValidationRequest<DateTime> request);
-}
-
-///
-mixin EtagMixin on Endpoint {
-  ///
-  FutureOr<ValidationResponse<String>> etag(ValidationRequest<String> request);
-}
+// class EndpointCallingWithCacheControl<T> extends EndpointCalling {
+//   ///
+//   EndpointCallingWithCacheControl(
+//       EndpointCallingBinding endpoint)
+//       : super(endpoint);
+//
+//   //
+//   // @override
+//   // FutureOr<Message> onCall(Request request) async {
+//   //   try {
+//   //     if (request is ValidationRequest<T>) {
+//   //       var val = await validate(request);
+//   //       if (val is ValidationResponse<T>) {
+//   //         return val;
+//   //       } else if (val is T) {
+//   //         return ValidationResponse.fromRequest(request, val);
+//   //       } else {
+//   //         throw ArgumentError("Validate function should return"
+//   //             " validation data(String or DateTime) or ValidationRequest()");
+//   //       }
+//   //     } else {
+//   //       return await binding.component.onCall(request);
+//   //     }
+//   //   } on Exception {
+//   //     rethrow;
+//   //   }
+//   // }
+// }
+//
+// class _LastModifiedCalling extends
+// EndpointCallingWithCacheControl<DateTime> {
+//   _LastModifiedCalling(EndpointCallingBinding
+//   endpoint)
+//       : super(endpoint, (endpoint.component as
+//       LastModifiedMixin).lastModified);
+// }
+//
+// class _EtagCalling extends EndpointCallingWithCacheControl<String> {
+//   _EtagCalling(EndpointCallingBinding endpoint)
+//       : super(endpoint, (endpoint.component as EtagMixin).etag);
+// }

@@ -1,6 +1,6 @@
 name: style_cron_job
 description: Style Cron Job is periodic operations executor and definator with basic syntax. You can define a period and run your process with your own executor or through the controller.
-version: 1.0.0
+version: 1.0.3
 homepage: https://github.com/Mehmetyaz/style/tree/main/packages/style_cron_job
 repository: https://github.com/Mehmetyaz/style
 

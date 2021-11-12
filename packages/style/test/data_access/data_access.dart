@@ -1,22 +1,80 @@
 /*
- * Copyright (c) 2021. This code was written by Mehmet Yaz.
- * Mehmet Yaz does not accept the problems that may arise due to these codes.
+ * Copyright 2021 styledart.dev - Mehmet Yaz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  */
+
+import 'dart:io';
 
 import 'package:style_dart/style_dart.dart';
 import 'package:style_test/style_test.dart';
-import 'package:test/expect.dart';
 
-void main() {
-  initStyleTester("data_access", _MyServer(), (tester) {
-    tester("/api/users", statusCodeIs(200),
+void main() async {
+  await initStyleTester("data_access", _MyServer(), (tester) async {
+    /// Post
+    /// Crete data with body
+    tester(
+        "/api/users",
+        allOf(statusCodeIs(201),
+            headerIs(HttpHeaders.locationHeader, "my_user1")),
         methods: Methods.POST,
         body: {"_id": "my_user1", "name": "Mehmet", "l_name": "Yaz"});
+
+    /// Read data
     tester(
         "/api/users/my_user1",
         allOf(statusCodeIs(200),
             bodyIs({"_id": "my_user1", "name": "Mehmet", "l_name": "Yaz"})),
         methods: Methods.GET);
+
+    /// Create one more
+    tester("/api/users", statusCodeIs(201),
+        methods: Methods.POST,
+        body: {"_id": "my_user2", "name": "Jack", "l_name": "Daniel"});
+
+    /// Read data
+    tester(
+        "/api/users/my_user2",
+        allOf(statusCodeIs(200),
+            bodyIs({"_id": "my_user2", "name": "Jack", "l_name": "Daniel"})),
+        methods: Methods.GET);
+
+    /// Read list
+    tester(
+        "/api/users",
+        allOf(bodyIs([
+          {"_id": "my_user1", "name": "Mehmet", "l_name": "Yaz"},
+          {"_id": "my_user2", "name": "Jack", "l_name": "Daniel"}
+        ])),
+        methods: Methods.GET);
+
+    /// Update
+    tester("api/users/my_user1", statusCodeIs(200),
+        body: {"name": "Mehmet1"}, methods: Methods.PUT);
+
+    /// Check updated
+    tester(
+      "/api/users/my_user1",
+      allOf(statusCodeIs(200),
+          bodyIs({"_id": "my_user1", "name": "Mehmet1", "l_name": "Yaz"})),
+      methods: Methods.GET,
+      description: "my_user1_read2",
+    );
+
+    ///
+    tester("/api/users/my_user1", statusCodeIs(200),
+        description: "my_user1_delete", methods: Methods.DELETE);
   });
 }
 
@@ -28,6 +86,6 @@ class _MyServer extends StatelessComponent {
     return Server(
         dataAccess: DataAccess(SimpleCacheDataAccess(),
             defaultPermission: false, collections: []),
-        children: [SimpleAccessPoint("api")]);
+        children: [RestAccessPoint("api")]);
   }
 }

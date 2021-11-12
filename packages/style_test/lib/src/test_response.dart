@@ -1,6 +1,18 @@
 /*
- * Copyright (c) 2021. This code was written by Mehmet Yaz.
- * Mehmet Yaz does not accept the problems that may arise due to these codes.
+ * Copyright 2021 styledart.dev - Mehmet Yaz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  */
 
 import 'dart:io';
@@ -15,6 +27,57 @@ class ResponseTest {
   Binding binding;
 
   bool initChecked = false;
+
+  Future<bool> init() async {
+    if (!initChecked) {
+      ///
+      var initializers = <Future<bool>>[];
+      if (binding.hasService<DataAccess>()) {
+        initializers.add(binding.dataAccess
+                .ensureInitialize() /*.then((value) {
+            print("Data Access Initialize $value");
+            return value;
+          })*/
+            );
+      }
+      if (binding.hasService<HttpService>()) {
+        initializers.add(binding.httpService
+                .ensureInitialize() /*.then((value) {
+            print("HttpService Initialize $value");
+            return value;
+          })*/
+            );
+      }
+      if (binding.hasService<WebSocketService>()) {
+        initializers.add(binding.socketService
+                .ensureInitialize() /*.then((value) {
+            print("Socket Initialize $value");
+            return value;
+          })*/
+            );
+      }
+      if (binding.hasService<Logger>()) {
+        initializers.add(binding.logger
+                .ensureInitialize() /*.then((value) {
+            print("Logger Initialize $value");
+            return value;
+          })*/
+            );
+      }
+      if (binding.hasService<Crypto>()) {
+        initializers.add(binding.crypto
+                .ensureInitialize() /*.then((value) {
+            print("Crypto Initialize $value");
+            return value;
+          })*/
+            );
+      }
+      var r = await Future.wait(initializers);
+      initChecked = true;
+      return !r.contains(false);
+    }
+    return true;
+  }
 
   void testRequest(
     String path,
@@ -38,46 +101,8 @@ class ResponseTest {
         body: body,
         cookies: cookies,
         path: path);
-    test(description ?? "testing: ${req.path.calledPath}", () async {
-      if (!initChecked) {
-        ///
-        var initializers = <Future<bool>>[];
-        if (binding.hasService<DataAccess>()) {
-          initializers.add(binding.dataAccess.ensureInitialize().then((value) {
-            print("Data Access Initialize $value");
-            return value;
-          }));
-        }
-        if (binding.hasService<HttpService>()) {
-          initializers.add(binding.httpService.ensureInitialize().then((value) {
-            print("HttpService Initialize $value");
-            return value;
-          }));
-        }
-        if (binding.hasService<WebSocketService>()) {
-          initializers
-              .add(binding.socketService.ensureInitialize().then((value) {
-            print("Socket Initialize $value");
-            return value;
-          }));
-        }
-        if (binding.hasService<Logger>()) {
-          initializers.add(binding.logger.ensureInitialize().then((value) {
-            print("Logger Initialize $value");
-            return value;
-          }));
-        }
-        if (binding.hasService<Crypto>()) {
-          initializers.add(binding.crypto.ensureInitialize().then((value) {
-            print("Crypto Initialize $value");
-            return value;
-          }));
-        }
 
-        var r = await Future.wait(initializers);
-        expect(r, isNot(contains(false)));
-        initChecked = true;
-      }
+    test(description ?? "testing: ${req.path.calledPath}", () async {
       expect(await binding.findCalling.calling(req), matcher, skip: false);
     });
   }

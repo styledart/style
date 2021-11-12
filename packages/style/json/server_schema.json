@@ -12,31 +12,39 @@
         "$ref": "#/definitions/path_route"
       }
     },
-    "auth_gate" : {
+    "auth_gate": {
       "type": "object",
-      "required": ["auth_required"],
+      "required": [
+        "auth_required"
+      ],
       "properties": {
-        "auth_required" : {
+        "auth_required": {
           "type": "boolean"
         }
       }
     },
-
-
-    "condition" : {
+    "condition": {
       "type": "object",
       "oneOf": [
         {
-          "required": ["eq"]
+          "required": [
+            "eq"
+          ]
         },
         {
-          "required": ["ne"]
+          "required": [
+            "ne"
+          ]
         },
         {
-          "required": ["and"]
+          "required": [
+            "and"
+          ]
         },
         {
-          "required": ["or"]
+          "required": [
+            "or"
+          ]
         }
       ],
       "properties": {
@@ -48,9 +56,8 @@
           "uniqueItems": true,
           "maxItems": 2,
           "minItems": 2
-        }
-      ,
-        "ne" : {
+        },
+        "ne": {
           "type": "array",
           "items": {
             "type": "string"
@@ -59,14 +66,14 @@
           "maxItems": 2,
           "minItems": 2
         },
-        "and" : {
+        "and": {
           "type": "array",
           "minItems": 2,
           "items": {
             "$ref": "#/definitions/condition"
           }
         },
-        "or" : {
+        "or": {
           "type": "array",
           "minItems": 2,
           "items": {
@@ -75,18 +82,18 @@
         }
       }
     },
-
-    "permission_gate" : {
+    "permission_gate": {
       "type": "object",
-      "required": ["equals"],
+      "required": [
+        "equals"
+      ],
       "properties": {
-        "equals" : {
+        "equals": {
           "$ref": "#/definitions/condition"
         }
       }
     },
-
-    "agent" : {
+    "agent": {
       "type": "string",
       "enum": [
         "http",
@@ -94,12 +101,13 @@
         "internal"
       ]
     },
-
-    "agent_gate" : {
+    "agent_gate": {
       "type": "object",
-      "required": ["allowed_agents"],
+      "required": [
+        "allowed_agents"
+      ],
       "properties": {
-        "allowed_agents" : {
+        "allowed_agents": {
           "type": "array",
           "uniqueItems": true,
           "items": {
@@ -108,7 +116,7 @@
         }
       }
     },
-    "component" : {
+    "component": {
       "oneOf": [
         {
           "$ref": "#/definitions/endpoint"
@@ -158,10 +166,15 @@
         "segment": {
           "type": "string"
         },
-        "child": { "$ref": "#/definitions/component"},
-        "root": { "$ref": "#/definitions/component"},
+        "child": {
+          "$ref": "#/definitions/component"
+        },
+        "root": {
+          "$ref": "#/definitions/component"
+        },
         "handleUnknownAsRoot": {
-          "type": "boolean"
+          "type": "boolean",
+          "default": false
         }
       },
       "allOf": [
@@ -184,7 +197,7 @@
             {
               "properties": {
                 "handleUnknownAsRoot": {
-                  "const" : false
+                  "const": false
                 }
               }
             },
@@ -199,24 +212,17 @@
     }
   },
   "required": [
-    "unknown",
-    "gateway",
-    "root",
-    "rootName"
+    "gateway"
   ],
   "properties": {
-    "rootName" : {
+    "rootName": {
       "type": "string"
     },
-    "root" : {
+    "root": {
       "$ref": "#/definitions/endpoint"
     },
-
     "gateway": {
       "$ref": "#/definitions/gateway"
-    },
-    "unknown": {
-      "$ref": "#/definitions/endpoint"
     },
     "host": {
       "type": "string",
@@ -224,8 +230,7 @@
     },
     "port": {
       "type": "integer",
-      "default": 9090
+      "default": 80
     }
-
   }
 }

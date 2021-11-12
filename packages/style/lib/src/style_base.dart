@@ -1,24 +1,46 @@
+/*
+ * Copyright 2021 styledart.dev - Mehmet Yaz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:json_schema2/json_schema2.dart';
 import 'package:meta/meta.dart';
 import 'package:queue/queue.dart' as q;
-import 'package:stack_trace/stack_trace.dart';
 import 'package:style_cron_job/style_cron_job.dart';
 
 import 'functions/random.dart';
 import 'functions/uint8_merge.dart';
+import 'models/json_schema.dart';
+part 'component/base_services/authorization.dart';
 
 part 'component/base_services/base.dart';
 
 part 'component/base_services/crypto.dart';
-part 'component/base_services/authorization.dart';
+
 part 'component/base_services/data_access/data.dart';
+
 part 'component/base_services/data_access/permission.dart';
+
 part 'component/base_services/data_access/trigger.dart';
+
 part 'component/base_services/http.dart';
 
 part 'component/base_services/logger.dart';
@@ -61,8 +83,9 @@ part 'exception/exception_handler.dart';
 
 part 'exception/style_exception.dart';
 
-part 'models/query/query.dart';
 part 'models/query/collection.dart';
+
+part 'models/query/query.dart';
 
 part 'models/request/agent.dart';
 
@@ -71,4 +94,5 @@ part 'models/request/cause.dart';
 part 'models/request/context.dart';
 
 part 'models/request/request.dart';
+
 part 'models/request/token.dart';

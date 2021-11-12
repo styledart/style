@@ -1,9 +1,31 @@
+/*
+ * Copyright 2021 styledart.dev - Mehmet Yaz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 part of '../../style_base.dart';
 
 ///
 abstract class HttpService extends _BaseService {
   ///
   HttpService();
+
+  ///
+  static HttpService of(BuildContext context) {
+    return context.httpService;
+  }
 
   ///
   String get address;
@@ -24,19 +46,15 @@ abstract class HttpService extends _BaseService {
   Future<void> handleHttpRequest(HttpRequest request);
 
   @override
-  Future<bool> init([bool inInterface = true]) async {
+  Future<bool> init() async {
     // await context.logger.ensureInitialize();
-    if (!inInterface) {
-      server = await serverBind;
-      if (defaultResponseHeaders != null) {
-        for (var h in defaultResponseHeaders!.entries) {
-          server.defaultResponseHeaders.add(h.key, h.value);
-        }
+    server = await serverBind;
+    if (defaultResponseHeaders != null) {
+      for (var h in defaultResponseHeaders!.entries) {
+        server.defaultResponseHeaders.add(h.key, h.value);
       }
     }
-    if (!inInterface) {
-      server.listen(handleHttpRequest);
-    }
+    server.listen(handleHttpRequest);
     return true;
   }
 }
@@ -44,9 +62,10 @@ abstract class HttpService extends _BaseService {
 ///
 class DefaultHttpServiceHandler extends HttpService {
   ///
-  DefaultHttpServiceHandler()
-      : _address = String.fromEnvironment("HOST", defaultValue: "localhost"),
-        port = int.fromEnvironment("PORT", defaultValue: 80);
+  DefaultHttpServiceHandler({String? host, int? port})
+      : _address =
+            host ?? String.fromEnvironment("HOST", defaultValue: "localhost"),
+        port = port ?? int.fromEnvironment("PORT", defaultValue: 80);
 
   ///
   final String _address;
@@ -57,7 +76,6 @@ class DefaultHttpServiceHandler extends HttpService {
   ///
   Future<void> handleHttpRequest(HttpRequest request) async {
     var body = await request.toList();
-
     var uInt8List = mergeList(body);
 
     var _body;
@@ -101,21 +119,25 @@ class DefaultHttpServiceHandler extends HttpService {
       }
     }
 
-    var req = HttpStyleRequest.fromRequest(
+    var req = await HttpStyleRequest.fromRequest(
         req: request, body: Body(_body), context: context);
     try {
       var res = await context.owner.calling(req);
       if (res is Response && res is! NoResponseRequired) {
         request.response.statusCode = res.statusCode;
+
         request.response.headers.contentType = res.contentType;
         for (var head in res.additionalHeaders?.entries.toList() ??
             <MapEntry<String, dynamic>>[]) {
           request.response.headers.add(head.key, head.value);
         }
-        if (res.body != null && res.contentType == ContentType.binary) {
+
+        if (res.body != null && res.body is BinaryBody) {
           request.response.add((res.body as BinaryBody).data);
         } else {
-          request.response.write(res.body);
+          if (res.body?.data != null) {
+            request.response.write(res.body);
+          }
         }
 
         await request.response.close();

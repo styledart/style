@@ -12,7 +12,6 @@ Articles is free-read.
 
 [comment]: <> (### Create Service)
 
-
 [comment]: <> (*[host] will be used instead of "http://host" from now on.*)
 
 [comment]: <> (*All classes created as an example will begin with the prefix "My". Others are what Framework offers.*)

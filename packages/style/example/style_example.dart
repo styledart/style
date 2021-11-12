@@ -1,3 +1,20 @@
+/*
+ * Copyright 2021 styledart.dev - Mehmet Yaz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 import 'dart:async';
 import 'dart:io';
 
@@ -12,7 +29,7 @@ void main() async {
         Bitti
         """);
 
-  var b = runService(ShelfExample());
+  runService(ShelfExample());
 
   // b.visitChildren(TreeVisitor((visitor) {
   //   try {
@@ -71,35 +88,72 @@ class ShelfExample extends StatelessComponent {
 
   @override
   Component build(BuildContext context) {
-    return Server(children: [
-      Route("*root",
-          root: SimpleEndpoint((request) => request.response("unk"))),
-      Route("{a}", root: SimpleEndpoint((request) => request.response("body"))),
+    return Server(httpService: DefaultHttpServiceHandler(), children: [
+      // ContentDelivery("D:\\style\\packages\\style\\data\\",
+      //     cacheFiles: true, useLastModified: true),
+
+      // RouteBase("*root",
+      //     child: DocumentService("D:\\style\\packages\\style\\site\\build"),
+      //     handleUnknownAsRoot: true),
+
+      // Route("*root",
+      //     root: SimpleEndpoint((request) => request.response("unk"))),
+      // Route("{a}", root: SimpleEndpoint((request)
+      // => request.response("body"))),
       // Route("{b}",
-      //     root: SimpleEndpoint((request) => request.createResponse("body2")))
+      //     root: SimpleEndpoint((request) =>
+      //     request.createResponse("body2")))
       //     ,
       // Static handler
       // Route("web", root: DocumentService("/dir"), handleUnknownAsRoot: true),
-      ExceptionWrapper<StyleException>(
-          child: Route("time", root: Throw(Exception())),
-          exceptionEndpoint: ClientExEnd()),
-      Route("hello", root: SimpleEndpoint((req) => req.response("hello"))),
+      CacheControl(
+          cacheability: Cacheability.public(),
+          expiration: Expiration.maxAge(Duration(seconds: 10)),
+          child: RouteBase("modified1", root: MyIfNoneMatchEnd())),
+
+      CacheControl(
+          cacheability: Cacheability.public(),
+          expiration: Expiration.maxAge(Duration(seconds: 10)),
+          child: RouteBase("modified2", root: SimpleEndpoint((r, __) {
+            return r.response("""<html>
+              <script src='/modified1' type='application/javascript'></script>
+              <h1>Hello</h1>
+            </html>""");
+          }))),
+      MathRoutes()
+
+      // ExceptionWrapper<StyleException>(
+      //     child: Route("time", root: Throw(Exception())),
+      //     exceptionEndpoint: ClientExEnd()),
+      // Route("hello", root:
+      // SimpleEndpoint((req) => req.response("hello"))),
+
+      // Route("json", root: SimpleEndpoint((request) {
+      //   print(
+      //       "REQ: ${request.fullPath}\nQUERY:${request.path.queryParameters}");
+      //   return request.response({
+      //     "q": request.path.queryParameters,
+      //     "enc": json.decode(request.path.queryParameters["q"]),
+      //     "fr": json
+      //         .decode(request.path.queryParameters["q"])["from"]
+      //         .runtimeType
+      //         .toString()
+      //   });
+      // })),
+    ]);
+  }
+}
+
+class MathRoutes extends StatelessComponent {
+  const MathRoutes({Key? key}) : super(key: key);
+
+  @override
+  Component build(BuildContext context) {
+    return Gateway(children: [
       MathOperationRoute("sum", (a, b) => a + b),
       MathOperationRoute("mul", (a, b) => a * b),
       MathOperationRoute("div", (a, b) => a / b),
       MathOperationRoute("dif", (a, b) => a - b),
-      Route("json", root: SimpleEndpoint((request) {
-        print(
-            "REQ: ${request.fullPath}\nQUERY:${request.path.queryParameters}");
-        return request.response({
-          "q": request.path.queryParameters,
-          "enc": json.decode(request.path.queryParameters["q"]),
-          "fr": json
-              .decode(request.path.queryParameters["q"])["from"]
-              .runtimeType
-              .toString()
-        });
-      })),
     ]);
   }
 }
@@ -128,44 +182,54 @@ class MyIfNoneMatchEnd extends StatefulEndpoint {
   EndpointState<StatefulEndpoint> createState() => _EndState();
 }
 
-class _EndState extends EndpointState<MyIfNoneMatchEnd> with EtagStateMixin {
+class _EndState extends EndpointState<MyIfNoneMatchEnd> {
   ///
   DateTime last = DateTime.now();
 
   late String val = getRandomId(30);
 
   @override
-  void initState() {
-    Timer.periodic(Duration(seconds: 20), (timer) {
-      print("Değişti");
-      val = getRandomId(30);
-      last = DateTime.now();
-    });
-    super.initState();
-  }
-
-  @override
-  FutureOr<Message> onCall(Request request) {
-    return request.createResponse(
-      {
-        "val": val,
-        "last": last.toString()
-      }, /*headers: {HttpHeaders.etagHeader: val}*/
-    );
-  }
-
-  // @override
-  // FutureOr<ValidationResponse<DateTime>> lastModified(
-  //     ValidationRequest<DateTime> request) {
-  //   return request.validate(last);
-  // }
-
-  @override
-  FutureOr<ValidationResponse<String>> etag(ValidationRequest<String> request) {
-    print("ETAG REQ");
-    return request.validate(val);
+  FutureOr<Object> onCall(Request request) {
+    print("Request: ${request.headers}");
+    return request.response("""
+    document.write(5 + 6);
+    """, contentType: ContentType("application", "javascript"));
   }
 }
+// /// TODO: Document
+// class MyIfNoneMatchEnd extends StatefulEndpoint {
+//   MyIfNoneMatchEnd() : super();
+//
+//   @override
+//   EndpointState<StatefulEndpoint> createState() => _EndState();
+// }
+//
+// class _EndState extends EtagEndpointState<MyIfNoneMatchEnd> {
+//   ///
+//   DateTime last = DateTime.now();
+//
+//   late String val = getRandomId(30);
+//
+//   @override
+//   void initState() {
+//     Timer.periodic(Duration(seconds: 20), (timer) {
+//       print("Değişti");
+//       val = getRandomId(30);
+//       last = DateTime.now();
+//     });
+//     super.initState();
+//   }
+//
+//   @override
+//   FutureOr<ResponseWithEtag> onRequest(ValidationRequest<String> request) {
+//     print("NORMAL CALL: Have Logger ${context.hasService<Logger>()}");
+//
+//     return ResponseWithEtag({"val": val, "last": last.toString()},
+//         request: request, etag: val);
+//   }
+//
+//
+// }
 
 class MathOperationRoute extends StatelessComponent {
   MathOperationRoute(this.name, this.operation);
@@ -176,16 +240,14 @@ class MathOperationRoute extends StatelessComponent {
   @override
   Component build(BuildContext context) {
     return ExceptionWrapper(
-        child: Route(name,
+        child: RouteBase(name,
             root: Throw(FormatException()),
-            child: RouteTo("{a}",
+            child: SubRoute("{a}",
                 root: Throw(FormatException()),
-                child: RouteTo("{b}", root: SimpleEndpoint((request) {
+                child: SubRoute("{b}", root: SimpleEndpoint((request, _) {
                   var a = int.parse(request.arguments["a"]);
                   var b = int.parse(request.arguments["b"]);
-                  return request.response({
-                    {"a": a, "b": b, name: operation(a, b)}
-                  });
+                  return {"a": a, "b": b, name: operation(a, b)};
                 })))),
         exceptionEndpoint: FormatExEnd());
   }
@@ -212,8 +274,9 @@ class MyServer extends StatelessComponent {
         },
         faviconDirectory: "D:\\style\\packages\\style\\assets",
         children: [
-          Route("any_ex",
-              root: SimpleEndpoint((request) => throw UnauthorizedException())),
+          RouteBase("any_ex",
+              root: SimpleEndpoint(
+                  (request, _) => throw UnauthorizedException())),
           // AuthFilterGate(
           //     authRequired: true,
           //     child: Route(
@@ -241,20 +304,21 @@ class MyServer extends StatelessComponent {
           // ),
           AuthFilterGate(
               authRequired: true,
-              child: Route("appointments",
+              child: RouteBase("appointments",
                   root: GetUserAppointments(),
-                  child: RouteTo("{stylist_id}",
-                      child: RouteTo("{day}",
+                  child: SubRoute("{stylist_id}",
+                      child: SubRoute("{day}",
                           child: CallQueue(Gateway(children: [
-                            Route("create",
+                            RouteBase("create",
                                 root: MethodFilterGate(
                                     allowedMethods: [Methods.GET],
-                                    child: SimpleEndpoint((req) async {
+                                    child: SimpleEndpoint((req, _) async {
                                       await Future.delayed(
                                           Duration(milliseconds: 500));
                                       throw Exception("unimplemented");
                                     }))),
-                            Route("delete", root: SimpleEndpoint((req) async {
+                            RouteBase("delete",
+                                root: SimpleEndpoint((req, _) async {
                               await Future.delayed(Duration(milliseconds: 500));
                               throw Exception("unimplemented");
                             }))
@@ -262,21 +326,22 @@ class MyServer extends StatelessComponent {
 
           // Post(),
           User(),
-          Route("c_t",
-              root: SimpleEndpoint((request) => request.response({
+          RouteBase("c_t",
+              root: SimpleEndpoint((request, _) => request.response({
                     "type": request.contentType?.mimeType,
                     "body": request.body?.data.runtimeType.toString()
                   }))),
-          SimpleAccessPoint("api"),
-          Route("doc",
+          RestAccessPoint("api"),
+          RouteBase("doc",
               handleUnknownAsRoot: true,
-              root: DocumentService("D:\\style\\packages\\style\\source\\web\\",
-                  cacheAll: false)),
+              root:
+                  ContentDelivery("D:\\style\\packages\\style\\source\\web\\")),
           MethodFilterGate(
               allowedMethods: [Methods.GET],
               child: AuthFilterGate(
-                  authRequired: true, child: Route("auth", root: AuthEnd()))),
-          Route("un-auth", root: CallQueue(UnAuthEnd())),
+                  authRequired: true,
+                  child: RouteBase("auth", root: AuthEnd()))),
+          RouteBase("un-auth", root: CallQueue(UnAuthEnd())),
         ],
         // defaultUnknownEndpoint: SimpleEndpoint((r) {
         //   print("Buraya Geldi");
@@ -307,15 +372,16 @@ class User extends StatelessComponent {
 
   @override
   Component build(BuildContext context) {
-    return Route("user",
+    return RouteBase("user",
         handleUnknownAsRoot: true,
-        child:
-            RouteTo("{api_key}", root: GeneratedRedirect(generate: (req) async {
+        child: SubRoute("{api_key}",
+            root: GeneratedRedirect(generate: (req) async {
           if (req.path.arguments["api_key"] == "v1") {
             return "../../auth";
           } else if (req.path.arguments["api_key"] == "v2") {
             return "../../un-auth";
           }
+          return "*unknown";
         })),
         root: AuthRedirect(authorized: "../auth", unauthorized: "../un-auth"));
   }
@@ -346,7 +412,7 @@ class Post extends StatelessComponent {
 
   @override
   Component build(BuildContext context) {
-    return Route("{post_id}",
+    return RouteBase("{post_id}",
         root: Redirect("https://www.google.com/search?q={post_id}"),
         // root: Gate(
         //     child: PostEnd(),

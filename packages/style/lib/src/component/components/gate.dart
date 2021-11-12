@@ -1,3 +1,20 @@
+/*
+ * Copyright 2021 styledart.dev - Mehmet Yaz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 part of '../../style_base.dart';
 
 ///
@@ -204,47 +221,41 @@ class ContentTypeFilterGate extends StatelessComponent {
   }
 }
 
-
-///
-class IfModifiedSince extends GateWithChild {
-  ///
-  IfModifiedSince({required Component child, this.responseMaxAge = 0})
-      : super(child: child);
-
-  ///
-  final int responseMaxAge;
-
-  FutureOr<Response> _requestNormal(Request request,
-      FutureOr<Message> Function(Request request) childCalling) async {
-    var rr2 = await childCalling(request);
-    (rr2 as Response).additionalHeaders ??= {};
-    return rr2
-      ..additionalHeaders!.addAll({
-        if (rr2.lastModified != null)
-          HttpHeaders.lastModifiedHeader: HttpDate.format(rr2.lastModified!),
-        if (rr2.lastModified != null)
-          HttpHeaders.cacheControlHeader: "must-revalidate"
-      });
-  }
-
-  @override
-  FutureOr<Response> onRequest(Request request,
-      FutureOr<Message> Function(Request request) childCalling) async {
-    if (request.headers?.ifModifiedSince != null) {
-      // TODO: Check max age
-      var res = await childCalling(ModifiedSinceRequest(request));
-      if (res is ModifiedSinceResponse) {
-        if (res.lastMod.millisecondsSinceEpoch ~/ 1000 >
-            request.headers!.ifModifiedSince!.millisecondsSinceEpoch ~/ 1000) {
-          return _requestNormal(request, childCalling);
-        } else {
-          return (res)
-            ..statusCode = 304
-            ..body = null;
-        }
-      }
-    }
-    return _requestNormal(request, childCalling);
-    throw UnimplementedError();
-  }
-}
+// ///
+// class IfModifiedSince extends GateWithChild {
+//   ///
+//   IfModifiedSince({required Component child, this.responseMaxAge = 0})
+//       : super(child: child);
+//
+//   ///
+//   final int responseMaxAge;
+//
+//   FutureOr<Response> _requestNormal(Request request,
+//       FutureOr<Message> Function(Request request) childCalling) async {
+//     var rr2 = await childCalling(request);
+//     (rr2 as Response).additionalHeaders ??= {};
+//     return rr2;
+//   }
+//
+//   @override
+//   FutureOr<Response> onRequest(Request request,
+//       FutureOr<Message> Function(Request request) childCalling) async {
+//     var lastMod = ValidationRequest._getIfModifiedSince(request.headers);
+//     if (lastMod != null) {
+//       // TODO: Check max age
+//       var res = await childCalling(ModifiedSinceRequest(
+//           request, lastMod));
+//       if (res is ModifiedSinceResponse) {
+//         if (res.lastMod.millisecondsSinceEpoch ~/ 1000 >
+//             lastMod.millisecondsSinceEpoch ~/ 1000) {
+//           return _requestNormal(request, childCalling);
+//         } else {
+//           return (res)
+//             ..statusCode = 304
+//             ..body = null;
+//         }
+//       }
+//     }
+//     return _requestNormal(request, childCalling);
+//   }
+// }

@@ -15,6 +15,11 @@ include: package:effective_dart/analysis_options.yaml
 
 # Uncomment the following section to specify additional rules.
 
+
+analyzer:
+  exclude:
+    - site/**
+
 # linter:
 #   rules:
 #     - camel_case_types

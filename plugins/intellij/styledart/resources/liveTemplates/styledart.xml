@@ -1,0 +1,111 @@
+<!--
+  ~ Copyright 2021 styledart.dev - Mehmet Yaz
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~       http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  ~
+  -->
+
+<templateSet group="StyleDart">
+    <template name="endpStfull" value="class $NAME$ extends StatefulEndpoint {&#10;  @override&#10;  EndpointState&lt;StatefulEndpoint&gt; createState() =&gt; _$NAME$State();&#10;}&#10;&#10;class _$NAME$State extends EndpointState&lt;$NAME$&gt; {&#10;  @override&#10;  FutureOr&lt;Message&gt; onCall(Request request) {&#10;    throw UnimplementedError();&#10;  }&#10;}" description="Statefull Endpoint" toReformat="false" toShortenFQNames="true">
+        <variable name="NAME" expression="" defaultValue="" alwaysStopAt="true" />
+        <context>
+            <option name="DART_TOPLEVEL" value="true" />
+        </context>
+    </template>
+    <template name="endp" value="/// TODO: Document&#10;class $NAME$ extends Endpoint {&#10;  $NAME$() : super();&#10;&#10;  @override&#10;  FutureOr&lt;Message&gt; onCall(Request request) {&#10;    // TODO: implement onCall&#10;    throw UnimplementedError();&#10;  }&#10;}" description="Endpoint" toReformat="false" toShortenFQNames="true">
+        <variable name="NAME" expression="" defaultValue="" alwaysStopAt="true" />
+        <context>
+            <option name="DART_TOPLEVEL" value="true" />
+        </context>
+    </template>
+    <template name="compStfull" value="class $NAME$ extends StatefulComponent {&#10;  const $NAME$({GlobalKey? key}) : super(key: key);&#10;&#10;  @override&#10;  $NAME$State createState() =&gt; $NAME$State();&#10;}&#10;&#10;class $NAME$State extends State&lt;$NAME$&gt; {&#10;  @override&#10;  Component build(BuildContext context) {&#10;    return Throw(ServiceUnavailable(&quot;$NAME$ is unavailable&quot;));&#10;  }&#10;}" description="StatefulComponent" toReformat="false" toShortenFQNames="true">
+        <variable name="NAME" expression="" defaultValue="" alwaysStopAt="true" />
+        <context>
+            <option name="DART_TOPLEVEL" value="true" />
+        </context>
+    </template>
+    <template name="compStless" value="class $NAME$ extends StatelessComponent {&#10;  const $NAME$({Key? key}) : super(key: key);&#10;&#10;  @override&#10;  Component build(BuildContext context) {&#10;    return Throw(ServiceUnavailable(&quot;$NAME$ is unavailable&quot;));&#10;  }&#10;}&#10;" description="StatelessComponent" toReformat="false" toShortenFQNames="true">
+        <variable name="NAME" expression="" defaultValue="" alwaysStopAt="true" />
+        <context>
+            <option name="DART_TOPLEVEL" value="true" />
+        </context>
+    </template>
+    <template name="endpStfLastMod" value="class $NAME$ extends StatefulEndpoint {&#10;  @override&#10;  EndpointState&lt;StatefulEndpoint&gt; createState() =&gt; _$NAME$State();&#10;}&#10;&#10;class _$NAME$State extends LastModifiedEndpointState&lt;$NAME$&gt; {&#10;&#10;  /// If your data and lastModified are on different sources&#10;  /// may you want to ensure that data is need(data changed after lastModified)&#10;  /// before getting data from db.&#10;  /// For this, you can check [ValidationResponse] documentation.&#10;  @override&#10;  FutureOr&lt;ResponseWithLastModified&gt; onRequest(&#10;      ValidationRequest&lt;DateTime&gt; request) {&#10;    // TODO: set [body] and [lastModified] with your data.&#10;    return ResponseWithLastModified(&quot;unimplemented&quot;,&#10;        request: request, lastModified: DateTime.now());&#10;  }&#10;}" toReformat="false" toShortenFQNames="true">
+        <variable name="NAME" expression="" defaultValue="" alwaysStopAt="true" />
+        <context>
+            <option name="DART_TOPLEVEL" value="true" />
+        </context>
+    </template>
+    <template name="endpStfEtag" value="class $NAME$ extends StatefulEndpoint {&#10;  @override&#10;  EndpointState&lt;StatefulEndpoint&gt; createState() =&gt; _$NAME$State();&#10;}&#10;&#10;class _$NAME$State extends EtagEndpointState&lt;$NAME$&gt; {&#10;&#10;&#10;  /// If your data and etag are on different sources&#10;  /// may you want to ensure data need(e-tags are different)&#10;  /// before get data from db.&#10;  /// For this, you can check [ValidationResponse] documentation.&#10;  @override&#10;  FutureOr&lt;ResponseWithEtag&gt; onRequest(ValidationRequest&lt;String&gt; request) {&#10;    // TODO: set body and etag with your data.&#10;    return ResponseWithEtag(&quot;unimplemented&quot;, request: request, etag: &quot;etag&quot;);&#10;  }&#10;}&#10;" toReformat="false" toShortenFQNames="true">
+        <variable name="NAME" expression="" defaultValue="" alwaysStopAt="true" />
+        <context>
+            <option name="DART_TOPLEVEL" value="true" />
+        </context>
+    </template>
+
+    <template name="endpEtag" value="class $NAME$ extends EtagEndpoint {&#10;&#10;&#10;  /// If your data and etag are on different sources&#10;  /// may you want to ensure data need(e-tags are different)&#10;  /// before get data from db.&#10;  /// For this, you can check [ValidationResponse] documentation.&#10;  @override&#10;  FutureOr&lt;ResponseWithCacheControl&lt;String&gt;&gt; onRequest(&#10;      ValidationRequest&lt;String&gt; request) {&#10;    // TODO: set body and etag with your data.&#10;    return ResponseWithEtag(&quot;unimplemented&quot;, request: request, etag: &quot;etag&quot;);&#10;  }&#10;}" toReformat="false" toShortenFQNames="true">
+        <variable name="NAME" expression="" defaultValue="" alwaysStopAt="true" />
+        <context>
+            <option name="DART_TOPLEVEL" value="true" />
+        </context>
+    </template>
+    <template name="endpLastMod" value="class $NAME$ extends LastModifiedEndpoint {&#10;  /// If your data and lastModified are on different sources&#10;  /// may you want to ensure that data is need(data changed after lastModified)&#10;  /// before getting data from db.&#10;  /// For this, you can check [ValidationResponse] documentation.&#10;  @override&#10;  FutureOr&lt;ResponseWithCacheControl&lt;DateTime&gt;&gt; onRequest(&#10;      ValidationRequest&lt;DateTime&gt; request) {&#10;    // TODO: set [body] and [lastModified] with your data.&#10;    return ResponseWithLastModified(&quot;unimplemented&quot;,&#10;        request: request, lastModified: DateTime.now());&#10;  }&#10;}" toReformat="false" toShortenFQNames="true">
+        <variable name="NAME" expression="" defaultValue="" alwaysStopAt="true" />
+        <context>
+            <option name="DART_TOPLEVEL" value="true" />
+        </context>
+    </template>
+
+    <template name="dbRead" value="//TODO: Add query or identifier&#10;DataAccess.of(context)&#10;    .read(Read(request: request, collection: &quot;$END$&quot;));" description="Read with current data access" toReformat="false" toShortenFQNames="true">
+        <context>
+            <option name="DART_STATEMENT" value="true" />
+        </context>
+    </template>
+    <template name="dbReadMultiple" value="DataAccess.of(context)&#10;    .readList(ReadMultiple(request: request, collection: &quot;$END$&quot;));" description="Read Multiple with current data access" toReformat="false" toShortenFQNames="true">
+        <context>
+            <option name="DART_STATEMENT" value="true" />
+        </context>
+    </template>
+    <template name="dbCreate" value="DataAccess.of(context)&#10;    .create(Create(request: request, collection: &quot;$NAME$&quot;, data: {$END$}));" description="Create with current data access" toReformat="false" toShortenFQNames="true">
+        <variable name="NAME" expression="" defaultValue="" alwaysStopAt="true" />
+        <context>
+            <option name="DART_STATEMENT" value="true" />
+        </context>
+    </template>
+    <template name="dbUpdate" value="//TODO: Add query or identifier&#10;DataAccess.of(context)&#10;    .update(Update(request: request, collection: &quot;$NAME$&quot;, data: {$END$}));" description="Update with current data access" toReformat="false" toShortenFQNames="true">
+        <variable name="NAME" expression="" defaultValue="" alwaysStopAt="true" />
+        <context>
+            <option name="DART_STATEMENT" value="true" />
+        </context>
+    </template>
+    <template name="dbDelete" value="//TODO: Add query or identifier&#10;DataAccess.of(context)&#10;    .delete(Delete(request: request, collection: &quot;$END$&quot;));" description="Delete with current data access" toReformat="false" toShortenFQNames="true">
+        <context>
+            <option name="DART_STATEMENT" value="true" />
+        </context>
+    </template>
+    <template name="dbCount" value="DataAccess.of(context)&#10;    .count(Count(request: request, collection: &quot;$END$&quot;));" description="Count with current data access" toReformat="false" toShortenFQNames="true">
+        <context>
+            <option name="DART_STATEMENT" value="true" />
+        </context>
+    </template>
+    <template name="dbExists" value="//TODO: Add query or identifier&#10;DataAccess.of(context)&#10;    .exists(Exists(request: request, collection: &quot;$END$&quot;));" description="Exists with current data access" toReformat="false" toShortenFQNames="true">
+        <context>
+            <option name="DART_STATEMENT" value="true" />
+        </context>
+    </template>
+    <template name="db" value="DataAccess.of(context)$END$;" description="Current DataAccess" toReformat="false" toShortenFQNames="true">
+        <context>
+            <option name="DART_STATEMENT" value="true" />
+        </context>
+    </template>
+</templateSet>

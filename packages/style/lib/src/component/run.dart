@@ -1,59 +1,70 @@
+/*
+ * Copyright 2021 styledart.dev - Mehmet Yaz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 part of '../style_base.dart';
 
 ///
 Binding runService(Component component) {
-  try {
-    var binding = component.createBinding();
-    binding._build();
+  var binding = component.createBinding();
+  binding._build();
 
-    // var results = <String>[];
-    // binding.visitCallingChildren(TreeVisitor((binding) {
-    //   if (binding.currentValue is EndpointCalling) {
-    //     var path =
-    //         (binding.currentValue.binding as
-    //         EndpointCallingBinding).fullPath;
-    //     if (!path.endsWith("/*root")) {
-    //       results.add("% $path %");
-    //     }
-    //   }
-    // }));
-    // print(results.join("\n"));
+  binding.visitChildren(TreeVisitor((visitor) {
+    if (visitor.currentValue is ServiceWrapperBinding) {
+      (visitor.currentValue as ServiceWrapperBinding).component.service._init();
+    }
+  }));
 
 
-    stdin.listen((event) {
-      print(binding._owner);
-      print(utf8.decode(event));
-    });
-    return binding;
-  }
-// ignore: avoid_catches_without_on_clauses
-  catch (e, s) {
-    var trace = Trace.format(s);
-    throw Exception("Error: $e \n Stack Trace: \n $trace");
-  }
 
-  // parseFile(path: path, featureSet: featureSet)
+  // var runner = CommandRunner("style", "style inline command-line app");
+  // runner.addCommand(SetProperty());
+  //
+  // stdin.listen((event) {
+  //   runner.run(utf8.decode(event).split(" "));
+  // });
 
-  //
-  // binding.visitChildren(TreeVisitor<Binding>((visitor) {
-  //   print("""
-  //
-  //   comp ${visitor.currentValue.component}
-  //   owner ${visitor.currentValue.owner}
-  //
-  //   """);
-  // }));
-  //
-
-  //
-  //
-
-  // var visiting = binding.visitChildren(TreeVisitor((binding) {
-  //
-  // }));
-  //
-  //
-  // var service = binding.findChildState<_Sort>();
-  //
-  //
+  return binding;
 }
+
+// ///
+// class SetProperty extends Command {
+//
+//   ///
+//   SetProperty(){
+//     argParser.addMultiOption("property",abbr: "p",callback: (v){
+//
+//     });
+//   }
+//
+//
+//   void run(){
+//     if(argResults == null) {
+//       return;
+//     }
+//
+//     if (argResults!.rest.isEmpty) {
+//       throw UsageException("state key not found", usage);
+//     }
+//
+//   }
+//
+//   @override
+//   String get description => "Set property of state";
+//
+//   @override
+//   String get name => "set-property";
+// }

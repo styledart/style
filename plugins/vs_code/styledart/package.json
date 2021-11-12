@@ -1,0 +1,38 @@
+{
+	"name": "styledart",
+	"displayName": "StyleDart",
+	"description": "Style Dart Snippets",
+	"version": "0.0.1",
+	"license": "Apache",
+	"publisher": "styledart",
+	"homepage": "https://github.com/Mehmetyaz/style",
+	"icon": "images/pluginIcon.png",
+	"engines": {
+		"vscode": "^1.51.0"
+	},
+	"categories": [
+		"Snippets"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Mehmetyaz/style"
+	},
+	"contributes": {
+		"snippets": [
+			{
+				"language": "dart",
+				"path": "./snippets.code-snippets"
+			}
+		]
+	},
+	"bugs": {
+		"url": "https://github.com/Mehmetyaz/style/issues",
+		"email": "mehmedyaz@gmail.com"
+	},
+	"keywords": [
+		"dart",
+		"snippet",
+		"style",
+		"style dart"
+	]
+}

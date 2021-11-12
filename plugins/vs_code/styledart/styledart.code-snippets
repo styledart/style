@@ -1,0 +1,13 @@
+{
+
+	"Current Data Access" : {
+		"prefix": "db",
+		"body": [
+			"DataAccess.of(context)$0"
+		],
+		"description": "Current Data Access"
+	},
+	
+
+
+}

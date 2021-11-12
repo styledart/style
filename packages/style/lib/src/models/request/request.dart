@@ -1,7 +1,23 @@
+/*
+ * Copyright 2021 styledart.dev - Mehmet Yaz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 part of '../../style_base.dart';
 
-
-class NullBody  extends Body<Null> {
+class NullBody extends Body<Null> {
   NullBody() : super._(null);
 }
 
@@ -22,6 +38,9 @@ class Body<T> {
     if (data is Body<T>) {
       return data;
     }
+    if (data is List<int>) {
+      return BinaryBody(data as Uint8List) as Body<T>;
+    }
     if (data is Map<String, dynamic> || data is List) {
       return JsonBody(data) as Body<T>;
     } else if (data is String) {
@@ -29,8 +48,6 @@ class Body<T> {
         return HtmlBody(data) as Body<T>;
       }
       return TextBody(data) as Body<T>;
-    } else if (data is List<int>) {
-      return BinaryBody(data as Uint8List) as Body<T>;
     }
 
     return Body._(data);
@@ -117,10 +134,13 @@ abstract class Message {
   String get fullPath => path.calledPath;
 
   ///
+  AccessToken? get auth => context.accessToken;
+
+  ///
   PathController get path => context.pathController;
 
   ///
-  String get currentPath => path.current;
+  String get nextPathSegment => path.next;
 
   /// Request Body
   /// Http requests body or web socket messages "body" values
@@ -137,13 +157,22 @@ abstract class Message {
 
   ContentType? contentType;
 
-  // TODO: Call Path Builder
-  // TODO: Call Path
+  Map<String, dynamic> toMap() => {
+        if (auth != null) "token": auth!.toMap(),
+        "path": path.toMap(),
+        "agent": agent.index,
+        "cause": cause.index,
+        "type": runtimeType,
+        "create": context.requestTime.millisecondsSinceEpoch
+      };
 
-  /// Data access state of current context
-  ///
-  /// At the point where the request is handled , not only endpoint
-  DataAccess get dataAccess => context.currentContext.dataAccess;
+// TODO: Call Path Builder
+// TODO: Call Path
+
+// /// Data access state of current context
+// ///
+// /// At the point where the request is handled , not only endpoint
+// DataAccess get dataAccess => context.currentContext.dataAccess;
 }
 
 ///
@@ -193,11 +222,20 @@ abstract class Request extends Message {
   Request(
       {required RequestContext context,
       ContentType? contentType,
-      dynamic body,
+      Body? body,
       this.headers,
       this.cookies,
       this.method})
       : super(body: body, context: context, contentType: contentType);
+
+  Request.fromRequest(Request request)
+      : headers = request.headers,
+        cookies = request.cookies,
+        method = request.method,
+        super(
+            context: request.context,
+            body: request.body,
+            contentType: request.contentType);
 
   ///
   final List<Cookie>? cookies;
@@ -227,6 +265,14 @@ abstract class Request extends Message {
 
   Methods? method;
 
+  AccessToken? get token => context.accessToken;
+
+  ///
+  set token(AccessToken? token) {
+    if (token == null) return;
+    context.accessToken = token;
+  }
+
   ///
   Future<bool> ensureResponded() async {
     if (_waiter != null) return await _waiter!.future;
@@ -236,12 +282,36 @@ abstract class Request extends Message {
 
   ///
   Response response(dynamic body,
-      {int? statusCode, Map<String, dynamic>? headers}) {
+      {int? statusCode,
+      Map<String, dynamic>? headers,
+      ContentType? contentType}) {
+    if (body is DbResult) {
+      var h = (headers?..addAll(body.headers ?? {})) ?? {...?body.headers};
+      return Response(
+          body: Body(body.data),
+          request: this,
+          statusCode: body.statusCode ?? statusCode ?? 200,
+          additionalHeaders: h,
+          contentType: contentType);
+    }
+
     return Response(
         body: body is Body ? body : Body(body),
         request: this,
         statusCode: statusCode ?? 200,
-        additionalHeaders: headers);
+        additionalHeaders: headers,
+        contentType: contentType);
+  }
+
+  factory Request.fromMap(
+      Map<String, dynamic> map, HttpRequest base, RequestContext context) {
+    //TODO: OTHER
+    return HttpStyleRequest(
+        baseRequest: base,
+        body: map["body"],
+        method: Methods.values[map["method"]],
+        context: context,
+        contentType: ContentType.parse(map["content_type"]));
   }
 }
 
@@ -252,8 +322,9 @@ class Response extends Message {
       {required Request request,
       Body? body,
       required this.statusCode,
-      this.additionalHeaders})
-      : super(body: body, context: request.context);
+      this.additionalHeaders,
+      ContentType? contentType})
+      : super(body: body, context: request.context, contentType: contentType);
 
   ///
   int statusCode;
@@ -276,9 +347,7 @@ class Response extends Message {
   }
 
   ///
-  ContentType? get contentType {
-    return _contentType(body);
-  }
+  ContentType? get contentType;
 
   ///
   Completer<bool>? _waiter;
@@ -336,53 +405,34 @@ class HttpStyleRequest extends Request {
   final HttpRequest baseRequest;
 
   ///
-  factory HttpStyleRequest.fromRequest(
+  static Future<HttpStyleRequest> fromRequest(
       {required HttpRequest req,
       required dynamic body,
-      required BuildContext context}) {
+      required BuildContext context}) async {
     // print("AUTH:::: "
     //     "${req.uri.queryParameters["token"]
     //     ?? req.headers[HttpHeaders.authorizationHeader]}");
 
     var q = req.uri.queryParameters;
+    var t = req.headers[HttpHeaders.authorizationHeader]?.first ?? q["token"];
+    AccessToken? token;
+    if (t != null && context.hasService<Authorization>()) {
+      token = await Authorization.of(context).verifyToken(t);
+    }
     return HttpStyleRequest(
         baseRequest: req,
         contentType: req.headers.contentType,
         method: Methods.values[_m.indexOf(req.method)],
         context: RequestContext(
             requestTime: DateTime.now(),
-            currentContext: context,
             cause: Cause.clientRequest,
             agent: Agent.http,
-            accessToken: req.headers[HttpHeaders.authorizationHeader]?.first ??
-                q["token"],
+            accessToken: token,
             // TODO: Look cookies for token
-            createContext: context,
+            // createContext: context,
             pathController: PathController.fromHttpRequest(req)),
         body: body);
   }
-}
-
-///
-class TagRequest extends Request {
-  ///
-  TagRequest(HttpStyleRequest request)
-      : super(
-            context: request.context,
-            body: request.body,
-            headers: request.headers,
-            cookies: request.cookies);
-}
-
-///
-class TagResponse extends Response {
-  ///
-  TagResponse(TagRequest request,
-      {required String tag, ContentType? contentType})
-      : super(request: request, statusCode: 304, additionalHeaders: {
-          HttpHeaders.contentLengthHeader: 0,
-          HttpHeaders.etagHeader: tag
-        });
 }
 
 ///

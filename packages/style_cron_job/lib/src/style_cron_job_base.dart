@@ -1,3 +1,20 @@
+/*
+ * Copyright 2021 styledart.dev - Mehmet Yaz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 import 'dart:async';
 
 /// CronJobController manages multiple cron jobs
@@ -72,13 +89,15 @@ class CronJobController {
   }
 }
 
+typedef CronCallback = FutureOr<void> Function(DateTime time);
+
 /// Runner for each cron jobs
 /// [onCall] call in period
 class CronJobRunner {
-  const CronJobRunner({required this.period, required this.onCall});
+  CronJobRunner({required this.period, required this.onCall});
 
   final CronTimePeriod period;
-  final FutureOr<void> Function(DateTime time) onCall;
+  final CronCallback onCall;
 
   @override
   bool operator ==(Object other) {
@@ -490,17 +509,27 @@ class EachMinute extends CronTimePeriod with _MinuteMixin {
   }
 }
 
+mixin EveryX on CronTimePeriod {
+  ///
+  DateTime _lastRun = DateTime(1970);
+
+  /// Last Run
+  DateTime get lastRun => _lastRun;
+
+  /// Reset last run
+  void reset([DateTime? time]) {
+    _lastRun = time ?? DateTime.now();
+  }
+}
+
 ///
 class EveryXMonth extends CronTimePeriod
-    with _MonthMixin, _DayMixin, _HourMixin, _MinuteMixin {
+    with _MonthMixin, _DayMixin, _HourMixin, _MinuteMixin, EveryX {
   ///
   EveryXMonth(this.month);
 
   ///
   final int month;
-
-  ///
-  DateTime _lastRun = DateTime(1970);
 
   @override
   bool isNecessary(DateTime time) {
@@ -536,15 +565,12 @@ class EveryXMonth extends CronTimePeriod
 
 ///
 class EveryXWeek extends CronTimePeriod
-    with _WeekMixin, _DayMixin, _HourMixin, _MinuteMixin {
+    with _WeekMixin, _DayMixin, _HourMixin, _MinuteMixin, EveryX {
   ///
   EveryXWeek(this.week);
 
   ///
   final int week;
-
-  ///
-  DateTime _lastRun = DateTime(1970);
 
   @override
   bool isNecessary(DateTime time) {
@@ -579,15 +605,12 @@ class EveryXWeek extends CronTimePeriod
 }
 
 class EveryXDay extends CronTimePeriod
-    with _DayMixin, _HourMixin, _MinuteMixin {
+    with _DayMixin, _HourMixin, _MinuteMixin, EveryX {
   ///
   EveryXDay(this.day);
 
   ///
   final int day;
-
-  ///
-  DateTime _lastRun = DateTime(1970);
 
   @override
   bool isNecessary(DateTime time) {
@@ -620,15 +643,12 @@ class EveryXDay extends CronTimePeriod
   }
 }
 
-class EveryXHour extends CronTimePeriod with _HourMixin, _MinuteMixin {
+class EveryXHour extends CronTimePeriod with _HourMixin, _MinuteMixin, EveryX {
   ///
   EveryXHour(this.hour);
 
   ///
   final int hour;
-
-  ///
-  DateTime _lastRun = DateTime(1970);
 
   @override
   bool isNecessary(DateTime time) {
@@ -662,14 +682,13 @@ class EveryXHour extends CronTimePeriod with _HourMixin, _MinuteMixin {
 }
 
 ///
-class EveryXMinute extends CronTimePeriod with _MinuteMixin {
+class EveryXMinute extends CronTimePeriod with _MinuteMixin, EveryX {
   ///
   EveryXMinute(this.minute);
 
   //ignore_for_file: public_member_api_docs
 
   final int minute;
-  DateTime _lastRun = DateTime(1969);
 
   @override
   bool isNecessary(DateTime time) {
@@ -701,10 +720,9 @@ class EveryXMinute extends CronTimePeriod with _MinuteMixin {
   }
 }
 
-class EveryXSecond extends CronTimePeriod {
+class EveryXSecond extends CronTimePeriod with EveryX {
   EveryXSecond(this.second);
 
-  DateTime _lastRun = DateTime(1970);
   int second;
 
   @override

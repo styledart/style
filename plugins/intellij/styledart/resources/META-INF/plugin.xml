@@ -1,0 +1,70 @@
+<!--
+  ~ Copyright 2021 styledart.dev - Mehmet Yaz
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~       http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  ~
+  -->
+
+<idea-plugin>
+  <id>dev.styledart</id>
+  <name>Style Dart</name>
+  <version>0.2</version>
+  <vendor email="mehmedyaz@gmail.com" url="http://dev.styledart.dev">StyleDart</vendor>
+  <description>
+    <![CDATA[
+    Style Dart common used snippets.<br/>
+    Available snippets: <br/>
+    <p>&nbsp;</p>
+<h3>Component Snippets</h3>
+<ul>
+<li>compStless: create a StatelessComponent</li>
+<li>compStful: create a StatefulComponent</li>
+<li>endp: create a Endpoint</li>
+<li>endpEtag: create a Endpoint with Etag handler</li>
+<li>endpLastMod: create a Endpoint with Last Modified handler</li>
+<li>endpStful: create a StatefulEndpoint&nbsp;</li>
+<li>endpStfEtag: create StatefulEndpoint with Etag handler</li>
+<li>endpStfLastMod: create StatefulEndpoint with Last Modified handler</li>
+</ul>
+<h3>DataAccess Snippets</h3>
+<ul>
+<li>db : current context's DataAccess</li>
+<li>dbRead: Read Data with current DataAccess</li>
+<li>dbReadMultiple: Read Multiple Data with current DataAccess&nbsp;</li>
+<li>dbUpdate: Update&nbsp;Data with current DataAccess</li>
+<li>dbCreate: Create Data with current DataAccess</li>
+<li>dbDelete: Delete Data with current DataAccess</li>
+<li>dbExists: Ask data is exists with current DataAccess</li>
+<li>dbCount: Data Count with current DataAccess</li>
+</ul>
+    ]]>
+  </description>
+
+  <!-- please see https://plugins.jetbrains.com/docs/intellij/build-number-ranges.html for description -->
+  <idea-version since-build="203.0"/>
+
+  <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
+       on how to target different products -->
+  <depends>com.intellij.modules.platform</depends>
+<!--  <depends>com.intellij.modules.lang</depends>-->
+
+<!--  <depends>Dart</depends>-->
+
+
+  <extensions defaultExtensionNs="com.intellij">
+    <defaultLiveTemplates file="/liveTemplates/styledart.xml"/>
+    <liveTemplateContext implementation="dev.styledart.liveTemplates.StyleDartContext"/>
+<!--    <configurationType implementation="dev.styledart.run.StyleRunConfigurationType"/>-->
+  </extensions>
+
+</idea-plugin>

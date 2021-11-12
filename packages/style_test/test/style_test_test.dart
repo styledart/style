@@ -1,11 +1,27 @@
+/*
+ * Copyright 2021 styledart.dev - Mehmet Yaz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 import 'dart:io';
 
 import 'package:style_dart/style_dart.dart';
 import 'package:style_test/style_test.dart';
-import 'package:test/test.dart';
 
-void main() {
-  initStyleTester("MyServerBaseTest", MyTestServer(), (tester) {
+void main() async {
+  initStyleTester("MyServerBaseTest", MyTestServer(), (tester) async {
     tester("/onlyAuth", statusCodeIs(401));
 
     tester("/onlyAuth", anyOf(statusCodeIs(200), bodyIs("you are auth")),
@@ -21,8 +37,8 @@ class MyTestServer extends StatelessComponent {
     return Server(children: [
       AuthFilterGate(
           child:
-              Route("onlyAuth", root: SimpleEndpoint.static("you are auth"))),
-      Route("everyone", root: SimpleEndpoint.static("it does not matter"))
+              RouteBase("onlyAuth", root: SimpleEndpoint.static("you are auth"))),
+      RouteBase("everyone", root: SimpleEndpoint.static("it does not matter"))
     ]);
   }
 }

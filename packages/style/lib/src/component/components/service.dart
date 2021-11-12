@@ -1,11 +1,31 @@
+/*
+ * Copyright 2021 styledart.dev - Mehmet Yaz
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 part of '../../style_base.dart';
 
+/// Base component for server
 ///
+///
+/// Used for api gateway
 class Server extends StatefulComponent {
   ///
   Server(
       {GlobalKey? key,
-      HttpService? httpServiceNew,
+      HttpService? httpService,
       this.socketService,
       this.dataAccess,
       this.cryptoService,
@@ -16,7 +36,7 @@ class Server extends StatefulComponent {
       required this.children,
       this.faviconDirectory,
       Map<Type, ExceptionEndpoint>? defaultExceptionEndpoints})
-      : httpServiceNew = httpServiceNew ?? DefaultHttpServiceHandler(),
+      : httpService = httpService ?? DefaultHttpServiceHandler(),
         logger = logger ?? DefaultLogger(),
         rootName = rootName ?? "style_server",
         defaultExceptionEndpoints = defaultExceptionEndpoints ??
@@ -38,7 +58,7 @@ class Server extends StatefulComponent {
   final String rootName;
 
   ///
-  final Logger? logger;
+  final Logger logger;
 
   ///
   final Crypto? cryptoService;
@@ -50,7 +70,7 @@ class Server extends StatefulComponent {
   final WebSocketService? socketService;
 
   ///
-  final HttpService httpServiceNew;
+  final HttpService httpService;
 
   ///
   final Authorization? authorization;
@@ -80,7 +100,7 @@ class ServiceState extends State<Server> {
   WebSocketService get socketService => component.socketService!;
 
   ///
-  HttpService get httpServiceNew => component.httpServiceNew;
+  HttpService get httpServiceNew => component.httpService;
 
   ///
   Authorization get authorization => component.authorization!;
@@ -89,18 +109,15 @@ class ServiceState extends State<Server> {
   Component build(BuildContext context) {
     Component result = Gateway(children: [
       if (component.faviconDirectory != null)
-        Route("favicon.ico", root: Favicon(component.faviconDirectory!)),
+        RouteBase("favicon.ico", root: Favicon(component.faviconDirectory!)),
       if (component.rootEndpoint != null)
-        Route("*root", root: component.rootEndpoint),
+        RouteBase("*root", root: component.rootEndpoint),
       ...component.children
     ]);
 
     result = ServiceWrapper<HttpService>(
-        service: component.httpServiceNew, child: result);
-    if (component.logger != null) {
-      result =
-          ServiceWrapper<Logger>(service: component.logger!, child: result);
-    }
+        service: component.httpService, child: result);
+    result = ServiceWrapper<Logger>(service: component.logger, child: result);
     if (component.cryptoService != null) {
       result = ServiceWrapper<Crypto>(service: cryptoService, child: result);
     }
@@ -171,17 +188,17 @@ class ServiceCallingComponent extends SingleChildCallingComponent {
   }
 
   @override
-  ServiceBinding createBinding() => ServiceBinding(this);
+  ServerBinding createBinding() => ServerBinding(this);
 
   @override
   Calling createCalling(BuildContext context) =>
-      ServiceCalling(binding: context as ServiceBinding);
+      ServiceCalling(binding: context as ServerBinding);
 }
 
 ///
-class ServiceBinding extends SingleChildCallingBinding with ServiceOwnerMixin {
+class ServerBinding extends SingleChildCallingBinding with ServiceOwnerMixin {
   ///
-  ServiceBinding(ServiceCallingComponent component) : super(component);
+  ServerBinding(ServiceCallingComponent component) : super(component);
 
   @override
   ServiceCallingComponent get component =>
@@ -236,10 +253,10 @@ class ServiceBinding extends SingleChildCallingBinding with ServiceOwnerMixin {
 ///
 class ServiceCalling extends Calling {
   ///
-  ServiceCalling({required ServiceBinding binding}) : super(binding);
+  ServiceCalling({required ServerBinding binding}) : super(binding);
 
   @override
-  ServiceBinding get binding => super.binding as ServiceBinding;
+  ServerBinding get binding => super.binding as ServerBinding;
 
   @override
   FutureOr<Message> onCall(Request request) {
@@ -251,13 +268,16 @@ class ServiceCalling extends Calling {
 
 ///
 mixin ServiceOwnerMixin on Binding {
-  final Map<GlobalKey, StatefulBinding> _states = {};
+  final Map<String, GlobalKey> _states = {};
 
   ///
   void addState(State state) {
-    _states[state.component.key as GlobalKey] = state.context;
+    _states[state.key.key] = state.key;
   }
 
   ///
   late String serviceRootName;
+
+  ///
+  Map<String, CronTimePeriod> cronJobs = {};
 }

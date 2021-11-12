@@ -1,9 +1,4 @@
 {
-  "unknown": "../home",
-  "root": "../home",
-  "host": "localhost",
-  "port": 9090,
-  "rootName": "my_server",
   "gateway": [
     {
       "segment": "home",
