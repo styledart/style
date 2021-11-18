@@ -1,6 +1,6 @@
 name: style_test
 description: A starting point for Dart libraries or applications.
-version: 1.0.0
+version: 1.0.0+1
 homepage: https://github.com/Mehmetyaz/style/tree/main/packages/style_test/
 repository: https://github.com/Mehmetyaz/style
 
@@ -11,7 +11,7 @@ environment:
 dependencies:
   test: ^1.19.3
   meta: ^1.7.0
-  style_dart: ^1.0.2
+  style_dart: ^1.0.2+1
 #   path: ^1.8.0
 
 dev_dependencies:

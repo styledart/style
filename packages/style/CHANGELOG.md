@@ -9,3 +9,7 @@
 ## 1.0.2
 
 - Many Changes. Documentation will ready as soon as possible.
+
+## 1.0.2+1
+
+- Readme fix
