@@ -28,7 +28,6 @@ void main() async {
         ${Trace.current().frames}
         Bitti
         """);
-
   runService(ShelfExample());
 
   // b.visitChildren(TreeVisitor((visitor) {
@@ -48,10 +47,10 @@ class MyEx implements Exception {
 
 class UnauthorizedEndpoint extends ExceptionEndpoint<UnauthorizedException> {
   @override
-  FutureOr<Response> onError(
+  FutureOr<Object> onError(
       Message message, UnauthorizedException exception, StackTrace stackTrace) {
     if (message.contentType?.mimeType == ContentType.json.mimeType) {
-      return (message as Request).response({"error": "unauthorized_error"});
+      return ({"error": "unauthorized_error"});
     } else {
       return (message as Request).response(HtmlBody("""
 <html>
@@ -115,7 +114,7 @@ class ShelfExample extends StatelessComponent {
           cacheability: Cacheability.public(),
           expiration: Expiration.maxAge(Duration(seconds: 10)),
           child: RouteBase("modified2", root: SimpleEndpoint((r, __) {
-            return r.response("""<html>
+            return ("""<html>
               <script src='/modified1' type='application/javascript'></script>
               <h1>Hello</h1>
             </html>""");
@@ -163,9 +162,9 @@ class ClientExEnd extends ExceptionEndpoint<StyleException> {
   ClientExEnd() : super();
 
   @override
-  FutureOr<Response> onError(
+  FutureOr<Object> onError(
       Message message, StyleException exception, StackTrace stackTrace) {
-    return (message as Request).response({
+    return ({
       "err": "client_error_received",
       "type": "${exception.runtimeType}",
       "sup": "${exception.superType}",
@@ -191,9 +190,9 @@ class _EndState extends EndpointState<MyIfNoneMatchEnd> {
   @override
   FutureOr<Object> onCall(Request request) {
     print("Request: ${request.headers}");
-    return request.response("""
+    return request.response(Body("""
     document.write(5 + 6);
-    """, contentType: ContentType("application", "javascript"));
+    """), contentType: ContentType("application", "javascript"));
   }
 }
 // /// TODO: Document
@@ -256,10 +255,10 @@ class MathOperationRoute extends StatelessComponent {
 ///
 class FormatExEnd extends ExceptionEndpoint<FormatException> {
   @override
-  FutureOr<Response> onError(
+  FutureOr<Object> onError(
       Message message, FormatException exception, StackTrace stackTrace) {
-    return (message as Request).response(
-        "please ensure path like: \"host/{sum|div|dif|mul}/{number}/{number}\"");
+    return
+        "please ensure path like: \"host/{sum|div|dif|mul}/{number}/{number}\"";
   }
 }
 
@@ -327,7 +326,7 @@ class MyServer extends StatelessComponent {
           // Post(),
           User(),
           RouteBase("c_t",
-              root: SimpleEndpoint((request, _) => request.response({
+              root: SimpleEndpoint((request, _) => ({
                     "type": request.contentType?.mimeType,
                     "body": request.body?.data.runtimeType.toString()
                   }))),
@@ -389,10 +388,10 @@ class User extends StatelessComponent {
 
 class UnAuthEnd extends Endpoint {
   @override
-  FutureOr<Message> onCall(Request request) async {
+  FutureOr<Object> onCall(Request request) async {
     try {
       print("Cevap Gitti UN: ${context.dataAccess}");
-      return request.response({"args": "FROM UNAUTH"});
+      return {"args": "FROM UNAUTH"};
     } on Exception catch (e) {
       print("ON 2 $e");
       rethrow;
@@ -402,8 +401,8 @@ class UnAuthEnd extends Endpoint {
 
 class AuthEnd extends Endpoint {
   @override
-  FutureOr<Message> onCall(Request request) {
-    return request.response({"args": "FROM AUTH"});
+  FutureOr<Object> onCall(Request request) {
+    return {"args": "FROM AUTH"};
   }
 }
 
@@ -433,15 +432,15 @@ class PostEnd extends Endpoint {
   PostEnd() : super();
 
   @override
-  FutureOr<Message> onCall(Request request) {
-    return request.response({"args": request.path.arguments});
+  FutureOr<Object> onCall(Request request) {
+    return ({"args": request.path.arguments});
   }
 }
 
 class MyUserEndpoint extends Endpoint {
   @override
-  FutureOr<Message> onCall(Request request) {
-    return request.response({"args": "FROM LANG"});
+  FutureOr<Object> onCall(Request request) {
+    return ({"args": "FROM LANG"});
   }
 }
 

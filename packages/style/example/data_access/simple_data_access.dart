@@ -104,13 +104,17 @@ class CustomDataAccess extends Endpoint {
   CustomDataAccess() : super();
 
   @override
-  FutureOr<Message> onCall(Request request) async {
+  // TODO: implement preferredType
+  EndpointPreferredType? get preferredType => EndpointPreferredType.accessEvent;
+
+  @override
+  FutureOr<Object> onCall(Request request) async {
     /// Get Current DataAccess
     /// and read document identified as "world" in collection "hello"
     /// You can use [query] also
     var data = await DataAccess.of(context)
         .read(Read(request: request, collection: "hello", identifier: "world"));
-    return request.response(data);
+    return (data);
   }
 }
 

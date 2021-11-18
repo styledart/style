@@ -23,7 +23,7 @@ class TestRequest extends Request {
   TestRequest({
     required Agent agent,
     required Cause cause,
-    required BuildContext context,
+    BuildContext? context,
     required String path,
     Map<String, dynamic>? headers,
     dynamic body,

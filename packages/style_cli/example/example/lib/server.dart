@@ -48,7 +48,7 @@ class MyServer extends StatelessComponent {
                 request: req,
                 collection: "greeters",
                 data: {"id": req.arguments["name"]}));
-            return req.response("Greet from ${req.arguments["name"]}");
+            return ("Greet from ${req.arguments["name"]}");
           })),
 
           // This route and endpoint return greeters collection
@@ -56,7 +56,7 @@ class MyServer extends StatelessComponent {
           //
           // Call http://localhost/greeters
           Route("greeters", root: SimpleEndpoint((req, ctx) async {
-            return req.response((await DataAccess.of(ctx)
+            return ((await DataAccess.of(ctx)
                 .readList(ReadMultiple(request: req, collection: "greeters"))));
           })),
         ]);

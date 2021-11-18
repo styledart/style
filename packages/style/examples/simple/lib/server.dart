@@ -112,7 +112,7 @@ class MyServer extends StatelessComponent {
           Route("style", root: SimpleEndpoint((req, ctx) {
             /// You can response directly with body.
             /// Also you can response with custom properties (eg status code)
-            return req.response("is very good",
+            return req.response(Body("is very good"),
                 statusCode: 202,
                 contentType: ContentType.text,
                 headers: {"x-my_head": "header"});

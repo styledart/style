@@ -33,7 +33,7 @@ void main() async {
             ]),
             onRequest: (r) {
               if (r.nextPathSegment == "b") {
-                return r.response("responded with gate");
+                return r.response(Body("responded with gate"));
               }
               return r..body = Body("in gate");
             }),

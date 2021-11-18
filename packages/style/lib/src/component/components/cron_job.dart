@@ -87,14 +87,14 @@ class CronJobState extends EndpointState<_CronJobEndpoint> {
   }
 
   @override
-  FutureOr<Message> onCall(Request request) async {
+  FutureOr<Object> onCall(Request request) async {
     if (request.cause != Cause.cronJobs && period is EveryX) {
       (period as EveryX).reset();
     }
     var stw = Stopwatch()..start();
     await component.onCall(request, period);
     stw..stop();
-    return request.response({
+    return ({
       "created": request.context.requestTime.toUtc().toString(),
       "took_ms": stw.elapsedMilliseconds,
     });

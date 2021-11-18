@@ -47,7 +47,7 @@ class Body<T> {
       if (data.startsWith("<")) {
         return HtmlBody(data) as Body<T>;
       }
-      return TextBody(data) as Body<T>;
+      return StringBody(data) as Body<T>;
     }
 
     return Body._(data);
@@ -88,13 +88,13 @@ class JsonBody extends Body<dynamic> {
 }
 
 ///
-class TextBody extends Body<String> {
+class StringBody extends Body<String> {
   ///
-  TextBody(String data) : super._(data);
+  StringBody(String data) : super._(data);
 }
 
 ///
-class HtmlBody extends TextBody {
+class HtmlBody extends StringBody {
   ///
   HtmlBody(String data) : super(data);
 }
@@ -281,22 +281,22 @@ abstract class Request extends Message {
   }
 
   ///
-  Response response(dynamic body,
+  Response response(Body? body,
       {int? statusCode,
       Map<String, dynamic>? headers,
       ContentType? contentType}) {
-    if (body is DbResult) {
-      var h = (headers?..addAll(body.headers ?? {})) ?? {...?body.headers};
-      return Response(
-          body: Body(body.data),
-          request: this,
-          statusCode: body.statusCode ?? statusCode ?? 200,
-          additionalHeaders: h,
-          contentType: contentType);
-    }
+    // if (body is DbResult) {
+    //   var h = (headers?..addAll(body.headers ?? {})) ?? {...?body.headers};
+    //   return Response(
+    //       body: Body(body.data),
+    //       request: this,
+    //       statusCode: body.statusCode ?? statusCode ?? 200,
+    //       additionalHeaders: h,
+    //       contentType: contentType);
+    // }
 
     return Response(
-        body: body is Body ? body : Body(body),
+        body: /*body is Body ? body :*/ Body(body),
         request: this,
         statusCode: statusCode ?? 200,
         additionalHeaders: headers,
@@ -339,7 +339,7 @@ class Response extends Message {
       return ContentType.html;
     } else if (body is BinaryBody) {
       return ContentType.binary;
-    } else if (body is TextBody) {
+    } else if (body is StringBody) {
       return ContentType.text;
     } else {
       return null;

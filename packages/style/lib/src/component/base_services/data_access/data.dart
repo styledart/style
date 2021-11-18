@@ -126,6 +126,30 @@ abstract class DataAccess extends _BaseService {
       AccessEvent accessEvent, FutureOr<T> Function() interoperation);
 
   ///
+  FutureOr<DbResult> any(AccessEvent access) {
+    switch (access.access.type) {
+      case AccessType.read:
+        return _operation(access, () => _read(access.access));
+      case AccessType.readMultiple:
+        return _operation(access, () => _readList(access.access));
+      case AccessType.create:
+        return _operation(access, () => _create(access.access));
+      case AccessType.update:
+        return _operation(access, () => _update(access.access));
+      case AccessType.exists:
+        return _operation(access, () => _exists(access.access));
+      case AccessType.listen:
+        throw UnimplementedError();
+      case AccessType.delete:
+        return _operation(access, () => _delete(access.access));
+      case AccessType.count:
+        return _operation(access, () => _count(access.access));
+      case AccessType.aggregation:
+        return _operation(access, () => _aggregation(access.access));
+    }
+  }
+
+  ///
   FutureOr<ReadDbResult> read(AccessEvent access) {
     return _operation<ReadDbResult>(access, () => _read(access.access));
   }

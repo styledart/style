@@ -53,6 +53,7 @@ abstract class ExceptionEndpoint<T extends Exception> extends Endpoint {
   FutureOr<Message> onCall(Request request,
       [T? exception, StackTrace? stackTrace]) async {
     try {
+      //TODO: Change
       var e = await onError(request, exception!, stackTrace!);
       if (e is Response) {
         if (exception is StyleException) {
@@ -72,7 +73,7 @@ abstract class ExceptionEndpoint<T extends Exception> extends Endpoint {
         if (e is Message) {
           return e;
         } else {
-          return request.response(e);
+          return request.response(Body(e));
         }
       }
     } on Exception {
@@ -111,15 +112,37 @@ class SimpleExceptionEndpoint<T extends Exception>
 ///
 class SimpleEndpoint extends Endpoint {
   ///
-  SimpleEndpoint(this.onRequest);
+  SimpleEndpoint(this.onRequest, {EndpointPreferredType? preferredType})
+      : _preferredType = preferredType;
+
+  final EndpointPreferredType? _preferredType;
+
+  @override
+  EndpointPreferredType? get preferredType => _preferredType;
 
   ///
-  SimpleEndpoint.static(dynamic body) : onRequest = _static(body);
+  SimpleEndpoint.static(Object body)
+      : _preferredType = _type(body),
+        onRequest = _static(body);
 
-  static FutureOr<Response> Function(Request req, BuildContext _) _static(
-      dynamic body) {
+  static EndpointPreferredType? _type(Object body) {
+    if (body is Message || body is Future<Message>) {
+      return EndpointPreferredType.message;
+    } else if (body is Body || body is Future<Body>) {
+      return EndpointPreferredType.body;
+    } else if (body is AccessEvent || body is Future<AccessEvent>) {
+      return EndpointPreferredType.accessEvent;
+    } else if (body is DbResult || body is Future<DbResult>) {
+      return EndpointPreferredType.dbResult;
+    } else {
+      return EndpointPreferredType.anyEncodable;
+    }
+  }
+
+  static FutureOr<Object> Function(Request req, BuildContext _) _static(
+      Object body) {
     return (req, _) {
-      return req.response(body);
+      return (body);
     };
   }
 
@@ -128,8 +151,8 @@ class SimpleEndpoint extends Endpoint {
       onRequest;
 
   @override
-  FutureOr<Object> onCall(Request request) async {
-    return await onRequest(request, context);
+  FutureOr<Object> onCall(Request request) {
+    return onRequest(request, context);
   }
 }
 
@@ -287,41 +310,47 @@ class AccessPoint extends Endpoint {
       accessBuilder;
 
   @override
-  FutureOr<Message> onCall(Request request) async {
-    var dataAccess = context.dataAccess;
+  EndpointPreferredType? get preferredType => EndpointPreferredType.accessEvent;
+
+  @override
+  FutureOr<AccessEvent> onCall(Request request) async {
+    // var dataAccess = context.dataAccess;
     var acc = await accessBuilder(request, context);
     acc.context = context;
-    DbResult result;
-    switch (acc.access.type) {
-      case AccessType.read:
-        result = ((await dataAccess.read(acc)));
-        break;
-      case AccessType.readMultiple:
-        result = ((await dataAccess.readList(acc)));
-        break;
-      case AccessType.create:
-        result = ((await dataAccess.create(acc)));
-        break;
-      case AccessType.update:
-        result = ((await dataAccess.update(acc)));
-        break;
-      case AccessType.exists:
-        result = ((await dataAccess.exists(acc)));
-        break;
-      case AccessType.listen:
-        throw UnimplementedError();
-      case AccessType.delete:
-        result = ((await dataAccess.delete(acc)));
-        break;
-      case AccessType.count:
-        result = ((await dataAccess.count(acc)));
-        break;
-      case AccessType.aggregation:
-        result = await dataAccess.aggregation(acc);
-        break;
-    }
-    return request.response(result.data,
-        headers: result.headers, statusCode: result.statusCode);
+    // DbResult result;
+    //
+    return acc;
+
+    // switch (acc.access.type) {
+    //   case AccessType.read:
+    //     result = ((await dataAccess.read(acc)));
+    //     break;
+    //   case AccessType.readMultiple:
+    //     result = ((await dataAccess.readList(acc)));
+    //     break;
+    //   case AccessType.create:
+    //     result = ((await dataAccess.create(acc)));
+    //     break;
+    //   case AccessType.update:
+    //     result = ((await dataAccess.update(acc)));
+    //     break;
+    //   case AccessType.exists:
+    //     result = ((await dataAccess.exists(acc)));
+    //     break;
+    //   case AccessType.listen:
+    //     throw UnimplementedError();
+    //   case AccessType.delete:
+    //     result = ((await dataAccess.delete(acc)));
+    //     break;
+    //   case AccessType.count:
+    //     result = ((await dataAccess.count(acc)));
+    //     break;
+    //   case AccessType.aggregation:
+    //     result = await dataAccess.aggregation(acc);
+    //     break;
+    // }
+    // return request.response(result.data,
+    //     headers: result.headers, statusCode: result.statusCode);
   }
 }
 
@@ -780,7 +809,7 @@ class __CachedFileServiceState extends EndpointState<_CachedContentDelivery> {
       throw NotFoundException();
     }
 
-    return request.response(cachedFiles[file]!.data, headers: {
+    return request.response(Body(cachedFiles[file]!.data), headers: {
       HttpHeaders.contentTypeHeader: ContentDelivery
               ._contentTypes[cachedFiles[file]!.extension]
               ?.toString() ??
@@ -861,7 +890,7 @@ class _ContentDelivery extends Endpoint {
     var exists = await f.exists();
 
     if (exists) {
-      return request.response(await f.readAsBytesSync(), headers: {
+      return request.response(Body(await f.readAsBytesSync()), headers: {
         HttpHeaders.contentTypeHeader:
             ContentDelivery._contentTypes[f.path.split(".").last]?.toString() ??
                 ContentDelivery._contentTypes["*"]!.toString(),

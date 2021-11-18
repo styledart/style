@@ -18,33 +18,131 @@
 part of '../style_base.dart';
 
 ///
-class EndpointCalling extends Calling {
+abstract class EndpointCalling extends Calling {
   ///
   EndpointCalling(EndpointCallingBinding endpoint) : super(endpoint);
 
   @override
   EndpointCallingBinding get binding => super.binding as EndpointCallingBinding;
 
+  ///
+  Object Function(Request request) get _endpointOnCall =>
+      binding.component.onCall;
+
+// @override
+// FutureOr<Message> onCall(Request request) async {
+//   try {
+//     var val = await binding.component.onCall(request);
+//     if (val is Future) {
+//       var r = await val;
+//       if (r is Message) {
+//         return r;
+//       } else {
+//         return request.response(r);
+//       }
+//     }
+//     if (val is Message) {
+//       return val;
+//     } else {
+//       return request.response(Body(val));
+//     }
+//   } on Exception {
+//     rethrow;
+//   }
+// }
+}
+
+///
+class _DefaultEndpointCalling extends EndpointCalling {
+  ///
+  _DefaultEndpointCalling(EndpointCallingBinding endpoint) : super(endpoint);
+
+  ///
+  FutureOr<Message> _get(Object value, Request request) async {
+    if (value is Message) {
+      return value;
+    } else if (value is DbResult) {
+      return request.response(Body(value.data),
+          headers: value.headers, statusCode: value.statusCode);
+    } else if (value is AccessEvent) {
+      var res = await DataAccess.of(binding).any(value);
+      return request.response(Body(res.data),
+          headers: res.headers, statusCode: res.statusCode);
+    } else {
+      return request.response(Body(value));
+    }
+  }
+
   @override
   FutureOr<Message> onCall(Request request) async {
     try {
-      var val = await binding.component.onCall(request);
+      var val = await _endpointOnCall(request);
       if (val is Future) {
-        var r = await val;
-        if (r is Message) {
-          return r;
-        } else {
-          return request.response(r);
-        }
+        return _get(await val, request);
       }
-      if (val is Message) {
-        return val;
-      } else {
-        return request.response(val);
-      }
+      return _get(val, request);
     } on Exception {
       rethrow;
     }
+  }
+}
+
+class _AccessEventEndpointCalling extends EndpointCalling {
+  _AccessEventEndpointCalling(EndpointCallingBinding endpoint)
+      : super(endpoint);
+
+  @override
+  FutureOr<Message> onCall(Request request) async {
+
+    var event = (await _endpointOnCall(request)) as AccessEvent;
+    var res = await DataAccess.of(binding).any(event);
+    return request.response(Body(res.data),
+        statusCode: res.statusCode, headers: res.headers);
+  }
+}
+
+class _DbResultEndpointCalling extends EndpointCalling {
+  _DbResultEndpointCalling(EndpointCallingBinding endpoint) : super(endpoint);
+
+  @override
+  FutureOr<Message> onCall(Request request) async {
+
+    var res = (await _endpointOnCall(request)) as DbResult;
+    return request.response(Body(res.data),
+        statusCode: res.statusCode, headers: res.headers);
+  }
+}
+
+class _BodyEndpointCalling extends EndpointCalling {
+  _BodyEndpointCalling(EndpointCallingBinding endpoint) : super(endpoint);
+
+  @override
+  FutureOr<Message> onCall(Request request) async {
+
+    var res = (await _endpointOnCall(request)) as Body;
+    return request.response(res);
+  }
+}
+
+class _MessageEndpointCalling extends EndpointCalling {
+  _MessageEndpointCalling(EndpointCallingBinding endpoint) : super(endpoint);
+
+  @override
+  FutureOr<Message> onCall(Request request) async {
+
+    return (await _endpointOnCall(request)) as Message;
+  }
+}
+
+class _AnyEncodableEndpointCalling extends EndpointCalling {
+  _AnyEncodableEndpointCalling(EndpointCallingBinding endpoint)
+      : super(endpoint);
+
+  @override
+  FutureOr<Message> onCall(Request request) async {
+
+    var res = (await _endpointOnCall(request));
+    return request.response(Body(res));
   }
 }
 
@@ -65,6 +163,68 @@ class ExceptionEndpointCalling<T extends Exception> extends EndpointCalling {
   }
 }
 
+/// Endpoint preferred types for performance optimization.
+///
+/// If [Endpoint.preferredType] getter overridden and isn't null,
+/// optimal EndpointCalling created during build.
+///
+enum EndpointPreferredType {
+  /// The return type must be [Body]
+  body,
+
+  /// The return type must be [Message].<br>
+  /// You can create a Message instance with [request.response] function
+  ///
+  /// Message can be [Request] or [Response]
+  message,
+
+  /// The return type can be any json encodable instances like
+  /// String, int, Map etc.<br>
+  /// Look [Body] documentation for encodable objects.<br>
+  ///
+  /// in endpoint [onCall];
+  ///
+  /// ````dart
+  ///   //preferredType => anyEncodable
+  ///   return "hello";
+  /// ````
+  /// equal:
+  /// ````dart
+  ///   return request.response(Body("hello"));
+  /// ````
+  anyEncodable,
+
+  /// The return type must be DbResult.<br>
+  /// in endpoint [onCall];
+  ///
+  /// ````dart
+  ///   //preferredType => dbResult
+  ///   return await db.read(..);
+  /// ````
+  /// equal:
+  /// ````dart
+  ///   var dbResult = await db.read(..);
+  ///   return request.response(dbResult.data, headers: dbResult.headers,
+  ///     statusCode: dbResult.statusCode);
+  /// ````
+  dbResult,
+
+  /// The return type must be [AccessEvent].
+  /// in endpoint [onCall];
+  ///
+  /// ````dart
+  ///   //preferredType => accessEvent
+  ///   return Read(..);
+  /// ````
+  /// equal:
+  /// ````dart
+  ///   var dbResult = await db.read(..);
+  ///   return request.response(dbResult.data, headers: dbResult.headers,
+  ///     statusCode: dbResult.statusCode);
+  /// ````
+  accessEvent,
+}
+
 ///
 abstract class Endpoint extends CallingComponent {
   ///
@@ -77,8 +237,7 @@ abstract class Endpoint extends CallingComponent {
   BuildContext get context => _context!;
 
   ///
-  FutureOr<ReadDbResult> Function(Read event) get dbRead =>
-      DataAccess.of(context).read;
+  EndpointPreferredType? get preferredType => null;
 
   @override
   CallingBinding createBinding() {
@@ -87,11 +246,25 @@ abstract class Endpoint extends CallingComponent {
 
   @override
   Calling createCalling(BuildContext context) {
-    return EndpointCalling(context as EndpointCallingBinding);
+    if (preferredType == null) {
+      return _DefaultEndpointCalling(context as EndpointCallingBinding);
+    }
+    switch (preferredType!) {
+      case EndpointPreferredType.body:
+        return _BodyEndpointCalling(context as EndpointCallingBinding);
+      case EndpointPreferredType.message:
+        return _MessageEndpointCalling(context as EndpointCallingBinding);
+      case EndpointPreferredType.anyEncodable:
+        return _AnyEncodableEndpointCalling(context as EndpointCallingBinding);
+      case EndpointPreferredType.dbResult:
+        return _DbResultEndpointCalling(context as EndpointCallingBinding);
+      case EndpointPreferredType.accessEvent:
+        return _AccessEventEndpointCalling(context as EndpointCallingBinding);
+    }
   }
 
   ///
-  FutureOr<dynamic> onCall(Request request);
+  FutureOr<Object> onCall(Request request);
 }
 
 ///
@@ -269,17 +442,15 @@ abstract class LastModifiedEndpoint extends Endpoint {
       ValidationRequest<DateTime> request);
 
   @override
-  FutureOr onCall(Request request) {
-
-    if (request is! ValidationRequest<DateTime>) {
-
-      var _parent = (context as Binding).ancestorCalling;
-      while (_parent != null){
-        print("$_parent");
-        _parent = _parent.ancestorCalling;
-      }
-      print("Req: ${request.path.calledPath}");
-    }
+  FutureOr<Object> onCall(Request request) {
+    // if (request is! ValidationRequest<DateTime>) {
+    //   var _parent = (context as Binding).ancestorCalling;
+    //   while (_parent != null) {
+    //     print("$_parent");
+    //     _parent = _parent.ancestorCalling;
+    //   }
+    //   print("Req: ${request.path.calledPath}");
+    // }
     return onRequest(request as ValidationRequest<DateTime>);
   }
 }
@@ -294,6 +465,6 @@ abstract class EtagEndpoint extends Endpoint {
       ValidationRequest<String> request);
 
   @override
-  FutureOr onCall(Request request) =>
+  FutureOr<Object> onCall(Request request) =>
       onRequest(request as ValidationRequest<String>);
 }

@@ -78,14 +78,14 @@ class CreateTestToken extends Endpoint {
   CreateTestToken() : super();
 
   @override
-  FutureOr<Message> onCall(Request request) async {
+  FutureOr<Object> onCall(Request request) async {
     var token = AccessToken.create(
         context: context,
         subject: "test",
         deviceID: "",
         userId: "test_user",
         expire: DateTime(2022));
-    return request.response(await context.authorization.decryptToken(token));
+    return (await context.authorization.decryptToken(token));
   }
 }
 
@@ -93,13 +93,13 @@ class VerifyToken extends Endpoint {
   VerifyToken() : super();
 
   @override
-  FutureOr<Message> onCall(Request request) async {
-    if (request.body is! TextBody) {
+  FutureOr<Object> onCall(Request request) async {
+    if (request.body is! StringBody) {
       throw BadRequests();
     }
     var res = await context.authorization
-        .verifyToken((request.body as TextBody).data);
-    return request.response(res.toMap());
+        .verifyToken((request.body as StringBody).data);
+    return (res.toMap());
   }
 }
 

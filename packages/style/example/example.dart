@@ -61,6 +61,8 @@ class MMM extends LastModifiedEndpoint {
 
 class EEEE extends EtagEndpoint {
 
+  ///
+
 
   /// If your data and etag are on different sources
   /// may you want to ensure data need(e-tags are different)
