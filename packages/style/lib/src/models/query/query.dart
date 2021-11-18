@@ -60,13 +60,13 @@ class AccessEvent {
   Access access;
 
   ///
-  AccessToken? get token => request.token;
+  AccessToken? get token => request?.token;
 
   ///
   DbOperationType type;
 
   ///
-  Request request;
+  Request? request;
 
   ///
   final DateTime createTime;
@@ -86,7 +86,7 @@ class AccessEvent {
         "data_access": context?.dataAccess.toMap() ?? "unknown",
         "type": type.index,
         "create": createTime.millisecondsSinceEpoch,
-        "request": request.toMap(),
+        "request": request?.toMap(),
         if (includeBeforeAfter) "before": before,
         if (includeBeforeAfter) "after": after,
         "access": access.toMap(),

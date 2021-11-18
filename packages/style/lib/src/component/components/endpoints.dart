@@ -127,7 +127,7 @@ class SimpleEndpoint extends Endpoint {
 
   static EndpointPreferredType? _type(Object body) {
     if (body is Message || body is Future<Message>) {
-      return EndpointPreferredType.message;
+      return EndpointPreferredType.response;
     } else if (body is Body || body is Future<Body>) {
       return EndpointPreferredType.body;
     } else if (body is AccessEvent || body is Future<AccessEvent>) {

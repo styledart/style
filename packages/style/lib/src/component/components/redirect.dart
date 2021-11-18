@@ -107,7 +107,7 @@ class GeneratedRedirect extends Endpoint {
   GeneratedRedirect({required this.generate});
 
   ///
-  final Future<String> Function(Request request) generate;
+  final FutureOr<String> Function(Request request) generate;
 
   @override
   FutureOr<Message> onCall(Request request) async {

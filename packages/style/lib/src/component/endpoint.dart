@@ -176,7 +176,7 @@ enum EndpointPreferredType {
   /// You can create a Message instance with [request.response] function
   ///
   /// Message can be [Request] or [Response]
-  message,
+  response,
 
   /// The return type can be any json encodable instances like
   /// String, int, Map etc.<br>
@@ -252,7 +252,7 @@ abstract class Endpoint extends CallingComponent {
     switch (preferredType!) {
       case EndpointPreferredType.body:
         return _BodyEndpointCalling(context as EndpointCallingBinding);
-      case EndpointPreferredType.message:
+      case EndpointPreferredType.response:
         return _MessageEndpointCalling(context as EndpointCallingBinding);
       case EndpointPreferredType.anyEncodable:
         return _AnyEncodableEndpointCalling(context as EndpointCallingBinding);

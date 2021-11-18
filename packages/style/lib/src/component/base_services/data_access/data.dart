@@ -448,14 +448,14 @@ class AggregationStage {
 class Read extends AccessEvent {
   ///
   Read(
-      {required Request request,
+      {Request? request,
       required String collection,
       String? identifier,
       Query? query,
       AccessToken? customToken})
       : assert(identifier != null || query != null),
         super(
-            request: request..token = customToken,
+            request: request?..token = customToken,
             access: Access(
                 type: AccessType.read,
                 collection: collection,
@@ -467,12 +467,12 @@ class Read extends AccessEvent {
 class ReadMultiple extends AccessEvent {
   ///
   ReadMultiple(
-      {required Request request,
+      {Request? request,
       required String collection,
       Query? query,
       AccessToken? customToken})
       : super(
-            request: request..token = customToken,
+            request: request?..token = customToken,
             access: Access(
                 type: AccessType.readMultiple,
                 collection: collection,
@@ -483,12 +483,12 @@ class ReadMultiple extends AccessEvent {
 class Create extends AccessEvent {
   ///
   Create(
-      {required Request request,
+      {Request? request,
       required String collection,
       required Map<String, dynamic> data,
       AccessToken? customToken})
       : super(
-            request: request..token = customToken,
+            request: request?..token = customToken,
             access: Access(
                 type: AccessType.create, collection: collection, data: data));
 }
@@ -497,7 +497,7 @@ class Create extends AccessEvent {
 class Update extends AccessEvent {
   ///
   Update(
-      {required Request request,
+      {Request? request,
       required String collection,
       Query? query,
       String? identifier,
@@ -505,7 +505,7 @@ class Update extends AccessEvent {
       AccessToken? customToken})
       : assert(identifier != null || query != null),
         super(
-            request: request..token = customToken,
+            request: request?..token = customToken,
             access: Access(
                 type: AccessType.update, collection: collection, data: data));
 }
@@ -514,14 +514,14 @@ class Update extends AccessEvent {
 class Delete extends AccessEvent {
   ///
   Delete(
-      {required Request request,
+      {Request? request,
       required String collection,
       String? identifier,
       Query? query,
       AccessToken? customToken})
       : assert(identifier != null || query != null),
         super(
-            request: request..token = customToken,
+            request: request?..token = customToken,
             access: Access(
                 type: AccessType.delete,
                 collection: collection,
@@ -533,12 +533,12 @@ class Delete extends AccessEvent {
 class Count extends AccessEvent {
   ///
   Count(
-      {required Request request,
+      {Request? request,
       required String collection,
       Query? query,
       AccessToken? customToken})
       : super(
-          request: request..token = customToken,
+          request: request?..token = customToken,
           access: Access(
               type: AccessType.count, collection: collection, query: query),
         );
@@ -548,14 +548,14 @@ class Count extends AccessEvent {
 class Exists extends AccessEvent {
   ///
   Exists(
-      {required Request request,
+      {Request? request,
       required String collection,
       Query? query,
       String? identifier,
       AccessToken? customToken})
       : assert(identifier != null || query != null),
         super(
-            request: request..token = customToken,
+            request: request?..token = customToken,
             access: Access(
                 identifier: identifier,
                 type: AccessType.exists,

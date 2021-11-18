@@ -2,9 +2,11 @@
 
 For more accurate information look this [article](https://itnext.io/style-backend-framework-d544bdb78a36)
 
+[Pub Package](https://pub.dev/packages/style_dart)
+
 Development Log 1 : [Exception Handling](https://itnext.io/exception-handling-with-style-6020f01af7d8)
 
-Development Log 2 : [Cache Control](https://itnext.io)
+Development Log 2 : [Endpoint](https://medium.com/@mehmet_yaz/style-development-log-2-endpoint-c0a0566b44db)
 
 Articles is free-read.
 

@@ -14,3 +14,7 @@
 
 - Add "EveryX" mixin
     this is merged "lastRun"
+
+## 1.0.4
+
+- Fixes

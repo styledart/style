@@ -16,6 +16,7 @@
  */
 
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:style_dart/style_dart.dart';
 import 'package:style_test/style_test.dart';
@@ -54,9 +55,6 @@ void main() async {
     });
   });
 
-
-
-
   var defaultW = Stopwatch()..start();
 
   for (var i = 0; i < 20000; i++) {
@@ -74,6 +72,46 @@ void main() async {
   test("optimized", () {
     expect(defaultW.elapsedMilliseconds > preferredW.elapsedMilliseconds, true);
   });
+}
+
+class MyServer extends StatelessComponent {
+  const MyServer({Key? key}) : super(key: key);
+
+  @override
+  Component build(BuildContext context) {
+    return Server(children: [
+      CallQueue(MyStatefulEndpoint()),
+      Route("hello", root: MyEndpoint(1)),
+      Route("another",
+          child: Route("sub-route",
+              root: MyEndpoint(2),
+              child: Route("second-sub", root: MyEndpoint(3))))
+    ]);
+  }
+}
+
+class MyStatefulEndpoint extends StatefulEndpoint {
+  @override
+  EndpointState<StatefulEndpoint> createState() => _MyStatefulEndpointState();
+}
+
+class _MyStatefulEndpointState extends EndpointState<MyStatefulEndpoint> {
+  int counter = 0;
+
+  @override
+  FutureOr<Object> onCall(Request request) {
+    counter++;
+    return counter;
+  }
+}
+
+class MyLastModifiedEndpoint extends LastModifiedEndpoint {
+  @override
+  FutureOr<ResponseWithCacheControl<DateTime>> onRequest(
+      ValidationRequest<DateTime> request) {
+    return ResponseWithLastModified("Hello",
+        request: request, lastModified: DateTime.now());
+  }
 }
 
 class _MyServer extends StatelessComponent {
@@ -94,6 +132,18 @@ class _MyServer extends StatelessComponent {
           Route("not_preferred",
               handleUnknownAsRoot: true, root: NotPreferredAny()),
         ]);
+  }
+}
+
+///
+class MyEndpoint extends Endpoint {
+  MyEndpoint(this.code);
+
+  final int code;
+
+  @override
+  FutureOr<Object> onCall(Request request) {
+    return "Hello World! $code";
   }
 }
 
@@ -154,8 +204,6 @@ class NotPreferredAny extends Endpoint {
   }
 }
 
-
-
 class BodyEndpoint extends Endpoint {
   BodyEndpoint() : super();
 
@@ -180,10 +228,11 @@ class AccessEndpoint extends Endpoint {
   @override
   FutureOr<Object> onCall(Request request) {
     if (request.path.next == "future") {
-      return Future.value(
-          Read(request: request, collection: "greeters", identifier: "veli"));
+      return Future.value(Read(collection: "greeters", identifier: "veli"));
     }
-    return Read(request: request, collection: "greeters", identifier: "veli");
+
+
+    return (Read(collection: "greeters", identifier: "veli"));
   }
 }
 
@@ -208,7 +257,7 @@ class MessageEndpoint extends Endpoint {
   MessageEndpoint() : super();
 
   @override
-  EndpointPreferredType? get preferredType => EndpointPreferredType.message;
+  EndpointPreferredType? get preferredType => EndpointPreferredType.response;
 
   @override
   FutureOr<Object> onCall(Request request) async {

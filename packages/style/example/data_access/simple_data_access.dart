@@ -35,7 +35,7 @@ class StyleDataAccessExample extends StatelessComponent {
           permissionHandler: PermissionHandler.custom(callback: (event) {
         /// permit if request token equals access's identifier.
         /// so own document
-        return event.request.token?.userId == event.access.identifier;
+        return event.request?.token?.userId == event.access.identifier;
       }))
     ]);
 
