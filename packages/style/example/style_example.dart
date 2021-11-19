@@ -23,11 +23,6 @@ import 'package:style_dart/style_dart.dart';
 
 /// Bu App Güzel Çalışacak
 void main() async {
-  print("""
-        Traces
-        ${Trace.current().frames}
-        Bitti
-        """);
   runService(ShelfExample());
 
   // b.visitChildren(TreeVisitor((visitor) {
@@ -87,59 +82,63 @@ class ShelfExample extends StatelessComponent {
 
   @override
   Component build(BuildContext context) {
-    return Server(httpService: DefaultHttpServiceHandler(), children: [
-      // ContentDelivery("D:\\style\\packages\\style\\data\\",
-      //     cacheFiles: true, useLastModified: true),
+    print(InternetAddress.anyIPv4.host);
+    return Server(
+        httpService:
+            DefaultHttpServiceHandler(host: InternetAddress.anyIPv4.host),
+        children: [
+          // ContentDelivery("D:\\style\\packages\\style\\data\\",
+          //     cacheFiles: true, useLastModified: true),
 
-      // RouteBase("*root",
-      //     child: DocumentService("D:\\style\\packages\\style\\site\\build"),
-      //     handleUnknownAsRoot: true),
+          // RouteBase("*root",
+          //     child: DocumentService("D:\\style\\packages\\style\\site\\build"),
+          //     handleUnknownAsRoot: true),
 
-      // Route("*root",
-      //     root: SimpleEndpoint((request) => request.response("unk"))),
-      // Route("{a}", root: SimpleEndpoint((request)
-      // => request.response("body"))),
-      // Route("{b}",
-      //     root: SimpleEndpoint((request) =>
-      //     request.createResponse("body2")))
-      //     ,
-      // Static handler
-      // Route("web", root: DocumentService("/dir"), handleUnknownAsRoot: true),
-      CacheControl(
-          cacheability: Cacheability.public(),
-          expiration: Expiration.maxAge(Duration(seconds: 10)),
-          child: RouteBase("modified1", root: MyIfNoneMatchEnd())),
+          // Route("*root",
+          //     root: SimpleEndpoint((request) => request.response("unk"))),
+          // Route("{a}", root: SimpleEndpoint((request)
+          // => request.response("body"))),
+          // Route("{b}",
+          //     root: SimpleEndpoint((request) =>
+          //     request.createResponse("body2")))
+          //     ,
+          // Static handler
+          // Route("web", root: DocumentService("/dir"), handleUnknownAsRoot: true),
+          // CacheControl(
+          //     cacheability: Cacheability.public(),
+          //     expiration: Expiration.maxAge(Duration(seconds: 10)),
+          //     child: RouteBase("modified1", root: MyIfNoneMatchEnd())),
+          //
+          // CacheControl(
+          //     cacheability: Cacheability.public(),
+          //     expiration: Expiration.maxAge(Duration(seconds: 10)),
+          //     child: RouteBase("modified2", root: SimpleEndpoint((r, __) {
+          //       return ("""<html>
+          //         <script src='/modified1' type='application/javascript'></script>
+          //         <h1>Hello</h1>
+          //       </html>""");
+          //     }))),
+          MathRoutes()
 
-      CacheControl(
-          cacheability: Cacheability.public(),
-          expiration: Expiration.maxAge(Duration(seconds: 10)),
-          child: RouteBase("modified2", root: SimpleEndpoint((r, __) {
-            return ("""<html>
-              <script src='/modified1' type='application/javascript'></script>
-              <h1>Hello</h1>
-            </html>""");
-          }))),
-      MathRoutes()
+          // ExceptionWrapper<StyleException>(
+          //     child: Route("time", root: Throw(Exception())),
+          //     exceptionEndpoint: ClientExEnd()),
+          // Route("hello", root:
+          // SimpleEndpoint((req) => req.response("hello"))),
 
-      // ExceptionWrapper<StyleException>(
-      //     child: Route("time", root: Throw(Exception())),
-      //     exceptionEndpoint: ClientExEnd()),
-      // Route("hello", root:
-      // SimpleEndpoint((req) => req.response("hello"))),
-
-      // Route("json", root: SimpleEndpoint((request) {
-      //   print(
-      //       "REQ: ${request.fullPath}\nQUERY:${request.path.queryParameters}");
-      //   return request.response({
-      //     "q": request.path.queryParameters,
-      //     "enc": json.decode(request.path.queryParameters["q"]),
-      //     "fr": json
-      //         .decode(request.path.queryParameters["q"])["from"]
-      //         .runtimeType
-      //         .toString()
-      //   });
-      // })),
-    ]);
+          // Route("json", root: SimpleEndpoint((request) {
+          //   print(
+          //       "REQ: ${request.fullPath}\nQUERY:${request.path.queryParameters}");
+          //   return request.response({
+          //     "q": request.path.queryParameters,
+          //     "enc": json.decode(request.path.queryParameters["q"]),
+          //     "fr": json
+          //         .decode(request.path.queryParameters["q"])["from"]
+          //         .runtimeType
+          //         .toString()
+          //   });
+          // })),
+        ]);
   }
 }
 
@@ -257,8 +256,7 @@ class FormatExEnd extends ExceptionEndpoint<FormatException> {
   @override
   FutureOr<Object> onError(
       Message message, FormatException exception, StackTrace stackTrace) {
-    return
-        "please ensure path like: \"host/{sum|div|dif|mul}/{number}/{number}\"";
+    return "please ensure path like: \"host/{sum|div|dif|mul}/{number}/{number}\"";
   }
 }
 

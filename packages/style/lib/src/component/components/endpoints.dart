@@ -35,7 +35,7 @@ class DefaultExceptionEndpoint<T extends Exception>
         ..body = body
         ..statusCode = statusCode;
     } else {
-      return (message as Request).response(body.data, statusCode: statusCode);
+      return (message as Request).response(body, statusCode: statusCode);
     }
   }
 }
