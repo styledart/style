@@ -30,12 +30,20 @@ abstract class DataAccess extends _BaseService {
     bool defaultPermission = true,
     bool streamSupport = false,
   }) {
+    /// set permission handler if
+    /// or
+    /// -- any collection have custom permission
+    /// -- defaultPermissionsByType is not null
+    /// -- defaultPermission is false
     var hasPermission = (collections
                 ?.where((element) =>
                     element.permissionHandler != null || element.hasSchema)
                 .isNotEmpty ??
             false) ||
-        defaultPermissionsByType != null;
+        defaultPermissionsByType != null ||
+        !defaultPermission;
+
+
 
     var hasTrigger = collections
             ?.where((element) =>
@@ -72,18 +80,21 @@ abstract class DataAccess extends _BaseService {
           streamSupport: streamSupport, collections: collections);
     }
 
+    DataAccess _acc;
+
     if (collections?.isEmpty ?? true) {
-      return _DataAccessEmpty(implementation, identifierMapping);
+      _acc = _DataAccessEmpty(implementation, identifierMapping);
     } else if (_triggerService != null && _permissionHandler == null) {
-      return _DataAccessWithOnlyTrigger(
+      _acc = _DataAccessWithOnlyTrigger(
           implementation, _triggerService, identifierMapping);
     } else if (_triggerService == null && _permissionHandler != null) {
-      return _DataAccessWithPermission(
+      _acc = _DataAccessWithPermission(
           implementation, _permissionHandler, identifierMapping);
     } else {
-      return _DataAccessWithTriggerAndPermission(implementation,
+      _acc = _DataAccessWithTriggerAndPermission(implementation,
           _triggerService!, _permissionHandler!, identifierMapping);
     }
+    return _acc;
   }
 
   ///

@@ -36,7 +36,7 @@ class DbCollection {
             createSchema != null ||
             updateSchema != null;
 
-  static PermissionHandler _getHandler({
+  static PermissionHandler? _getHandler({
     required JsonSchema? createSchema,
     required JsonSchema? updateSchema,
     required PermissionHandler? permissionHandler,
@@ -44,7 +44,8 @@ class DbCollection {
   }) {
     var basePer = permissionHandler;
     var _hasSchema = createSchema != null ||
-        updateSchema != null && resourceSchemaOnUpdate != null;
+        updateSchema != null ||
+        resourceSchemaOnUpdate != null;
     PermissionHandler? schema;
     if (_hasSchema) {
       schema = PermissionHandler._schema(
@@ -52,6 +53,7 @@ class DbCollection {
           createScheme: createSchema,
           onUpdateResource: resourceSchemaOnUpdate);
     }
+    if (basePer == null && schema == null) return null;
     return PermissionHandler.merge(
         [if (basePer != null) basePer, if (schema != null) schema]);
   }
@@ -173,6 +175,7 @@ class PermissionHandler {
         return _validateOnUpdateResource(onUpdateResource, a);
       });
     }
+
     checker = (a) async {
       var t = false;
       for (var c in call) {
