@@ -50,7 +50,7 @@ abstract class DataAccess extends _BaseService {
                 element.triggers != null && element.triggers!.isNotEmpty)
             .isNotEmpty ??
         false;
-    Map<String, String>? identifierMapping;
+    Map<String, String>? _identifierMapping;
     TriggerService? _triggerService;
     PermissionHandlerService? _permissionHandler;
 
@@ -59,10 +59,10 @@ abstract class DataAccess extends _BaseService {
           collections.where((element) => element.identifier != null).isNotEmpty;
 
       if (hasIdentifier) {
-        identifierMapping = {};
+        _identifierMapping = {};
         for (var db in collections) {
           if (db.identifier != null) {
-            identifierMapping[db.collectionName] = db.identifier!;
+            _identifierMapping[db.collectionName] = db.identifier!;
           }
         }
       }
@@ -83,16 +83,16 @@ abstract class DataAccess extends _BaseService {
     DataAccess _acc;
 
     if (collections?.isEmpty ?? true) {
-      _acc = _DataAccessEmpty(implementation, identifierMapping);
+      _acc = _DataAccessEmpty(implementation, _identifierMapping);
     } else if (_triggerService != null && _permissionHandler == null) {
       _acc = _DataAccessWithOnlyTrigger(
-          implementation, _triggerService, identifierMapping);
+          implementation, _triggerService, _identifierMapping);
     } else if (_triggerService == null && _permissionHandler != null) {
       _acc = _DataAccessWithPermission(
-          implementation, _permissionHandler, identifierMapping);
+          implementation, _permissionHandler, _identifierMapping);
     } else {
       _acc = _DataAccessWithTriggerAndPermission(implementation,
-          _triggerService!, _permissionHandler!, identifierMapping);
+          _triggerService!, _permissionHandler!, _identifierMapping);
     }
     return _acc;
   }

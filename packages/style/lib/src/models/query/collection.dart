@@ -89,7 +89,7 @@ class PermissionHandler {
 
   static FutureOr<bool> _validateCreate(
       FutureOr<JsonSchema> create, AccessEvent a) async {
-    if (a is! Create) {
+    if (a.type != DbOperationType.create) {
       return true;
     }
     var validator = StyleValidator(await create);
@@ -102,7 +102,7 @@ class PermissionHandler {
 
   static FutureOr<bool> _validateUpdate(
       FutureOr<JsonSchema> update, AccessEvent a) async {
-    if (a is! Update) {
+    if (a.type != DbOperationType.update) {
       return true;
     }
 
@@ -111,13 +111,14 @@ class PermissionHandler {
     if (!valid) {
       a.errors = validator.errorObjects.map((e) => e.toMapEntry()).toList();
     }
+
     return valid;
   }
 
   static FutureOr<bool> _validateOnUpdateResource(
       FutureOr<JsonSchema> update, AccessEvent a,
       {bool allowResourceIsNull = false}) async {
-    if (a is! Update) {
+    if (a.type != DbOperationType.update) {
       return true;
     }
 
@@ -126,16 +127,15 @@ class PermissionHandler {
     }
 
     var validator = StyleValidator(await update);
-    var valid = validator.validate(a.access.data);
+    var valid = validator.validate(a.before);
     if (!valid) {
       a.errors = validator.errorObjects.map((e) => e.toMapEntry()).toList();
     }
     return valid;
   }
 
-  ///
-  // late BuildContext context;
 
+  ///
   factory PermissionHandler.merge(List<PermissionHandler> handlers) {
     return PermissionHandler.custom(
         callback: (a) async {

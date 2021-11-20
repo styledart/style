@@ -31,6 +31,15 @@
                   <Item>
                     <option name="path" value="packages/style/json/server_schema.json" />
                   </Item>
+                  <Item>
+                    <option name="path" value="packages/style/test/data_access/schemas/create.json" />
+                  </Item>
+                  <Item>
+                    <option name="path" value="packages/style/test/data_access/schemas/onUpdateResource.json" />
+                  </Item>
+                  <Item>
+                    <option name="path" value="packages/style/test/data_access/schemas/update.json" />
+                  </Item>
                 </list>
               </option>
             </SchemaInfo>
