@@ -19,13 +19,17 @@ part of '../../style_base.dart';
 
 /// Base component for server
 ///
+/// Service is service owner that handle requests, hook states
+/// and necessary wrappers.
 ///
-/// Used for api gateway
+/// Server creates a gateway for handle requests.
+/// Server also wraps base services(http,ws,logger etc.).
+///
 class Server extends StatefulComponent {
   ///
   Server(
       {GlobalKey? key,
-      HttpService? httpService,
+      this.httpService,
       this.socketService,
       this.dataAccess,
       this.cryptoService,
@@ -36,8 +40,7 @@ class Server extends StatefulComponent {
       required this.children,
       this.faviconDirectory,
       Map<Type, ExceptionEndpoint>? defaultExceptionEndpoints})
-      : httpService = httpService ?? DefaultHttpServiceHandler(),
-        logger = logger ?? DefaultLogger(),
+      : logger = logger ?? DefaultLogger(),
         rootName = rootName ?? "style_server",
         defaultExceptionEndpoints = defaultExceptionEndpoints ??
             {
@@ -70,7 +73,7 @@ class Server extends StatefulComponent {
   final WebSocketService? socketService;
 
   ///
-  final HttpService httpService;
+  final HttpService? httpService;
 
   ///
   final Authorization? authorization;
@@ -87,24 +90,6 @@ class Server extends StatefulComponent {
 
 ///
 class ServiceState extends State<Server> {
-  ///
-  String get rootName => component.rootName;
-
-  ///
-  Crypto get cryptoService => component.cryptoService!;
-
-  ///
-  DataAccess get dataAccess => component.dataAccess!;
-
-  ///
-  WebSocketService get socketService => component.socketService!;
-
-  ///
-  HttpService get httpServiceNew => component.httpService;
-
-  ///
-  Authorization get authorization => component.authorization!;
-
   @override
   Component build(BuildContext context) {
     Component result = Gateway(children: [
@@ -115,29 +100,34 @@ class ServiceState extends State<Server> {
       ...component.children
     ]);
 
-    result = ServiceWrapper<HttpService>(
-        service: component.httpService, child: result);
+    if (component.httpService != null) {
+      result = ServiceWrapper<HttpService>(
+          service: component.httpService!, child: result);
+    }
+
     result = ServiceWrapper<Logger>(service: component.logger, child: result);
     if (component.cryptoService != null) {
-      result = ServiceWrapper<Crypto>(service: cryptoService, child: result);
+      result = ServiceWrapper<Crypto>(
+          service: component.cryptoService!, child: result);
     }
 
     if (component.socketService != null) {
       result = ServiceWrapper<WebSocketService>(
-          service: socketService, child: result);
+          service: component.socketService!, child: result);
     }
 
     if (component.dataAccess != null) {
-      result = ServiceWrapper<DataAccess>(service: dataAccess, child: result);
+      result = ServiceWrapper<DataAccess>(
+          service: component.dataAccess!, child: result);
     }
 
     if (component.authorization != null) {
-      result =
-          ServiceWrapper<Authorization>(service: authorization, child: result);
+      result = ServiceWrapper<Authorization>(
+          service: component.authorization!, child: result);
     }
 
     return ServiceCallingComponent(
-        rootName: rootName,
+        rootName: component.rootName,
         child: ExceptionWrapper.fromMap(
             map: component.defaultExceptionEndpoints, child: result));
   }
@@ -227,6 +217,7 @@ class ServerBinding extends SingleChildCallingBinding with ServiceOwnerMixin {
         visitor.stop();
       }
     })).result as GatewayCalling;
+    executeCronJobs();
   }
 
   @override
@@ -266,18 +257,54 @@ class ServiceCalling extends Calling {
   }
 }
 
-///
+/// Base service owner can be Server or MicroService(soon).
+/// Service owner took states and cron jobs. Also took service root name.
 mixin ServiceOwnerMixin on Binding {
   final Map<String, GlobalKey> _states = {};
 
-  ///
+  /// Add states by key
+  @protected
   void addState(State state) {
     _states[state.key.key] = state.key;
   }
 
-  ///
+  /// Service root name used for redirect, connecting microservices and
+  /// connecting remote services.
   late String serviceRootName;
 
+  /// cronJobs took Cron Job route and their period.
+  final Map<String, CronTimePeriod> cronJobs = {};
+
   ///
-  Map<String, CronTimePeriod> cronJobs = {};
+  @protected
+  void addCronJob(String route, CronTimePeriod period) {
+    cronJobs[route] = period;
+  }
+
+  final _cronJobController = CronJobController();
+
+  /// Call first time
+  @protected
+  void executeCronJobs() {
+    if (_cronJobController.runners.isNotEmpty) {
+      throw ArgumentError("Call only once executeCronJobs");
+    }
+    if (cronJobs.isNotEmpty) {
+      for (var c in cronJobs.entries) {
+        _cronJobController.add(CronJobRunner(
+            period: c.value,
+            onCall: (d) {
+              callCronJob(c.key, d);
+            }));
+      }
+    }
+    _cronJobController.start();
+  }
+
+  ///
+  Future<void> callCronJob(String route, DateTime time) async {
+    var res =
+        await findCalling.calling(CronJobRequest(time: time, path: route));
+    Logger.of(this).info(this, "cron_job_executed", payload: res.body?.data);
+  }
 }

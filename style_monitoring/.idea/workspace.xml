@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="7876e0a0-e7c0-4a3f-9bf1-07352ff95f07" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/libraries/Dart_Packages.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../.idea/style.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/style.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../packages/style/examp.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../packages/style/example/data_access/test.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../packages/style/example/style_example.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../packages/style/example/style_example.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../packages/style/lib/src/component/base_services/authorization.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../packages/style/lib/src/component/base_services/authorization.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../packages/style/lib/src/component/base_services/base.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../packages/style/lib/src/component/base_services/base.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../packages/style/lib/src/component/components/cron_job.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../packages/style/lib/src/component/components/cron_job.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../packages/style/lib/src/component/components/service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../packages/style/lib/src/component/components/service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../packages/style/lib/src/component/context.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../packages/style/lib/src/component/context.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../packages/style/lib/src/models/request/request.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../packages/style/lib/src/models/request/request.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../packages/style/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../packages/style/pubspec.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../packages/style/test/components/endpoint.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../packages/style/test/components/endpoint.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../packages/style/types.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../packages/style_cron_job/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/../packages/style_cron_job/CHANGELOG.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../packages/style_cron_job/lib/src/style_cron_job_base.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../packages/style_cron_job/lib/src/style_cron_job_base.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../packages/style_cron_job/lib/style_cron_job.dart" beforeDir="false" afterPath="$PROJECT_DIR$/../packages/style_cron_job/lib/style_cron_job.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../packages/style_cron_job/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../packages/style_cron_job/pubspec.yaml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Dart File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectId" id="21HjfdRVTzS2zoLPSPCwbRHggb0" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="dart.analysis.tool.window.visible" value="false" />
+    <property name="flutter.performance.tool.window.visible" value="true" />
+    <property name="io.flutter.reload.alreadyRun" value="true" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="settings.editor.selected.configurable" value="vcs.Git" />
+    <property name="show.migrate.to.gradle.popup" value="false" />
+  </component>
+  <component name="RunManager">
+    <configuration name="main.dart" type="FlutterRunConfigurationType" factoryName="Flutter">
+      <option name="filePath" value="$PROJECT_DIR$/lib/main.dart" />
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="7876e0a0-e7c0-4a3f-9bf1-07352ff95f07" name="Changes" comment="" />
+      <created>1637605020821</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1637605020821</updated>
+      <workItem from="1637605026051" duration="663000" />
+      <workItem from="1637606311674" duration="2028000" />
+      <workItem from="1637663773669" duration="430000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+  </component>
+</project>

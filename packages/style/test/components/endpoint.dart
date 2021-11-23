@@ -16,7 +16,6 @@
  */
 
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:style_dart/style_dart.dart';
 import 'package:style_test/style_test.dart';

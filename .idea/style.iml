@@ -118,6 +118,9 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/style_ssr_web/build" />
       <excludeFolder url="file://$MODULE_DIR$/packages/style_ssr_web/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/packages/style_ssr_web/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/style_monitoring/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/style_monitoring/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/style_monitoring/build" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

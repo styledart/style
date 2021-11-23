@@ -435,6 +435,21 @@ class HttpStyleRequest extends Request {
   }
 }
 
+class CronJobRequest extends Request {
+  CronJobRequest(
+      {required DateTime time, required String path, AccessToken? token})
+      : super(
+          context: RequestContext(
+            requestTime: DateTime.now(),
+            cause: Cause.cronJobs,
+            agent: Agent.internal,
+            accessToken: token,
+            pathController: PathController.fromFullPath(path),
+          ),
+          body: Body<DateTime>(time),
+        );
+}
+
 ///
 class NoResponseRequired extends Response {
   ///

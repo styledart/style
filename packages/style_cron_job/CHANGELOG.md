@@ -18,3 +18,7 @@
 ## 1.0.4
 
 - Fixes
+
+## 1.0.4+1
+
+- _checking already completed Fixed

@@ -40,17 +40,13 @@ class CronJobController {
   void start() {
     _subscription = Stream.periodic(Duration(seconds: 1)).listen((event) {
       var t = DateTime.now();
-      _checking.complete(true);
       for (var runner in runners) {
         if (runner.period.isNecessary(t)) {
           runner.onCall(t);
         }
       }
-      _checking.complete(false);
     });
   }
-
-  final Completer<bool> _checking = Completer();
 
   /// Stop Stream Subscription
   void stop() async {
@@ -64,13 +60,7 @@ class CronJobController {
   ///
   /// Added runner call next seconds if necessary
   void add(CronJobRunner runner) async {
-    while (true) {
-      var ch = await _checking.future;
-      if (!ch) {
-        runners.add(runner);
-        break;
-      }
-    }
+    runners.add(runner);
   }
 
   /// Remove Runners.
@@ -79,13 +69,7 @@ class CronJobController {
   ///
   /// Added runner don't call next
   void remove(CronJobRunner runner) async {
-    while (true) {
-      var ch = await _checking.future;
-      if (!ch) {
-        runners.remove(runner);
-        break;
-      }
-    }
+    runners.remove(runner);
   }
 }
 
@@ -340,6 +324,7 @@ abstract class CronTimePeriod {
   String toTimeString();
 
   CronCondition? _condition;
+
 
   /// Unix-cron Format https://man7.org/linux/man-pages/man5/crontab.5.html
   String unixCronFormat();

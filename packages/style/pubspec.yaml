@@ -14,7 +14,8 @@ dependencies:
   args: ^2.3.0
   queue: ^3.1.0+1
   json_schema2: ^2.0.0+4
-  style_cron_job: ^1.0.4
+  style_cron_job:
+    path: ../style_cron_job
   meta: ^1.7.0
 
 

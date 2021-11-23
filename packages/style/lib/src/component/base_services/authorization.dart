@@ -27,8 +27,6 @@ abstract class Authorization extends _BaseService {
     return context.authorization;
   }
 
-
-
   ///
   FutureOr<bool> initService();
 
@@ -74,6 +72,17 @@ abstract class Authorization extends _BaseService {
   }
 }
 
+
+
+
+
+
+
+
+
+
+
+
 ///
 class SimpleAuthorization extends Authorization {
   @override
@@ -98,43 +107,6 @@ class SimpleAuthorization extends Authorization {
     // TODO: implement register
     throw UnimplementedError();
   }
-
-  /*
-  var header = <String, dynamic>{"alg": "HS512", "typ": "JWT"};
-
-    var payload = toMap();
-
-    //var cAlg = Hmac.sha256();
-
-    var base64Payload = base64Url.encode(utf8.encode(json.encode(payload)));
-
-    var base64Header = base64Url.encode(utf8.encode(json.encode(header)));
-
-    var payloadFirstMacBytes = await context.crypto
-        .calculateSha256Mac(base64Url.decode(base64Payload));
-
-    // var payloadFirstMac = await cAlg.calculateMac(
-    //     base64Url.decode(base64Payload),
-    //     secretKey: styleDb.serverConfiguration.tokenKey1);
-
-    var payloadFirstMacBase64 = base64Url.encode(payloadFirstMacBytes);
-
-    var secondPlain = "$base64Header.$payloadFirstMacBase64";
-
-    var secondMacBytes = await context.crypto
-        .calculateSha256Mac(utf8.encode(secondPlain));
-
-    // var secondMac = await cAlg.calculateMac(utf8.encode(secondPlain),
-    //     secretKey: styleDb.serverConfiguration.tokenKey2);
-
-    var lastMacBase64 = base64Url.encode(secondMacBytes);
-
-    var pHMerged = "$base64Header.$base64Payload";
-
-    var phMergedBase64 = base64Url.encode(utf8.encode(pHMerged));
-
-    return "$phMergedBase64.$lastMacBase64";
-  */
 
   @override
   FutureOr<String> decryptToken(AccessToken token) async {

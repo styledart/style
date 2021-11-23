@@ -18,21 +18,13 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:stack_trace/stack_trace.dart';
+import 'package:style_cron_job/style_cron_job.dart';
 import 'package:style_dart/style_dart.dart';
 
 /// Bu App Güzel Çalışacak
 void main() async {
   runService(ShelfExample());
-
-  // b.visitChildren(TreeVisitor((visitor) {
-  //   try {
-  //     print("${visitor.currentValue.component}"
-  //         " ${visitor.currentValue.httpService}");
-  //   } on Exception {
-  //     print("${visitor.currentValue.component} on Null");
-  //   }
-  // }));
+  Stream.periodic(Duration(seconds: 1),(i)=>i).listen(print);
 }
 
 class MyEx implements Exception {
@@ -118,7 +110,17 @@ class ShelfExample extends StatelessComponent {
           //         <h1>Hello</h1>
           //       </html>""");
           //     }))),
-          MathRoutes()
+          MathRoutes(),
+
+          Route("cron",
+              child: CronJob(
+                  name: "5_sec",
+                  resetPeriodOnExternalCall: false,
+                  allowExternal: true,
+                  timePeriod: every.x(15).second.period,
+                  onCall: (r, p) async {
+                    print("P: ${p.toTimeString()}");
+                  })),
 
           // ExceptionWrapper<StyleException>(
           //     child: Route("time", root: Throw(Exception())),

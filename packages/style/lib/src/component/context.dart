@@ -184,6 +184,19 @@ abstract class BuildContext {
 
   ///
   ExceptionHandler get exceptionHandler;
+
+  /// Get current context path
+  String getPath() {
+    BuildContext? _parent = this;
+    var segments = <PathSegment>[];
+    while (_parent != null && _parent is! ServiceOwnerMixin) {
+      if ((_parent as Binding?) is RouteBinding) {
+        segments.add((_parent as RouteBinding).component.segment);
+      }
+      _parent = _parent._parent;
+    }
+    return "/${segments.map((e) => e.name).join("/")}";
+  }
 }
 
 /// Mimari kurucusu
@@ -356,40 +369,40 @@ abstract class Binding extends BuildContext {
   void _build();
 
   ///
-  // Map<String, dynamic> toMapShort() => {
-  //       "component": component.runtimeType.toString(),
-  //       "key": key.key,
-  //       "type": runtimeType.toString(),
-  //     };
-  //
-  // ///
-  // Map<String, dynamic> toMapOwn() => {
-  //       "calling": _foundCalling?.toMapShort(),
-  //       "services": [
-  //         if (hasService<DataAccess>())
-  //           {"type": "data_access", "name": dataAccess.runtimeType
+// Map<String, dynamic> toMapShort() => {
+//       "component": component.runtimeType.toString(),
+//       "key": key.key,
+//       "type": runtimeType.toString(),
+//     };
+//
+// ///
+// Map<String, dynamic> toMapOwn() => {
+//       "calling": _foundCalling?.toMapShort(),
+//       "services": [
+//         if (hasService<DataAccess>())
+//           {"type": "data_access", "name": dataAccess.runtimeType
 //           .toString()},
-  //         if (hasService<Logger>())
-  //           {"type": "logger", "name": logger.runtimeType.toString()},
-  //         if (hasService<HttpService>())
-  //           {
-  //             "type": "http_service",
-  //             "name": httpService.runtimeType.toString()
-  //           },
-  //         if (hasService<WebSocketService>())
-  //           {
-  //             "type": "web_socket",
-  //             "name": socketService.runtimeType.toString()
-  //           },
-  //         if (hasService<Crypto>())
-  //           {"type": "crypto", "name": crypto.runtimeType.toString()},
-  //         if (hasService<Authorization>())
-  //           {
-  //             "type": "authorization",
-  //             "name": authorization.runtimeType.toString()
-  //           },
-  //       ]
-  //     };
+//         if (hasService<Logger>())
+//           {"type": "logger", "name": logger.runtimeType.toString()},
+//         if (hasService<HttpService>())
+//           {
+//             "type": "http_service",
+//             "name": httpService.runtimeType.toString()
+//           },
+//         if (hasService<WebSocketService>())
+//           {
+//             "type": "web_socket",
+//             "name": socketService.runtimeType.toString()
+//           },
+//         if (hasService<Crypto>())
+//           {"type": "crypto", "name": crypto.runtimeType.toString()},
+//         if (hasService<Authorization>())
+//           {
+//             "type": "authorization",
+//             "name": authorization.runtimeType.toString()
+//           },
+//       ]
+//     };
 }
 
 ///

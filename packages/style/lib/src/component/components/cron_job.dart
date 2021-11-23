@@ -24,6 +24,7 @@ class CronJob extends StatelessComponent {
       {required this.timePeriod,
       required this.onCall,
       this.resetPeriodOnExternalCall = true,
+      this.allowExternal = false,
       String? name,
       GlobalKey? key})
       : name = name ?? "cron_job_${timePeriod.runtimeType}${getRandomId(5)}";
@@ -36,16 +37,44 @@ class CronJob extends StatelessComponent {
   final CronTimePeriod timePeriod;
 
   ///
+  final bool allowExternal;
+
+  ///
   final bool resetPeriodOnExternalCall;
 
   ///
   final String name;
 
   @override
+  StatelessBinding createBinding() => _CronJobBinding(this);
+
+  @override
   Component build(BuildContext context) {
-    return Route(name,
-        root: _CronJobEndpoint(
-            name: name, timePeriod: timePeriod, onCall: onCall));
+    return Gate(
+        child: Route(name,
+            root: _CronJobEndpoint(
+              resetPeriodOnExternalCall: resetPeriodOnExternalCall,
+                name: name, timePeriod: timePeriod, onCall: onCall)),
+        onRequest: (r) {
+          if (r.context.cause != Cause.cronJobs && !allowExternal) {
+            throw ForbiddenUnauthorizedException();
+          }
+          return r;
+        });
+  }
+}
+
+class _CronJobBinding extends StatelessBinding {
+  _CronJobBinding(StatelessComponent component) : super(component);
+
+  @override
+  // TODO: implement component
+  CronJob get component => super.component as CronJob;
+
+  @override
+  void _build() {
+    super._build();
+    owner.addCronJob("${getPath()}/${component.name}", component.timePeriod);
   }
 }
 
@@ -88,15 +117,19 @@ class CronJobState extends EndpointState<_CronJobEndpoint> {
 
   @override
   FutureOr<Object> onCall(Request request) async {
-    if (request.cause != Cause.cronJobs && period is EveryX) {
-      (period as EveryX).reset();
-    }
     var stw = Stopwatch()..start();
     await component.onCall(request, period);
     stw..stop();
-    return ({
+    if (request is! CronJobRequest &&
+        component.resetPeriodOnExternalCall &&
+        period is EveryX) {
+      print("RESET PERIOD");
+      (period as EveryX).reset();
+    }
+    return {
       "created": request.context.requestTime.toUtc().toString(),
       "took_ms": stw.elapsedMilliseconds,
-    });
+      "path": request.fullPath
+    };
   }
 }

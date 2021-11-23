@@ -55,7 +55,6 @@ class ServiceWrapper<B extends _BaseService> extends StatelessComponent {
 
 ///
 class ServiceWrapperBinding<B extends _BaseService> extends StatelessBinding {
-
   ///
   ServiceWrapperBinding(ServiceWrapper<B> component) : super(component);
 
@@ -81,6 +80,8 @@ class ServiceWrapperBinding<B extends _BaseService> extends StatelessBinding {
 }
 
 abstract class _BaseService {
+  _BaseService();
+
   /// The context in which the service attached
   late final BuildContext context;
 
@@ -104,7 +105,3 @@ abstract class _BaseService {
     return await _initializeCompleter.future;
   }
 }
-
-
-
-
