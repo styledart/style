@@ -52,7 +52,4 @@ Future<FutureOr<Message> Function(Request request)> initStyleTester(
   });
 
   return app.findCalling.calling.call;
-
-  /*
-  return respTest.testRequest;*/
 }
