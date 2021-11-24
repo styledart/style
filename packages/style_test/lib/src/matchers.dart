@@ -18,7 +18,110 @@
 import 'package:style_dart/style_dart.dart';
 import 'package:test/expect.dart';
 
-abstract class RequestMatcher extends Matcher {
+/// [bodyIs] checks the response body.
+///
+/// if [bodyOrMatcher] is matcher [bodyIs] creates a
+/// [_CustomBodyMatcher] instance, else creates [_BodyMatcher]
+/// instance and checks the response body with these matchers.
+///
+/// Example:
+///
+/// ````dart
+/// tester("/path/to" , bodyIs({"hello" : "world"}))
+/// ````
+///
+/// native equals:
+///
+/// ````dart
+/// //.. get response
+/// test(response.body, eq({"hello" : "world"}))
+/// ````
+///
+/// OR use with matcher
+///
+///
+/// ````dart
+/// tester("/path/to" , bodyIs(contains("hello")))
+/// ````
+///
+/// native equals:
+///
+/// ````dart
+/// //.. get response
+/// test(response.body, contains("hello"))
+/// ````
+Matcher bodyIs(dynamic bodyOrMatcher) {
+  if (bodyOrMatcher is Matcher) {
+    return _CustomBodyMatcher._(bodyOrMatcher);
+  }
+  return _BodyMatcher._(bodyOrMatcher);
+}
+
+/// StatusCodeMatcher checks status code of the response.
+///
+/// Example:
+///
+/// ````dart
+/// tester("/path/to" , statusCodeIs(500))
+/// ````
+///
+/// native equals:
+///
+/// ````dart
+/// //.. get response
+/// test(response.statusCode, 500)
+/// ````
+_ExactStatusCodeMatcher statusCodeIs(int statusCode) =>
+    _ExactStatusCodeMatcher._(statusCode);
+
+/// Check status code is 401.
+///
+/// Server has not take any authorization
+_ExactStatusCodeMatcher isUnauthorized = statusCodeIs(401);
+
+/// Check status code is 403 (Forbidden Unauthorization Error).
+///
+/// Server take authorization but the client does not have a access
+/// for the content.
+_ExactStatusCodeMatcher permissionIsDenied = statusCodeIs(403);
+
+/// Check status code is in range
+_RangeStatusCodeMatcher statusCodeIsInRange(int min, int max) =>
+    _RangeStatusCodeMatcher._(min, max);
+
+/// Status code is between 100-199
+_RangeStatusCodeMatcher isInformational = statusCodeIsInRange(100, 200);
+
+/// Status code is between 200-299
+_RangeStatusCodeMatcher isSuccess = statusCodeIsInRange(200, 300);
+
+/// Status code is between 300-399
+_RangeStatusCodeMatcher isRedirection = statusCodeIsInRange(300, 400);
+
+/// Status code is between 400-499
+_RangeStatusCodeMatcher isClientError = statusCodeIsInRange(400, 500);
+
+/// Status code is between 500-599
+_RangeStatusCodeMatcher isServerError = statusCodeIsInRange(500, 600);
+
+/// [headerIs] checks response headers key => value pairs.
+/// header can be null or List. So your matcher must be according to
+/// Iterable matchers.
+///
+/// eg. your matcher can be:
+///
+/// equals(["must-revalidate"])
+///
+/// or
+///
+/// contains("must-revalidate")
+///
+///
+_HeaderMatcher headerIs(String key, Matcher value) =>
+    _HeaderMatcher._(key, value);
+
+/// Request matcher checks the response.
+abstract class _ResponseMatcher extends Matcher {
   @override
   bool matches(item, Map matchState) {
     if (item is! Response) {
@@ -31,15 +134,11 @@ abstract class RequestMatcher extends Matcher {
   bool match(Response response);
 }
 
-Matcher bodyIs(dynamic bodyOrMatcher) {
-  if (bodyOrMatcher is Matcher) {
-    return CustomBodyMatcher(bodyOrMatcher);
-  }
-  return BodyMatcher(bodyOrMatcher);
-}
-
-class BodyMatcher extends RequestMatcher {
-  BodyMatcher(this.body);
+/// BodyMatcher checks the response body with "eq" matcher.
+class _BodyMatcher extends _ResponseMatcher {
+  /// Body must not be matcher.
+  /// if body is matcher use CustomBodyMatcher instead.
+  _BodyMatcher._(this.body);
 
   dynamic body;
 
@@ -62,8 +161,9 @@ class BodyMatcher extends RequestMatcher {
   }
 }
 
-class CustomBodyMatcher extends RequestMatcher {
-  CustomBodyMatcher(this.matcher);
+/// CustomBodyMatcher matcher checks the response body with given [matcher].
+class _CustomBodyMatcher extends _ResponseMatcher {
+  _CustomBodyMatcher._(this.matcher);
 
   Matcher matcher;
 
@@ -78,20 +178,18 @@ class CustomBodyMatcher extends RequestMatcher {
   }
 }
 
-class StatusCodeMatcher extends RequestMatcher {
-  StatusCodeMatcher(this.statusCode);
-
-  ///
-  int statusCode;
-
+/// StatusCodeMatcher checks status code of the response.
+abstract class _StatusCodeMatcher extends _ResponseMatcher {
   @override
   Description describe(Description description) {
-    return description.add("status_code: " + statusCode.toString() + " ");
+    return description.add("status_code: ");
   }
+
+  bool check(int statusCode);
 
   @override
   bool match(Response response) {
-    return response.statusCode == statusCode;
+    return check(response.statusCode);
   }
 
   @override
@@ -103,11 +201,51 @@ class StatusCodeMatcher extends RequestMatcher {
   }
 }
 
-class HeaderMatcher extends RequestMatcher {
-  HeaderMatcher(this.key, this.value);
+/// ExactStatusCodeMatcher checks status code of the response.
+/// Checks exactly.
+class _ExactStatusCodeMatcher extends _StatusCodeMatcher {
+  _ExactStatusCodeMatcher._(this.statusCode);
+
+  /// Http status code
+  int statusCode;
+
+  @override
+  bool check(int statusCode) {
+    return statusCode == this.statusCode;
+  }
+
+  @override
+  Description describe(Description description) {
+    return super.describe(description)..add(statusCode.toString());
+  }
+}
+
+/// RangeStatusCodeMatcher checks status code of the response.
+/// Checks is in range.
+class _RangeStatusCodeMatcher extends _StatusCodeMatcher {
+  /// min include, max exclude
+  _RangeStatusCodeMatcher._(this.min, this.max);
+
+  ///
+  int min, max;
+
+  @override
+  bool check(int statusCode) {
+    return (min <= statusCode && statusCode < max);
+  }
+
+  @override
+  Description describe(Description description) {
+    return super.describe(description)..add(" $min <= code < $max ");
+  }
+}
+
+/// HeaderMatcher checks header of the response.
+class _HeaderMatcher extends _ResponseMatcher {
+  _HeaderMatcher._(this.key, this.value);
 
   String key;
-  String value;
+  Matcher value;
 
   @override
   Description describeMismatch(
@@ -119,29 +257,11 @@ class HeaderMatcher extends RequestMatcher {
 
   @override
   Description describe(Description description) {
-    return description..add("header $key contains all of $value");
+    return description..add("header $key match ${value.describe(description)}");
   }
 
   @override
   bool match(Response response) {
     return equals(value).matches(response.additionalHeaders?[key], {});
   }
-}
-
-
-HeaderMatcher headerIs(String key, dynamic value) => HeaderMatcher(key, value);
-
-StatusCodeMatcher statusCodeIs(int statusCode) => StatusCodeMatcher(statusCode);
-
-UnauthorizedMatcher isUnauthorized = UnauthorizedMatcher();
-
-
-class UnauthorizedMatcher extends StatusCodeMatcher {
-  UnauthorizedMatcher() : super(401);
-}
-
-PermissionDenied permissionIsDenied = PermissionDenied();
-
-class PermissionDenied extends StatusCodeMatcher {
-  PermissionDenied() : super(403);
 }

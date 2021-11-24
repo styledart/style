@@ -48,6 +48,24 @@ Eg.
 tester("/path/to", statusCodeIs(200));
 ````
 
+#### ``statusCodeIsInRange(min,max)``
+
+Check status code is in range.
+
+Eg.
+````dart
+tester("/path/to", statusCodeIsInRange(200,300)); // max exclude
+````
+
+Simple range matchers:
+
+- ``isInformational`` for informational status codes. (1**).
+- ``isSuccess`` for success status codes (2**).
+- ``isRedirection`` for redirection status codes. (3**).
+- ``isClientError`` for client error status codes. (4**).
+- ``isServerError`` for server error status codes. (5**).
+
+
 #### ``headerIs(key, value)``
 
 Check headers.
@@ -74,4 +92,4 @@ tester("/path/to", isUnauthorized);
 
 ## Additional information
 
-TODO:
+// TODO: This documentation is a template.

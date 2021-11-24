@@ -54,4 +54,4 @@ will be hosted by styledart.dev. It will also be available as open source.
 
 ### cli improvements
 
-Many run/test options can be set by cli app. Also, cli app used for monitoring app.
+Many run/test options can be set by cli app. Also, cli app will be used for monitoring app.
