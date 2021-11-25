@@ -27,3 +27,7 @@
 ## 1.0.2+5
 
 - `AggregationPipeline` and `AggregationStage` deleted. Now, ``Access.pipeline`` is `Object?`
+
+## 1.0.2+6
+
+- `pubspec.yaml` edited.
