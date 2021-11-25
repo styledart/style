@@ -5,13 +5,13 @@ homepage: https://github.com/Mehmetyaz/style/tree/main/packages/style_test/
 repository: https://github.com/Mehmetyaz/style
 
 environment:
-  sdk: '>=2.14.0 <3.0.0'
+  sdk: '>=2.15.0 <3.0.0'
 
 
 dependencies:
   test: ^1.19.4
   meta: ^1.7.0
-  style_dart: ^1.0.2+2
+  style_dart: ^1.0.2+3
 
 dev_dependencies:
   lints: ^1.0.1

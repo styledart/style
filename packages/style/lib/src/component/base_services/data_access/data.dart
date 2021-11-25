@@ -384,6 +384,7 @@ class Access {
   ///
   final AggregationPipeline? pipeline;
 
+  ///
   final OperationSettings? settings;
 
   ///
@@ -409,13 +410,7 @@ class Access {
 }
 
 /// Db Operation settings
-abstract class OperationSettings {
-  ///
-  Map<String, dynamic> toMap();
-
-  ///
-  OperationSettings fromMap(Map<String, dynamic> map);
-}
+abstract class OperationSettings {}
 
 ///
 class AggregationPipeline {
