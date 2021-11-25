@@ -410,14 +410,12 @@ class CacheControl extends GateWithChild {
   @override
   FutureOr<Message> onRequest(Request request,
       FutureOr<Message> Function(Request p1) childCalling) async {
-
     var rrrR = request.path.calledPath ==
         "/packages/build_web_compilers/src/dev_compiler_stack_trace/stack_trace_mapper.dart.js";
 
     if (rrrR) {
       print("BURADAAAA");
     }
-
 
     var res = await childCalling(request);
     addHeaders(res);
@@ -435,7 +433,6 @@ class _CacheControlWithRevalidation extends CacheControl {
   @override
   FutureOr<Message> onRequest(Request request,
       FutureOr<Message> Function(Request p1) childCalling) async {
-
     var rrrR = request.path.calledPath ==
         "/packages/build_web_compilers/src/dev_compiler_stack_trace/stack_trace_mapper.dart.js";
 

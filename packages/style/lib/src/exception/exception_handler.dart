@@ -42,7 +42,7 @@ class ExceptionHandler {
   ExceptionEndpointCallingBinding? _findSuperTypes<T extends Exception>(
       Exception e) {
     if (e is StyleException) {
-       return _map[e.superType] ?? _map[StyleException];
+      return _map[e.superType] ?? _map[StyleException];
     }
     return null;
   }

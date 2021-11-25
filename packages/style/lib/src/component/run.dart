@@ -28,8 +28,6 @@ Binding runService(Component component) {
     }
   }));
 
-
-
   // var runner = CommandRunner("style", "style inline command-line app");
   // runner.addCommand(SetProperty());
   //

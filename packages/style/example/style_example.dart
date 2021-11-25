@@ -21,10 +21,9 @@ import 'dart:io';
 import 'package:style_cron_job/style_cron_job.dart';
 import 'package:style_dart/style_dart.dart';
 
-/// Bu App Güzel Çalışacak
 void main() async {
   runService(ShelfExample());
-  Stream.periodic(Duration(seconds: 1),(i)=>i).listen(print);
+  Stream.periodic(Duration(seconds: 1), (i) => i).listen(print);
 }
 
 class MyEx implements Exception {
@@ -40,17 +39,15 @@ class UnauthorizedEndpoint extends ExceptionEndpoint<UnauthorizedException> {
       return ({"error": "unauthorized_error"});
     } else {
       return (message as Request).response(HtmlBody("""
-<html>
+<html lang="en">
     <body>
-      <center style="vertical-align: middle;">
-        <h1>
+      <h1>
           You are not allowed inside
         </h1>
         <span style="padding-top: 20px;">
-        <p align='left'>
+        <p>
         ${stackTrace.toString().split("\n").join("<br>")}
-        </p>     
-      </center>
+        </p>
     </body>
   </html>
       """));
@@ -213,7 +210,6 @@ class _EndState extends EndpointState<MyIfNoneMatchEnd> {
 //   @override
 //   void initState() {
 //     Timer.periodic(Duration(seconds: 20), (timer) {
-//       print("Değişti");
 //       val = getRandomId(30);
 //       last = DateTime.now();
 //     });
@@ -247,7 +243,12 @@ class MathOperationRoute extends StatelessComponent {
                 child: SubRoute("{b}", root: SimpleEndpoint((request, _) {
                   var a = int.parse(request.arguments["a"]);
                   var b = int.parse(request.arguments["b"]);
-                  return {"a": a, "b": b, name: operation(a, b)};
+                  return {
+                    "isolate": request.body?.data,
+                    "a": a,
+                    "b": b,
+                    name: operation(a, b)
+                  };
                 })))),
         exceptionEndpoint: FormatExEnd());
   }
@@ -343,14 +344,11 @@ class MyServer extends StatelessComponent {
           RouteBase("un-auth", root: CallQueue(UnAuthEnd())),
         ],
         // defaultUnknownEndpoint: SimpleEndpoint((r) {
-        //   print("Buraya Geldi");
         //   return r.createResponse({"route": "un"});
         // }),
         rootEndpoint: Redirect("http://localhost/doc/index.html"));
   }
 }
-
-/// For Http Deneme
 
 /// TODO: Document
 class MyServerUnknown extends Endpoint {
@@ -390,8 +388,7 @@ class UnAuthEnd extends Endpoint {
   @override
   FutureOr<Object> onCall(Request request) async {
     try {
-      print("Cevap Gitti UN: ${context.dataAccess}");
-      return {"args": "FROM UNAUTH"};
+      return {"args": "FROM UN-AUTH"};
     } on Exception catch (e) {
       print("ON 2 $e");
       rethrow;
@@ -419,7 +416,7 @@ class Post extends StatelessComponent {
         //       if (req.path.arguments["post_id"] == "user") {
         //         throw Exception("Exception");
         //
-        //         return req.createJsonResponse({"mes": "Gate Cevap Verdi"});
+        //         return req.createJsonResponse({"mes": "Gate"});
         //       }
         //       return req;
         //     }),

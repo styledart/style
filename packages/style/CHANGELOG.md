@@ -13,3 +13,14 @@
 ## 1.0.2+1
 
 - Readme fix
+
+## 1.0.2+2
+
+- permission handler errors fixed
+- schema validation test
+- cron job errors fixed
+
+
+## 1.0.2+3
+
+- `operationSettings` added to Access

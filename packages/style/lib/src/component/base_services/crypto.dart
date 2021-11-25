@@ -17,14 +17,10 @@
 
 part of '../../style_base.dart';
 
-
-
-
-
 ///
 abstract class Crypto extends _BaseService {
   ///
-  static Crypto of(BuildContext context){
+  static Crypto of(BuildContext context) {
     return context.crypto;
   }
 
@@ -45,4 +41,3 @@ abstract class Crypto extends _BaseService {
   ///
   FutureOr<List<int>> calculateSha1Mac(List<int> plain);
 }
-

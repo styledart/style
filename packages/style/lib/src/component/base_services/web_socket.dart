@@ -17,38 +17,26 @@
 
 part of '../../style_base.dart';
 
-
 ///
 abstract class WebSocketService extends _BaseService {
-
   ///
-  static WebSocketService of(BuildContext context){
+  static WebSocketService of(BuildContext context) {
     return context.socketService;
   }
-
 
   ///
   void encrypt();
 
-
-
   @override
   Future<bool> init([bool inInterface = true]) async {
-      return true;
+    return true;
   }
-
-
 }
-
-
 
 ///
 class DefaultSocketServiceHandler extends WebSocketService {
-
   @override
   void encrypt() {
     // TODO: implement encrypt
   }
-
-
 }

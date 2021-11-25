@@ -53,8 +53,10 @@ class CronJob extends StatelessComponent {
     return Gate(
         child: Route(name,
             root: _CronJobEndpoint(
-              resetPeriodOnExternalCall: resetPeriodOnExternalCall,
-                name: name, timePeriod: timePeriod, onCall: onCall)),
+                resetPeriodOnExternalCall: resetPeriodOnExternalCall,
+                name: name,
+                timePeriod: timePeriod,
+                onCall: onCall)),
         onRequest: (r) {
           if (r.context.cause != Cause.cronJobs && !allowExternal) {
             throw ForbiddenUnauthorizedException();

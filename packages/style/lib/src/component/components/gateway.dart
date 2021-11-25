@@ -80,9 +80,8 @@ class GatewayBinding extends MultiChildCallingBinding {
         for (var seg in segments.entries) {
           if (seg.key.isArgument) {
             if (arg != null) {
-              throw Exception(
-                  "Gateways allow only once argument segment."
-                      "\nbut found $arg and"
+              throw Exception("Gateways allow only once argument segment."
+                  "\nbut found $arg and"
                   " $seg\nWHERE: $_errorWhere");
             } else {
               arg = seg.key;
@@ -96,9 +95,8 @@ class GatewayBinding extends MultiChildCallingBinding {
 
         if (seg.isArgument) {
           if (arg != null) {
-            throw Exception(
-                "Gateways allow only once argument segment."
-                    " \nbut found $arg and"
+            throw Exception("Gateways allow only once argument segment."
+                " \nbut found $arg and"
                 " $seg\nWHERE: $_errorWhere");
           } else {
             arg = seg;
@@ -128,7 +126,6 @@ class GatewayCalling extends Calling {
 
   @override
   FutureOr<Message> onCall(Request request) {
-
     if (childrenBinding[PathSegment(request.nextPathSegment)] != null) {
       return childrenBinding[PathSegment(request.nextPathSegment)]!
           .findCalling

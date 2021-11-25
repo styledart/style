@@ -74,26 +74,24 @@ class _CallTriggerCalling extends Calling {
 
   @override
   FutureOr<Message> onCall(Request request) async {
-
-      if (component.requestTrigger != null) {
-        if (component.ensureResponded) {
-          _ensureResponded(request);
-        } else {
-          component.requestTrigger!.call(request);
-        }
-      }
-      if (component.responseTrigger != null) {
-        var res = await binding.child.findCalling.calling(request);
-        if (component.ensureSent) {
-          _ensureSent(res);
-        } else {
-          component.responseTrigger!.call(request);
-        }
-        return res;
+    if (component.requestTrigger != null) {
+      if (component.ensureResponded) {
+        _ensureResponded(request);
       } else {
-        return binding.child.findCalling.calling(request);
+        component.requestTrigger!.call(request);
       }
-
+    }
+    if (component.responseTrigger != null) {
+      var res = await binding.child.findCalling.calling(request);
+      if (component.ensureSent) {
+        _ensureSent(res);
+      } else {
+        component.responseTrigger!.call(request);
+      }
+      return res;
+    } else {
+      return binding.child.findCalling.calling(request);
+    }
   }
 }
 

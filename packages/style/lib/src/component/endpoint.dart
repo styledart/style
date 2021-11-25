@@ -93,7 +93,6 @@ class _AccessEventEndpointCalling extends EndpointCalling {
 
   @override
   FutureOr<Message> onCall(Request request) async {
-
     var event = (await _endpointOnCall(request)) as AccessEvent;
     var res = await DataAccess.of(binding).any(event);
     return request.response(Body(res.data),
@@ -106,7 +105,6 @@ class _DbResultEndpointCalling extends EndpointCalling {
 
   @override
   FutureOr<Message> onCall(Request request) async {
-
     var res = (await _endpointOnCall(request)) as DbResult;
     return request.response(Body(res.data),
         statusCode: res.statusCode, headers: res.headers);
@@ -118,7 +116,6 @@ class _BodyEndpointCalling extends EndpointCalling {
 
   @override
   FutureOr<Message> onCall(Request request) async {
-
     var res = (await _endpointOnCall(request)) as Body;
     return request.response(res);
   }
@@ -129,7 +126,6 @@ class _MessageEndpointCalling extends EndpointCalling {
 
   @override
   FutureOr<Message> onCall(Request request) async {
-
     return (await _endpointOnCall(request)) as Message;
   }
 }
@@ -140,7 +136,6 @@ class _AnyEncodableEndpointCalling extends EndpointCalling {
 
   @override
   FutureOr<Message> onCall(Request request) async {
-
     var res = (await _endpointOnCall(request));
     return request.response(Body(res));
   }

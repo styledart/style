@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2021 styledart.dev - Mehmet Yaz
  *

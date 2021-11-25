@@ -134,7 +134,6 @@ class PermissionHandler {
     return valid;
   }
 
-
   ///
   factory PermissionHandler.merge(List<PermissionHandler> handlers) {
     return PermissionHandler.custom(

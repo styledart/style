@@ -31,7 +31,6 @@ class RequestContext {
   /// Path-Call Controller
   PathController pathController;
 
-
   /// Request Create Time
   DateTime requestTime;
 

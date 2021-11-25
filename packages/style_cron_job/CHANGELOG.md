@@ -22,3 +22,7 @@
 ## 1.0.4+1
 
 - _checking already completed Fixed
+
+## 1.0.4+2
+
+- dependency changes

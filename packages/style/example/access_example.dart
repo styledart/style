@@ -15,15 +15,11 @@
  *
  */
 
-
-
 import 'package:style_dart/style_dart.dart';
 
 void main() {
   runService(_MyServer());
 }
-
-
 
 class _MyServer extends StatelessComponent {
   const _MyServer({Key? key}) : super(key: key);
@@ -36,4 +32,3 @@ class _MyServer extends StatelessComponent {
         children: [RestAccessPoint("api")]);
   }
 }
-

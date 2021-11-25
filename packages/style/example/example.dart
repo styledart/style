@@ -42,8 +42,6 @@ class BerberUnknownRequest extends Endpoint {
   }
 }
 
-
-
 class MMM extends LastModifiedEndpoint {
   /// If your data and lastModified are on different sources
   /// may you want to ensure that data is need(data changed after lastModified)
@@ -58,11 +56,8 @@ class MMM extends LastModifiedEndpoint {
   }
 }
 
-
 class EEEE extends EtagEndpoint {
-
   ///
-
 
   /// If your data and etag are on different sources
   /// may you want to ensure data need(e-tags are different)
@@ -76,15 +71,12 @@ class EEEE extends EtagEndpoint {
   }
 }
 
-
-
 class MyStLastModd extends StatefulEndpoint {
   @override
   EndpointState<StatefulEndpoint> createState() => _MyStLastModdState();
 }
 
 class _MyStLastModdState extends LastModifiedEndpointState<MyStLastModd> {
-
   /// If your data and lastModified are on different sources
   /// may you want to ensure that data is need(data changed after lastModified)
   /// before getting data from db.
@@ -98,15 +90,12 @@ class _MyStLastModdState extends LastModifiedEndpointState<MyStLastModd> {
   }
 }
 
-
 class MyETagEnd extends StatefulEndpoint {
   @override
   EndpointState<StatefulEndpoint> createState() => _MyETagEndState();
 }
 
 class _MyETagEndState extends EtagEndpointState<MyETagEnd> {
-
-
   /// If your data and etag are on different sources
   /// may you want to ensure data need(e-tags are different)
   /// before get data from db.
@@ -117,6 +106,3 @@ class _MyETagEndState extends EtagEndpointState<MyETagEnd> {
     return ResponseWithEtag("unimplemented", request: request, etag: "etag");
   }
 }
-
-
-

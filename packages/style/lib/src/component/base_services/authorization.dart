@@ -23,7 +23,7 @@ abstract class Authorization extends _BaseService {
   Authorization();
 
   ///
-  static Authorization of(BuildContext context){
+  static Authorization of(BuildContext context) {
     return context.authorization;
   }
 
@@ -71,17 +71,6 @@ abstract class Authorization extends _BaseService {
     return initService();
   }
 }
-
-
-
-
-
-
-
-
-
-
-
 
 ///
 class SimpleAuthorization extends Authorization {
@@ -136,7 +125,6 @@ class SimpleAuthorization extends Authorization {
     var headerText = parts[0];
     var payloadText = parts[1];
     var hashBase64 = parts[2];
-
 
     var calcHash = await crypto
         .calculateSha256Mac(utf8.encode("$headerText.$payloadText"));

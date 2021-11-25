@@ -560,8 +560,6 @@ class PathController {
   /// First segment to be processed
   String next = "";
 
-
-
   /// Next segments to be processed,
   /// include current
   final List<String> notProcessedValues;
@@ -601,11 +599,11 @@ class PathController {
   }
 
   ///
-  Map<String,dynamic> toMap() => {
-    "path" : calledPath,
-    "query_parameters" : queryParameters,
-    "arguments" : arguments
-  };
+  Map<String, dynamic> toMap() => {
+        "path": calledPath,
+        "query_parameters": queryParameters,
+        "arguments": arguments
+      };
 }
 
 ///

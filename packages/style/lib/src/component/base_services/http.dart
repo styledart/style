@@ -34,29 +34,23 @@ abstract class HttpService extends _BaseService {
   SecurityContext? securityContext;
 
   ///
-  Future<HttpServer> get serverBind;
-
-  ///
   Map<String, dynamic>? get defaultResponseHeaders;
-
-  ///
-  late final HttpServer server;
 
   ///
   Future<void> handleHttpRequest(HttpRequest request);
 
-  @override
-  Future<bool> init() async {
-    // await context.logger.ensureInitialize();
-    server = await serverBind;
-    if (defaultResponseHeaders != null) {
-      for (var h in defaultResponseHeaders!.entries) {
-        server.defaultResponseHeaders.add(h.key, h.value);
-      }
-    }
-    server.listen(handleHttpRequest);
-    return true;
-  }
+// @override
+// Future<bool> init() async {
+//   // await context.logger.ensureInitialize();
+//   server = await serverBind;
+//   if (defaultResponseHeaders != null) {
+//     for (var h in defaultResponseHeaders!.entries) {
+//       server.defaultResponseHeaders.add(h.key, h.value);
+//     }
+//   }
+//   server.listen(handleHttpRequest);
+//   return true;
+// }
 }
 
 ///
@@ -159,6 +153,22 @@ class DefaultHttpServiceHandler extends HttpService {
   @override
   String get address => "http://$_address:$port";
 
-  @override
+  ///
   Future<HttpServer> get serverBind => HttpServer.bind(_address, port);
+
+  ///
+  late HttpServer server;
+
+  @override
+  FutureOr<bool> init() async {
+    // await context.logger.ensureInitialize();
+    server = await serverBind;
+    if (defaultResponseHeaders != null) {
+      for (var h in defaultResponseHeaders!.entries) {
+        server.defaultResponseHeaders.add(h.key, h.value);
+      }
+    }
+    server.listen(handleHttpRequest);
+    return true;
+  }
 }

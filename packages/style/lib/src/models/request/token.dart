@@ -218,7 +218,6 @@ class AccessToken {
   /// "jti" Json Web Token Id
   String tokenID;
 
-
   /// "uid" User id
   String userId;
 

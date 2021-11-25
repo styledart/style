@@ -23,5 +23,3 @@ library styledart;
 export 'src/component/components/web_dev.dart';
 export 'src/functions/random.dart';
 export 'src/style_base.dart';
-
-

@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2021 styledart.dev - Mehmet Yaz
  *
@@ -17,8 +16,6 @@
  */
 
 part of '../../style_base.dart';
-
-
 
 /// Request [Cause].
 /// Indicates why this request is made.

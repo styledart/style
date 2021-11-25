@@ -43,8 +43,6 @@ abstract class DataAccess extends _BaseService {
         defaultPermissionsByType != null ||
         !defaultPermission;
 
-
-
     var hasTrigger = collections
             ?.where((element) =>
                 element.triggers != null && element.triggers!.isNotEmpty)
@@ -361,7 +359,8 @@ class Access {
       required this.type,
       this.data,
       required this.collection,
-      this.pipeline});
+      this.pipeline,
+      this.settings});
 
   ///
   factory Access.fromMap(Map<String, dynamic> map) {
@@ -385,6 +384,8 @@ class Access {
   ///
   final AggregationPipeline? pipeline;
 
+  final OperationSettings? settings;
+
   ///
   final String? identifier;
 
@@ -405,6 +406,15 @@ class Access {
         if (query != null) "query": query?.toMap(),
         if (identifier != null) "identifier": identifier,
       };
+}
+
+/// Db Operation settings
+abstract class OperationSettings {
+  ///
+  Map<String, dynamic> toMap();
+
+  ///
+  OperationSettings fromMap(Map<String, dynamic> map);
 }
 
 ///

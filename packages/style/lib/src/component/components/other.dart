@@ -54,8 +54,6 @@ class _QueueCalling extends Calling {
 
   @override
   FutureOr<Message> onCall(Request request) async {
-
-      return queue.add(() async => binding.child.findCalling.calling(request));
-
+    return queue.add(() async => binding.child.findCalling.calling(request));
   }
 }

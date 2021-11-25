@@ -27,7 +27,7 @@ void main() async {
     tester(
         "/api/users",
         allOf(statusCodeIs(201),
-            headerIs(HttpHeaders.locationHeader, "my_user1")),
+            headerIs(HttpHeaders.locationHeader, equals("my_user1"))),
         methods: Methods.POST,
         body: {"_id": "my_user1", "name": "Mehmet", "l_name": "Yaz"});
 

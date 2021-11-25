@@ -71,9 +71,6 @@ class PermissionHandlerService {
   ///
   final HashMap<String, PermissionHandler> _collections;
 
-
-
-
   ///
   FutureOr<bool> check(AccessEvent operation) async {
     var befNeed = _collections[operation.access.collection]?.beforeNeed;
