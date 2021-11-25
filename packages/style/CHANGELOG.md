@@ -20,7 +20,10 @@
 - schema validation test
 - cron job errors fixed
 
-
 ## 1.0.2+3
 
 - `operationSettings` added to Access
+
+## 1.0.2+5
+
+- `AggregationPipeline` and `AggregationStage` deleted. Now, ``Access.pipeline`` is `Object?`

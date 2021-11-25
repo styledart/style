@@ -373,16 +373,14 @@ class Access {
 
         /// May map contains "pipeline" key with null value
         /// This situation create empty pipeline
-        pipeline: !map.containsKey("pipeline")
-            ? null
-            : AggregationPipeline.fromMap(map["pipeline"]));
+        pipeline: map["pipeline"]);
   }
 
   ///
   final Query? query;
 
   ///
-  final AggregationPipeline? pipeline;
+  final Object? pipeline;
 
   ///
   final OperationSettings? settings;
@@ -403,7 +401,7 @@ class Access {
   Map<String, dynamic> toMap() => {
         "collection": collection,
         "type": type.index,
-        if (pipeline != null) "pipeline": pipeline?.toMap(),
+        if (pipeline != null) "pipeline": pipeline,
         if (query != null) "query": query?.toMap(),
         if (identifier != null) "identifier": identifier,
       };
@@ -411,54 +409,6 @@ class Access {
 
 /// Db Operation settings
 abstract class OperationSettings {}
-
-///
-class AggregationPipeline {
-  ///
-  AggregationPipeline(this.stages);
-
-  ///
-  /// Example map:
-  /// ```json
-  /// {
-  ///   "type" : {
-  ///     ...data
-  ///   }
-  /// }
-  /// ```
-  factory AggregationPipeline.fromMap(Map<String, dynamic>? map) {
-    return AggregationPipeline(
-        map?.entries.map((e) => AggregationStage(e.key, e.value)).toList() ??
-            <AggregationStage>[]);
-  }
-
-  ///
-  List<AggregationStage> stages;
-
-  ///
-  bool hasStage(String type) {
-    return stages.where((element) => element.type == type).isNotEmpty;
-  }
-
-  ///
-  List<String> get stageTypes => stages.map((e) => e.type).toList();
-
-  ///
-  Map<String, dynamic> toMap() =>
-      stages.asMap().map((key, value) => MapEntry(value.type, value.data));
-}
-
-///
-class AggregationStage {
-  ///
-  AggregationStage(this.type, this.data);
-
-  ///
-  String type;
-
-  ///
-  Map<String, dynamic> data;
-}
 
 ///
 class Read extends AccessEvent {
