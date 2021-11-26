@@ -4,6 +4,8 @@ Style is a backend framework written in Flutter coding style.
 
 // TODO: This is a template
 
+[Join Discord Community](https://discord.gg/bPcscvBM)
+
 # Packages
 
 ## style

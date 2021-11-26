@@ -31,3 +31,7 @@
 ## 1.0.2+6
 
 - `pubspec.yaml` edited.
+
+## 1.0.2+7
+
+- sdk version changed to 2.14

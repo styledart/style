@@ -1,11 +1,11 @@
 name: style_cli
 description: A sample command-line application.
-version: 0.0.1+1
+version: 0.0.1+2
 homepage: https://github.com/Mehmetyaz/style/tree/main/packages/style_cli/
 repository: https://github.com/Mehmetyaz/style
 
 environment:
-  sdk: '>=2.15.0 <3.0.0'
+  sdk: '>=2.14.0 <3.0.0'
 
 executables:
   style: "style_cli"
