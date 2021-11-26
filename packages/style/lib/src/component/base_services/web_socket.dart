@@ -24,9 +24,6 @@ abstract class WebSocketService extends _BaseService {
     return context.socketService;
   }
 
-  ///
-  void encrypt();
-
   @override
   Future<bool> init([bool inInterface = true]) async {
     return true;
@@ -34,9 +31,7 @@ abstract class WebSocketService extends _BaseService {
 }
 
 ///
-class DefaultSocketServiceHandler extends WebSocketService {
-  @override
-  void encrypt() {
-    // TODO: implement encrypt
-  }
-}
+class DefaultSocketServiceHandler extends WebSocketService {}
+
+///
+class WebSocketConnection {}
