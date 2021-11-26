@@ -33,5 +33,18 @@ abstract class WebSocketService extends _BaseService {
 ///
 class DefaultSocketServiceHandler extends WebSocketService {}
 
-///
-class WebSocketConnection {}
+/// A web socket connection. Created at connected and disposed
+/// at connection end.
+class WebSocketConnection {
+  ///
+  WebSocketConnection();
+
+  ///
+  WebSocket? socket;
+
+  ///
+  AccessToken? token;
+
+  ///
+  bool get connected => socket != null;
+}
