@@ -52,8 +52,8 @@ class GatewayBinding extends MultiChildCallingBinding {
   }
 
   @override
-  void _build() {
-    super._build();
+  void buildBinding() {
+    super.buildBinding();
     var _callings = <PathSegment, Binding>{};
     PathSegment? arg;
     for (var child in children) {

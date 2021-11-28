@@ -20,7 +20,7 @@ part of '../style_base.dart';
 ///
 Binding runService(Component component) {
   var binding = component.createBinding();
-  binding._build();
+  binding.buildBinding();
 
   binding.visitChildren(TreeVisitor((visitor) {
     if (visitor.currentValue is ServiceWrapperBinding) {

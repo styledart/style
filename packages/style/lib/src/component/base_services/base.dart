@@ -62,9 +62,9 @@ class ServiceWrapperBinding<B extends _BaseService> extends StatelessBinding {
   ServiceWrapper<B> get component => super.component as ServiceWrapper<B>;
 
   @override
-  void _build() {
+  void buildBinding() {
     component.service.context = this;
-    super._build();
+    super.buildBinding();
   }
 
   @override
@@ -75,7 +75,7 @@ class ServiceWrapperBinding<B extends _BaseService> extends StatelessBinding {
 
   @override
   TreeVisitor<Calling> visitCallingChildren(TreeVisitor<Calling> visitor) {
-    return _child!.visitCallingChildren(visitor);
+    return child!.visitCallingChildren(visitor);
   }
 }
 
