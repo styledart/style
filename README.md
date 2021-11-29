@@ -2,13 +2,13 @@
 
 Style dart is a backend framework written in Flutter coding style.
 
-![](https://github.com/Mehmetyaz/style/blob/main/packages/style/documentation/images/pluginIcon.png)
-
-[Join Discord Community](https://discord.gg/bPcscvBM)
-
 You can see our main motivation, purpose and what it looks like in general with
 this [article](https://itnext.io/style-backend-framework-d544bdb78a36). Documentation and website will be developed
 soon.
+
+[Join Discord Community](https://discord.gg/bPcscvBM)
+
+![](https://github.com/Mehmetyaz/style/blob/main/packages/style/documentation/images/pluginIcon.png)
 
 # Get Started
 

@@ -1,480 +1,445 @@
+# style_dart
 
+Style dart is a backend framework written in Flutter coding style.
 
+You can see our main motivation, purpose and what it looks like in general with
+this [article](https://itnext.io/style-backend-framework-d544bdb78a36). Documentation and website will be developed
+soon.
 
-For more accurate information look this [article](https://itnext.io/style-backend-framework-d544bdb78a36)
+[Join Discord Community](https://discord.gg/bPcscvBM)
 
-[Pub Package](https://pub.dev/packages/style_dart)
+![](https://github.com/Mehmetyaz/style/blob/main/packages/style/documentation/images/pluginIcon.png)
 
-Development Log 1 : [Exception Handling](https://itnext.io/exception-handling-with-style-6020f01af7d8)
+# Get Started
 
-Development Log 2 : [Endpoint](https://medium.com/@mehmet_yaz/style-development-log-2-endpoint-c0a0566b44db)
+## 1 ) Create a dart simple-command-line application
 
-Articles is free-read.
+## 2 ) Add dependency
 
+``  style_dart: latest``
 
+## 3 ) Create a server
 
+Similar to Flutter, "everything is a component" structure used in Style.
 
-[comment]: <> (## Components)
+The `runService(MyComponent())` method runs a style application.
 
-[comment]: <> (### Create Service)
+### Define a Component
 
-[comment]: <> (*[host] will be used instead of "http://host" from now on.*)
+There is a component to create a simple server : ``Server``
 
-[comment]: <> (*All classes created as an example will begin with the prefix "My". Others are what Framework offers.*)
+It is the equivalent of "MaterialApp" or "CupertinoApp" in Flutter.
 
-[comment]: <> (```dart  )
+`Server` is a `ServiceOwner`. `ServiceOwner` holds states, cron jobs and component tree.
 
-[comment]: <> (class MyServer extends StatelessComponent {  )
+Not Implemented yet but components such as `MicroService` and `ServiceServer`(It will be used to share services such as
+Logger between Servers/Microservices.) are `ServiceOwner`.
 
-[comment]: <> (  @override  )
+`Server` receive and hold main gateway(`children`) , default services(like `httpService`) , root
+endpoint (`rootEndpoint`) , exception endpoints and etc.
 
-[comment]: <> (  Component build&#40;BuildContext context&#41; {  )
+Now let's create a simple http server:
 
-[comment]: <> (    return Server&#40;)
+```dart
+class MyServer extends StatelessComponent {
+  const MyServer({Key? key}) : super(key: key);
 
-[comment]: <> (		dataAccess: MyDataAccess&#40;&#41;, // Or use style implemantation for mongo db or mysql.)
+  @override
+  Component build(BuildContext context) {
+    return Server(
 
-[comment]: <> (        rootName: "my_server", // for internal ops. instead of hosts  )
+      /// default localhost:80
+        httpService: DefaultHttpServiceHandler(
+            host: "localhost",
+            port: 8080
+        ),
+        children: [
+          // main gateway
+        ]);
+  }
+}
+```
 
-[comment]: <> (		children: {)
+### Run Server
 
-[comment]: <> (	         "about": MyAbout&#40;&#41;,)
+````dart
+void main() {
+  runService(MyServer());
+}
+````
 
-[comment]: <> (	         "api" : MyApiGateway&#40;&#41;  )
+Now, server is ready from localhost but we have to define endpoints.
 
-[comment]: <> (		},)
+## 4 ) Create a `Endpoint`
 
-[comment]: <> (		// "[host]/" is directed to)
+Endpoints create functions where client requests are fulfilled.
 
-[comment]: <> (		rootEndpoint: MyUnknownEndpoint&#40;&#41;)
+"Endpoint" is a component. It can be put in Component parameters. But all ends in the component tree must end with
+Endpoint and Endpoints do not have child/children.
 
-[comment]: <> (	&#41;;  )
+![Endpoint](https://github.com/Mehmetyaz/style/blob/main/packages/style/documentation/images/endpoint1.png)
 
-[comment]: <> (  }  )
+**Boxes are `Component`, circles are `Endpoint`.**
 
-[comment]: <> (})
+Now let's create an Endpoint that response with "Hello World!".
 
-[comment]: <> (```)
+```dart
+class HelloEndpoint extends Endpoint {
 
-[comment]: <> (### Gateway)
+  @override
+  FutureOr<Object> onCall(Request request) {
+    return "Hello World!";
+  }
+}
+```
 
-[comment]: <> (```dart)
+## 4 ) Put endpoints on routes
 
-[comment]: <> (///  )
+The main `Gateway` that handles requests is the `Server`'s `children` value.
 
-[comment]: <> (class MyApiGateway extends StatelessComponent {  )
-  
-[comment]: <> (  ///  )
+There must be a `Route` between all `Endpoint` in the component tree and the `Gateway` above them.
 
-[comment]: <> (  const MyApiGateway&#40;{Key? key}&#41; : super&#40;key: key&#41;;  )
-  
-[comment]: <> (  @override  )
+Otherwise, you will get an error while the server is being built.
 
-[comment]: <> (  Component build&#40;BuildContext context&#41; {  )
+Now let's place the Endpoint to respond to the "http://localhost/hello" request.
 
-[comment]: <> (    return Gateway&#40;  )
+```dart
+class MyServer extends StatelessComponent {
+  const MyServer({Key? key}) : super(key: key);
 
-[comment]: <> (       	// "[host]/api" is directed to)
+  @override
+  Component build(BuildContext context) {
+    return Server(
+        httpService: DefaultHttpServiceHandler(
+            host: "localhost",
+            port: 8080
+        ),
+        children: [
+          Route("hello", root: HelloEndpoint())
+        ]);
+  }
+}
+```
 
-[comment]: <> (        root: MyApiDocumentation&#40;&#41;,)
+`Route` takes a `root` and a `child`.
 
-[comment]: <> (        children: {)
+`root` handles requests ending with the entered path segment.
 
-[comment]: <> (	        // "[host]/api/v1" is directed to)
+In this example `HelloEndpoint` handles request "http://localhost/hello"
 
-[comment]: <> (	        "v1": MyV1Api&#40;&#41;,)
+If we want to process "hello/*" and its sub-routes, the `child` parameter must be defined.
 
-[comment]: <> (	        // "[host]/api/v2" is directed to)
+Also, if we want to handle "hello/*" and its sub-routes with `HelloEndpoint`, `handleUnknownAsRoot` must be true.
 
-[comment]: <> (		    "v2": MyV2Api&#40;&#41;,)
+## Request
 
-[comment]: <> (		    // "[host]/api/{api-key}" is directed to)
+Now start server with `dart run` or your IDE's run command.
 
-[comment]: <> (		    // for auto detect api version)
+And call "http://localhost/hello" .
 
-[comment]: <> (		    // Look upper for GeneratedRedirect explanation )
+# 5 ) Add Middleware(Gate)
 
-[comment]: <> (			"{api-key}" : GeneratedRedirect&#40;&#41;)
+I named the `Component`, which creates functions to be used as middleware, `Gate`.
 
-[comment]: <> (		}&#41;;  )
+Gate's onRequest function works with a request and waits for a request or response.
 
-[comment]: <> (  }  )
+If the return value is `Request`, the request continues. It can be used to manipulate the content of requests.
 
-[comment]: <> (})
+If the return value is a `Response`, the response is sent to the client.
 
+Also, if you want to send an error message, the exceptions thrown in this function are handled by the
+context's `ExceptionWrapper`.
 
-[comment]: <> (// You can nest gateways.)
+`Gate` in the example only works for "host/api/users/*"
 
-[comment]: <> (class MyV1Api extends StatelessComponent {  )
+The second gate in the example, `AuthFilterGate`, which is a `Gate` implementation, optionally only accepts auth users.
 
-[comment]: <> (  const MyV1Api&#40;{Key? key}&#41; : super&#40;key: key&#41;;  )
-  
-[comment]: <> (  @override  )
+Since Style has a modular structure, it will have many ready-made Components that the developers will contribute.
 
-[comment]: <> (  Component build&#40;BuildContext context&#41; {  )
+The following example also has `Gateway` and argument path segment ("name") usage example.
 
-[comment]: <> (    return Gateway&#40;  )
+````dart
+class MyServer extends StatelessComponent {
+  const MyServer({Key? key}) : super(key: key);
 
-[comment]: <> (       	// "[host]/api/v1" is directed to)
+  @override
+  Component build(BuildContext context) {
+    return Server(
+        children: [
 
-[comment]: <> (        root: MyApiDocumentation&#40;&#41;,)
+          // host/api/
+          Route(
+              "api",
+              child: Gateway(
+                  children: [
 
-[comment]: <> (        children: {)
+                    /// GATE IS HERE :)
+                    Gate(
+                      onRequest: (request) {
+                        // DO SOMETHING
+                        return request; // return Request or Response
+                      },
+                      // host/api/users/
+                      child: Route("users",
 
-[comment]: <> (	        // "[host]/api/v1/user" is directed to)
+                          // host/api/users/{name}
+                          child: Route("{name}",
+                              root: SimpleEndpoint((req, c) {
+                                // [Create] request handled with
+                                // this context's DataAccess
+                                return Create(
+                                    collection: "greeters",
+                                    data: {"greeter": req.arguments["name"]});
+                              }))),
+                    ),
+                    // host/api/posts
+                    Route("posts",
+                        root: AuthFilterGate(
+                            child: SimpleEndpoint.static("Hi")
+                        ))
+                  ]
+              ))
+        ]);
+  }
+}
+````
 
-[comment]: <> (	        "user": MyUserV1&#40;&#41;,)
+The first Gate in the example handles both the root segment and all subsegments of "/api/users".
 
-[comment]: <> (	        "post" : MyPostV1&#40;&#41;)
+In the second example, it only handles the root segment of "api/posts".
 
-[comment]: <> (		}&#41;;  )
+# 6 ) Add your exception messages
 
-[comment]: <> (  }  )
+You can customize the endpoints that handle the exceptions.
 
-[comment]: <> (})
+It is possible to customize with exact types(e.g. in example bellow) or with super types(e.g. ClientError or Exception).
+Applies to all sub-components unless re-wrapped.
 
-[comment]: <> (```)
+When determining the endpoint to handle exceptions, they are checked in the following order. exact -> (if is
+implementation) super (e.g. ClientError) -> Exception
 
-[comment]: <> (### Path Route Segment)
+![](https://github.com/Mehmetyaz/style/blob/main/packages/style/documentation/images/exception.png)
 
-[comment]: <> (Let's say we have a path like "[host]/api/v1/user/{user_id}/...".)
+```dart
 
-[comment]: <> (We want to send users in trend when this path is called "[host]/api/v1/user".)
+class MyStyleExEndpoint extends ExceptionEndpoint<BadRequest> {
+  MyStyleExEndpoint() : super();
 
-[comment]: <> (We can use a segment both as an endpoint and as a segment.)
+  @override
+  FutureOr<Object> onError(Message message, BadRequest exception, StackTrace stackTrace) {
+    return "Will always be bad !!!";
+  }
+}
 
-[comment]: <> (```dart)
 
-[comment]: <> (// You can nest gateways.)
+//TODO: Add the component your Component tree.
+Component getExceptionWrapper() {
+  return ExceptionWrapper<BadRequest>(
+      child: Route("always_throw", root: Throw(BadRequest())),
+      exceptionEndpoint: MyExceptionEndpoint());
+}
+```
 
-[comment]: <> (class MyUserV1 extends StatelessComponent {  )
+**`Throw` is an endpoint that always sends an exception**
 
-[comment]: <> (  const MyUserV1&#40;{Key? key}&#41; : super&#40;key: key&#41;;  )
-  
-[comment]: <> (  @override  )
+# 7 ) Add your DataAccess
 
-[comment]: <> (  Component build&#40;BuildContext context&#41; {  )
+Accessing data is required for a backend application.
 
-[comment]: <> (    return PathRoute&#40;)
+In Style, there are structures that I call base service.
 
-[comment]: <> (	    // "[host]/api/v1/user" is called to endpoint)
+`DataAccess` , `HttpService` , `Logger` , `Authorization` , `Crypto` and `WebSocketService` are currently available
+services.
 
-[comment]: <> (		root: SimpleEndpoint&#40;)
+Each service has its own functions.
 
-[comment]: <> (			onCall: &#40;req&#41; {)
+### Defining the Services
 
-[comment]: <> (				// do something)
+All the services can be assigned as the default service of the ``Server``.
 
-[comment]: <> (				return req.response&#40;data&#41;;)
+```dart
+class MyServer extends StatelessComponent {
+  const MyServer({Key? key}) : super(key: key);
 
-[comment]: <> (			})
+  @override
+  Component build(BuildContext context) {
+    return Server(
+        httpService: DefaultHttpServiceHandler(),
+        webSocketService: StyleTicketBaseWebSocketService(),
+        logger: MyLogger(),
+        dataAccess: DataAccess(MongoDbDataAccessImplementation()),
+        children: [
+          Route("hello", root: HelloEndpoint())
+        ]);
+  }
+}
+```
 
-[comment]: <> (		&#41;,)
+**MongoDb implementation available with style_mongo package**
 
-[comment]: <> (		// And we will create sub-segments)
+### Service Wrapper
 
-[comment]: <> (		child: PathRoute&#40;)
+You can use a different service for part of your Component tree. Wraps are valid as long as they are not re-wrapped.
 
-[comment]: <> (			segment: "{user_id}",)
+```dart
+class MyServer extends StatelessComponent {
+  const MyServer({Key? key}) : super(key: key);
 
-[comment]: <> (			// "[host]/api/v1/user/user1" is direct to)
+  @override
+  Component build(BuildContext context) {
+    return Server(
+      // server default
+        dataAccess: DataAccess(MongoDbDataAccessImplementation()),
+        children: [
+          Route("hello", root: HelloEndpoint()),
 
-[comment]: <> (			child: RequestTransformer&#40;)
+          // Use different service for
+          // "/other/*"
+          ServiceWrapper<DataAccess>(
+              child: Route("other", root: HelloEndpoint()),
+              service: DataAccess(SimpleCacheDataAccess())
+          ),
+        ]);
+  }
+}
+```
 
-[comment]: <> (				onRequest : &#40;req&#41; {)
+### Use Service
 
-[comment]: <> (					/// adapt to version 2)
+You can access all services this way :
 
-[comment]: <> (					return req;)
+`DataAccess.of(context)`
 
-[comment]: <> (				},)
+# 8 ) Access data
 
-[comment]: <> (				child: Redirect&#40;"../../../v2/user"&#41;)
+There are many ways you can access your data. One is to return an `Event` in the endpoint `onCall` function.
 
-[comment]: <> (				//or)
+You can also access functions directly : ``DataAccess.of(context).read(...)`` .
 
-[comment]: <> (				// child: Redirect&#40;"my_server/api/v2/user"&#41;)
+The following endpoint is put on the "/greet/{name}" route.
 
-[comment]: <> (			&#41;)
+Create greeter by name
 
-[comment]: <> (		&#41;)
+````dart
+class HelloEndpoint extends Endpoint {
 
-[comment]: <> (	&#41;;  )
+  @override
+  FutureOr<Object> onCall(Request request) {
+    return Create(
+        collection: "greeters",
+        data: {"greeter": request.arguments["name"]});
+  }
+}
+````
 
-[comment]: <> (  }  )
+Read All Greeters
 
-[comment]: <> (})
+````dart
+class GreetersEndpoint extends Endpoint {
 
-[comment]: <> (```)
+  @override
+  FutureOr<Object> onCall(Request request) {
+    return ReadMultiple(
+        collection: "greeters");
+  }
+}
+````
 
-[comment]: <> (## Wrappers)
+### Automate access
 
-[comment]: <> (### UnknownWrapper)
+You can handle all data operations with a single endpoint.
 
-[comment]: <> (Unknown routes everywhere it wrappers lead to this endpoint.)
+You can process this completely yourself, or you can use ready-made Components.
 
-[comment]: <> (*Except under scopes in lower layers.*)
+#### AccessPoint
 
-[comment]: <> (```dart)
+AccessPoint take a callback that runs with request and returns. This `AccessEvent` is handled by the
+context's `DataAccess`.
 
-[comment]: <> (UnknownWrapper&#40;unknown: MyMediaUnknown&#40;&#41;, child: MyPicture&#40;&#41;&#41;,)
+```dart
+class MyServer extends StatelessComponent {
+  const MyServer({Key? key}) : super(key: key);
 
-[comment]: <> (```)
+  @override
+  Component build(BuildContext context) {
+    return Server(
+        httpService: DefaultHttpServiceHandler(),
+        children: [
+          Route("col",
+              // AccessEvent
+              root: AccessPoint((req, ctx) {
+                return AccessEvent(
+                    access: Access(
+                      type: _getAccessType(req),
+                      collection: req.arguments["col"],
 
-[comment]: <> (### Error Wrapper)
+                      ///optional parameters
+                      //query
+                      //identifier
+                      //data
+                      //pipeline
+                      //settings
 
-[comment]: <> (```dart)
+                    ),
+                    request: req);
+              }))
+        ]);
+  }
+}
+```
 
-[comment]: <> (UnknownWrapper&#40;error: MyErrorEndpoint&#40;&#41;, child: MyPicture&#40;&#41;&#41;,)
+#### RestApi
 
-[comment]: <> (class MyErrorEndpoint extends Endpoint {)
+Ready-made access points, both in the core package and developed by the developers, can be used.
 
-[comment]: <> (	FutureOr<void> onError&#40;StyleException exception, StackTrace stackTrace, Request request, BuildContext errorContext&#41; async {)
+`RestAccessPoint("route")`
 
-[comment]: <> (		//response own error message/view that specified for Picture Endpoint)
+It is an `AccessPoint` that works according to Rest API standards. `RestAccessPoint` documentation is being prepared.
 
-[comment]: <> (	})
+# More Documentation Coming Soon !
 
-[comment]: <> (})
+# Packages
 
-[comment]: <> (```)
+## style
 
-[comment]: <> (### DataAccess , Crypto , Logger)
+base package
 
-[comment]: <> (Parts wrapped in these components get this implementation in the DataAccess.of&#40;context&#41; call.)
+[pub package](https://pub.dev/packages/style_dart)
 
-[comment]: <> (```dart)
+## style_cli
 
-[comment]: <> (DataAccess&#40;dataAccess: MyDataAccessImplement&#40;&#41;, child: MyPicture&#40;&#41;&#41;,)
+Command line app for debugging, monitoring, templating.
 
-[comment]: <> (```)
+[pub package](https://pub.dev/packages/style_cli)
 
-[comment]: <> (Sub-wraps are excluded.)
+## style_test
 
-[comment]: <> (Also this applies to Crypto and Logger.)
+Test framework for style
 
+[pub package](https://pub.dev/packages/style_test)
 
-[comment]: <> (## Redirects)
+## style_cron_job
 
-[comment]: <> (#### Simple Redirect)
+Cron job definer and executor.
 
-[comment]: <> (Can redirect incoming requests to the specified route)
+[medium article](https://itnext.io/flutter-dart-cron-jobs-90fa065ba8d2)
 
-[comment]: <> (Support path-parent relation like parent's parent's `new/path` :  `../../new/path`)
+[pub package](https://pub.dev/packages/style_cron_job)
 
-[comment]: <> (```dart)
+# Future
 
-[comment]: <> (Redirect&#40;"path/to"&#41;)
+### remote service/server
 
-[comment]: <> (```)
+Similar to Microservice architecture, you can use to base services (logger, crypto, data access, etc.) from remote
+servers.
 
-[comment]: <> (Or you can find with context ancestor services root names like:)
+Services can be shared between servers(or microservices).
 
-[comment]: <> (```dart)
+### monitoring app
 
-[comment]: <> (Redirect&#40;context.findService&#40;"my_other_service"&#41;.rootName + "/path/to"&#41;)
+Monitoring app shows server status , state properties, usage statistics , logs, component tree etc. The monitoring app
+will be hosted by styledart.dev. It will also be available as open source.
 
-[comment]: <> (//or)
+### cli improvements
 
-[comment]: <> (MyServiceState.of&#40;context&#41;.rootName + "/path/to")
-
-[comment]: <> (```)
-
-
-[comment]: <> (#### GeneratedRedirect)
-
-[comment]: <> (```dart)
-
-[comment]: <> (GeneratedRedirect&#40;)
-
-[comment]: <> (	onRequest: &#40;req&#41; async {)
-
-[comment]: <> (		var keyData  = await DataAccess.of&#40;context&#41;)
-
-[comment]: <> (				.read&#40;"api_keys",req.path.arguments["api-key"]&#41;)
-
-[comment]: <> (		if &#40;keyData["v"] == 1&#41; {)
-
-[comment]: <> (			req.path.fullPath = "../v1";)
-
-[comment]: <> (		} else {)
-
-[comment]: <> (			req.path.fullPath = "../v2";)
-
-[comment]: <> (		})
-
-[comment]: <> (		req.body["api_key"] = req.path.arguments["api-key"];)
-
-[comment]: <> (		return req;)
-
-[comment]: <> (	})
-
-[comment]: <> (&#41;)
-
-[comment]: <> (```)
-
-[comment]: <> (#### AuthRedirect)
-
-[comment]: <> (```dart)
-
-[comment]: <> (AuthRedirect&#40;)
-
-[comment]: <> (	auth: "path/to/auth_user",)
-
-[comment]: <> (	admin: "path/to/admin",)
-
-[comment]: <> (	unauth: "path/to/login")
-
-[comment]: <> (&#41;)
-
-[comment]: <> (```)
-
-[comment]: <> (## Gates)
-
-[comment]: <> (Gates passes requests or responses through a controller.)
-
-[comment]: <> (#### Simple Gate)
-
-[comment]: <> (```dart)
-
-[comment]: <> (	// If onRequest return instance of request)
-
-[comment]: <> (	// request sent to child)
-
-[comment]: <> (	// or return response)
-
-[comment]: <> (	// the response is sent to the upper layer to be sent to the client.)
-
-[comment]: <> (	Gate&#40;)
-
-[comment]: <> (		onRequest : &#40;req&#41; {)
-
-[comment]: <> (			// do something)
-
-[comment]: <> (			return req;)
-
-[comment]: <> (		},)
-
-[comment]: <> (		child: MyOtherEndpoint&#40;&#41;)
-
-[comment]: <> (	&#41;)
-
-[comment]: <> (```)
-
-[comment]: <> (#### Permssion)
-
-[comment]: <> (If the request does not meet the condition, it sends an permission denied error.)
-
-[comment]: <> (```dart)
-
-[comment]: <> (PermissionGate&#40;)
-
-[comment]: <> (	// specify permission)
-
-[comment]: <> (	onRequestPermission : &#40;&#41;async {)
-
-[comment]: <> (		return true;)
-
-[comment]: <> (	})
-
-[comment]: <> (	child: MyComponent&#40;&#41;)
-
-[comment]: <> (&#41;)
-
-[comment]: <> (```)
-
-
-[comment]: <> (#### AuthGate)
-
-[comment]: <> (If the request does not meet the condition, it sends an unauthorized error.)
-
-[comment]: <> (```dart)
-
-[comment]: <> (AuthGate&#40;)
-
-[comment]: <> (	// specify auth required)
-
-[comment]: <> (	authRequired : true | false)
-
-[comment]: <> (	child: MyComponent&#40;&#41;)
-
-[comment]: <> (&#41;)
-
-[comment]: <> (```)
-
-[comment]: <> (#### AgentGate)
-
-[comment]: <> (```dart)
-
-[comment]: <> (AgentGate&#40;)
-
-[comment]: <> (	// MyComponent get only request that agent is Web Socket)
-
-[comment]: <> (	// or internal. Not allowed Http request)
-
-[comment]: <> (	// if het http request response with error)
-
-[comment]: <> (	allowedAgents : [Agent.ws, Agent.internal])
-
-[comment]: <> (	child: MyComponent&#40;&#41;)
-
-[comment]: <> (&#41;)
-
-[comment]: <> (```)
-
-[comment]: <> (#### Schema Gate)
-
-[comment]: <> (```dart)
-
-[comment]: <> (SchemaGate&#40;)
-
-[comment]: <> (	// in default check body)
-
-[comment]: <> (	// you can specify to queryParameters)
-
-[comment]: <> (	// checkQueryParameters: false)
-
-[comment]: <> (	schema: jsonSchema)
-
-[comment]: <> (	child: MyComponent&#40;&#41;)
-
-[comment]: <> (&#41;)
-
-[comment]: <> (```)
-
-[comment]: <> (You can also create for response)
-
-[comment]: <> (```dart)
-
-[comment]: <> (/// If responded body not passed the schema, sent error to client)
-
-[comment]: <> (ResponseSchemaGate&#40;)
-
-[comment]: <> (	schema: jsonSchema)
-
-[comment]: <> (	child: MyComponent&#40;&#41;)
-
-[comment]: <> (&#41;)
-
-[comment]: <> (```)
-
-
-[comment]: <> (# Feature)
-
-[comment]: <> (- [ ] Microservice- Internal - External Service. Services be active or reactive with idle duration, terminal commands.)
-
-[comment]: <> (- [ ] Style Command Line App)
-
-[comment]: <> (- [ ] ViewEndpoint for Server Side Rendering. Endpoint built in initialize and serve views)
-
-[comment]: <> (- [ ] DataView . MVC Pattern)
-
-[comment]: <> (- [ ] Auto Api Documentation)
-
-[comment]: <> (- [ ] Role Based Admin Auth)
-
-[comment]: <> (- [ ] Differnt State for Each Client)
-
-[comment]: <> (- [ ] Monitoring- All calling  tree statuses, service statuses, client states)
-
-[comment]: <> (- [ ] Simple CRUD)
+Many run/test options can be set by cli app. Also, cli app will be used for monitoring app.
