@@ -2,16 +2,19 @@
 
 Style dart is a backend framework written in Flutter coding style.
 
+![](https://github.com/Mehmetyaz/style/blob/main/packages/style/documentation/images/pluginIcon.png)
+
 [Join Discord Community](https://discord.gg/bPcscvBM)
 
-You can see our main motivation, purpose and what it looks like in general with this article. Documentation and website
-will be developed soon.
+You can see our main motivation, purpose and what it looks like in general with
+this [article](https://itnext.io/style-backend-framework-d544bdb78a36). Documentation and website will be developed
+soon.
 
 # Get Started
 
-### 1 ) Create a dart simple-command-line application
+## 1 ) Create a dart simple-command-line application
 
-### 2 ) Add dependency
+## 2 ) Add dependency
 
 ``  style_dart: latest``
 
@@ -74,7 +77,7 @@ Endpoints create functions where client requests are fulfilled.
 "Endpoint" is a component. It can be put in Component parameters. But all ends in the component tree must end with
 Endpoint and Endpoints do not have child/children.
 
-![Endpoint](/home/mehmet/projects/style/packages/style/documentation/images/endpoint1.png)
+![Endpoint](https://github.com/Mehmetyaz/style/blob/main/packages/style/documentation/images/endpoint1.png)
 
 **Boxes are `Component`, circles are `Endpoint`.**
 
@@ -134,14 +137,269 @@ Now start server with `dart run` or your IDE's run command.
 
 And call "http://localhost/hello" .
 
+# 5 ) Add Middleware(Gate)
+
+I named the `Component`, which creates functions to be used as middleware, `Gate`.
+
+Gate's onRequest function works with a request and waits for a request or response.
+
+If the return value is `Request`, the request continues. It can be used to manipulate the content of requests.
+
+If the return value is a `Response`, the response is sent to the client.
+
+Also, if you want to send an error message, the exceptions thrown in this function are handled by the
+context's `ExceptionWrapper`.
+
+`Gate` in the example only works for "host/api/users/*"
+
+The second gate in the example, `AuthFilterGate`, which is a `Gate` implementation, optionally only accepts auth users.
+
+Since Style has a modular structure, it will have many ready-made Components that the developers will contribute.
+
+The following example also has `Gateway` and argument path segment ("name") usage example.
+
+````dart
+class MyServer extends StatelessComponent {
+  const MyServer({Key? key}) : super(key: key);
+
+  @override
+  Component build(BuildContext context) {
+    return Server(
+        children: [
+
+          // host/api/
+          Route(
+              "api",
+              child: Gateway(
+                  children: [
+
+                    /// GATE IS HERE :)
+                    Gate(
+                      onRequest: (request) {
+                        // DO SOMETHING
+                        return request; // return Request or Response
+                      },
+                      // host/api/users/
+                      child: Route("users",
+
+                          // host/api/users/{name}
+                          child: Route("{name}",
+                              root: SimpleEndpoint((req, c) {
+                                // [Create] request handled with
+                                // this context's DataAccess
+                                return Create(
+                                    collection: "greeters",
+                                    data: {"greeter": req.arguments["name"]});
+                              }))),
+                    ),
+                    // host/api/posts
+                    Route("posts",
+                        root: AuthFilterGate(
+                            child: SimpleEndpoint.static("Hi")
+                        ))
+                  ]
+              ))
+        ]);
+  }
+}
+````
+
+The first Gate in the example handles both the root segment and all subsegments of "/api/users".
+
+In the second example, it only handles the root segment of "api/posts".
+
+# 6 ) Add your exception messages
+
+You can customize the endpoints that handle the exceptions.
+
+It is possible to customize with exact types(e.g. in example bellow) or with super types(e.g. ClientError or Exception).
+Applies to all sub-components unless re-wrapped.
+
+When determining the endpoint to handle exceptions, they are checked in the following order. exact -> (if is
+implementation) super (e.g. ClientError) -> Exception
+
+![](https://github.com/Mehmetyaz/style/blob/main/packages/style/documentation/images/exception.png)
+
+```dart
+
+class MyStyleExEndpoint extends ExceptionEndpoint<BadRequest> {
+  MyStyleExEndpoint() : super();
+
+  @override
+  FutureOr<Object> onError(Message message, BadRequest exception, StackTrace stackTrace) {
+    return "Will always be bad !!!";
+  }
+}
 
 
+//TODO: Add the component your Component tree.
+Component getExceptionWrapper() {
+  return ExceptionWrapper<BadRequest>(
+      child: Route("always_throw", root: Throw(BadRequest())),
+      exceptionEndpoint: MyExceptionEndpoint());
+}
+```
 
+**`Throw` is an endpoint that always sends an exception**
 
-#More Documentation Coming Soon !
+# 7 ) Add your DataAccess
 
+Accessing data is required for a backend application.
+
+In Style, there are structures that I call base service.
+
+`DataAccess` , `HttpService` , `Logger` , `Authorization` , `Crypto` and `WebSocketService` are currently available
+services.
+
+Each service has its own functions.
+
+### Defining the Services
+
+All the services can be assigned as the default service of the ``Server``.
+
+```dart
+class MyServer extends StatelessComponent {
+  const MyServer({Key? key}) : super(key: key);
+
+  @override
+  Component build(BuildContext context) {
+    return Server(
+        httpService: DefaultHttpServiceHandler(),
+        webSocketService: StyleTicketBaseWebSocketService(),
+        logger: MyLogger(),
+        dataAccess: DataAccess(MongoDbDataAccessImplementation()),
+        children: [
+          Route("hello", root: HelloEndpoint())
+        ]);
+  }
+}
+```
+
+**MongoDb implementation available with style_mongo package**
+
+### Service Wrapper
+
+You can use a different service for part of your Component tree. Wraps are valid as long as they are not re-wrapped.
+
+```dart
+class MyServer extends StatelessComponent {
+  const MyServer({Key? key}) : super(key: key);
+
+  @override
+  Component build(BuildContext context) {
+    return Server(
+      // server default
+        dataAccess: DataAccess(MongoDbDataAccessImplementation()),
+        children: [
+          Route("hello", root: HelloEndpoint()),
+
+          // Use different service for
+          // "/other/*"
+          ServiceWrapper<DataAccess>(
+              child: Route("other", root: HelloEndpoint()),
+              service: DataAccess(SimpleCacheDataAccess())
+          ),
+        ]);
+  }
+}
+```
+
+### Use Service
+
+You can access all services this way :
+
+`DataAccess.of(context)`
+
+# 8 ) Access data
+
+There are many ways you can access your data. One is to return an `Event` in the endpoint `onCall` function.
+
+You can also access functions directly : ``DataAccess.of(context).read(...)`` .
+
+The following endpoint is put on the "/greet/{name}" route.
+
+Create greeter by name
+
+````dart
+class HelloEndpoint extends Endpoint {
+
+  @override
+  FutureOr<Object> onCall(Request request) {
+    return Create(
+        collection: "greeters",
+        data: {"greeter": request.arguments["name"]});
+  }
+}
+````
+
+Read All Greeters
+
+````dart
+class GreetersEndpoint extends Endpoint {
+
+  @override
+  FutureOr<Object> onCall(Request request) {
+    return ReadMultiple(
+        collection: "greeters");
+  }
+}
+````
+
+### Automate access
+
+You can handle all data operations with a single endpoint.
+
+You can process this completely yourself, or you can use ready-made Components.
+
+#### AccessPoint
+
+AccessPoint take a callback that runs with request and returns. This `AccessEvent` is handled by the
+context's `DataAccess`.
+
+```dart
+class MyServer extends StatelessComponent {
+  const MyServer({Key? key}) : super(key: key);
+
+  @override
+  Component build(BuildContext context) {
+    return Server(
+        httpService: DefaultHttpServiceHandler(),
+        children: [
+          Route("col",
+              // AccessEvent
+              root: AccessPoint((req, ctx) {
+                return AccessEvent(
+                    access: Access(
+                      type: _getAccessType(req),
+                      collection: req.arguments["col"],
+
+                      ///optional parameters
+                      //query
+                      //identifier
+                      //data
+                      //pipeline
+                      //settings
+
+                    ),
+                    request: req);
+              }))
+        ]);
+  }
+}
+```
+
+#### RestApi
+
+Ready-made access points, both in the core package and developed by the developers, can be used.
+
+`RestAccessPoint("route")`
+
+It is an `AccessPoint` that works according to Rest API standards. `RestAccessPoint` documentation is being prepared.
+
+# More Documentation Coming Soon !
 
 # Packages
+
 ## style
 
 base package
