@@ -171,7 +171,7 @@ class RouteBinding extends CallingBinding {
   GatewayCalling? _childGateway;
 
   @override
-  void _build() {
+  void buildBinding() {
     _calling = component.createCalling(this);
     rootBinding = component._root?.createBinding();
     childBinding = component._child?.createBinding();
@@ -183,8 +183,8 @@ class RouteBinding extends CallingBinding {
       this,
     );
 
-    childBinding?._build();
-    rootBinding?._build();
+    childBinding?.buildBinding();
+    rootBinding?.buildBinding();
 
     if (rootBinding != null) {
       var _rootGateway =
@@ -243,7 +243,7 @@ class RouteBinding extends CallingBinding {
 
   @override
   TreeVisitor<Calling> callingVisitor(TreeVisitor<Calling> visitor) {
-    if (visitor._stopped) return visitor;
+    if (visitor.stopped) return visitor;
     visitor(calling);
     if (component.root != null) {
       rootBinding!.visitCallingChildren(visitor);
@@ -259,7 +259,7 @@ class RouteBinding extends CallingBinding {
 
   @override
   TreeVisitor<Binding> visitChildren(TreeVisitor<Binding> visitor) {
-    if (visitor._stopped) return visitor;
+    if (visitor.stopped) return visitor;
     visitor(this);
 
     if (rootBinding != null) {

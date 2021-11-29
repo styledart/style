@@ -55,7 +55,7 @@ class _ExceptionWrapperBinding extends StatelessBinding {
   _ExceptionWrapperBinding(ExceptionWrapper component) : super(component);
 
   @override
-  void _build() {
+  void buildBinding() {
     if (_exceptionHandler == null) {
       component._map.addAll({
         InternalServerError: DefaultExceptionEndpoint<InternalServerError>()
@@ -74,7 +74,7 @@ class _ExceptionWrapperBinding extends StatelessBinding {
     }
     for (var _b in _bindings.values) {
       _b.attachToParent(this);
-      _b._build();
+      _b.buildBinding();
     }
     for (var _b in _bindings.values) {
       var r = _b.visitChildren(TreeVisitor((visitor) {
@@ -92,32 +92,9 @@ class _ExceptionWrapperBinding extends StatelessBinding {
       }
     }
 
-    super._build();
+    super.buildBinding();
   }
 
   @override
   ExceptionWrapper get component => super.component as ExceptionWrapper;
-}
-
-///
-class IfMatchWrapper extends SingleChildCallingComponent {
-  ///
-  IfMatchWrapper(Component child) : super(child);
-
-  @override
-  SingleChildCallingBinding createBinding() => SingleChildCallingBinding(this);
-
-  @override
-  Calling createCalling(covariant SingleChildCallingBinding context) =>
-      _IfMatchCalling(context);
-}
-
-class _IfMatchCalling extends Calling {
-  _IfMatchCalling(SingleChildCallingBinding binding) : super(binding);
-
-  @override
-  FutureOr<Message> onCall(Request request) {
-    // TODO: implement onCall
-    throw UnimplementedError();
-  }
 }

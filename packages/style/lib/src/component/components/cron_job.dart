@@ -74,8 +74,8 @@ class _CronJobBinding extends StatelessBinding {
   CronJob get component => super.component as CronJob;
 
   @override
-  void _build() {
-    super._build();
+  void buildBinding() {
+    super.buildBinding();
     owner.addCronJob("${getPath()}/${component.name}", component.timePeriod);
   }
 }

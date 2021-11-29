@@ -24,24 +24,13 @@ ExceptionSet exceptionSet = ExceptionSet._();
 class ExceptionSet {
   ExceptionSet._();
 
-  /// Base Style Exception
-  static Type get style => StyleException;
-
-  /// Base ServerError
-  /// https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#server_error_responses
-  static Type get server => ServerError;
-
-  /// Base ServerError
-  /// https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#client_error_responses
-  static Type get client => ClientError;
-
   /// Bad Request
   /// https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400
-  static Type get e400 => ClientError;
+  static BadRequests e400() => BadRequests();
 
   /// Unauthorized
   /// https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
-  static Type get e401 => UnauthorizedException;
+  static UnauthorizedException e401() => UnauthorizedException();
 
   /// Payment Required
   /// https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402
