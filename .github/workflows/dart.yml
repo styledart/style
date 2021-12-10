@@ -15,6 +15,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     
+    
+    
     steps:
       - uses: actions/checkout@v2
 
@@ -24,9 +26,9 @@ jobs:
       # - uses: dart-lang/setup-dart@v1
       - uses: dart-lang/setup-dart@9a04e6d73cca37bd455e0608d7e5092f881fd603
 
-      - working-directory: packages/style
 
       - name: Install dependencies
+        working-directory: ./packages/style
         run: dart pub get
 
       # Uncomment this step to verify the use of 'dart format' on each commit.
@@ -35,10 +37,12 @@ jobs:
 
       # Consider passing '--fatal-infos' for slightly stricter analysis.
       - name: Analyze project source
-        run: dart analyze
+        working-directory: ./packages/style
+        run: dart analyze 
 
       # Your project will need to have tests in test/ and a dependency on
       # package:test for this step to succeed. Note that Flutter projects will
       # want to change this to 'flutter test'.
       - name: Run tests
+        working-directory: ./packages/style
         run: dart test test
