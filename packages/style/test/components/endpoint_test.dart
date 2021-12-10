@@ -120,7 +120,7 @@ class _MyServer extends StatelessComponent {
   Component build(BuildContext context) {
     return Server(
         dataAccess:
-            DataAccess(SimpleCacheDataAccess()),
+            DataAccess(SimpleDataAccess("./data/")),
         children: [
           Route("normal", handleUnknownAsRoot: true, root: DefaultEndpoint()),
           Route("any", handleUnknownAsRoot: true, root: AnyEndpoint()),
