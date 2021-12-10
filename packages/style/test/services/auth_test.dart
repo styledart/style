@@ -85,7 +85,7 @@ class CreateTestToken extends Endpoint {
         deviceID: "",
         userId: "test_user",
         expire: DateTime(2022));
-    return (await context.authorization.decryptToken(token));
+    return (await context.authorization.encryptToken(token));
   }
 }
 
@@ -98,7 +98,7 @@ class VerifyToken extends Endpoint {
       throw BadRequests();
     }
     var res = await context.authorization
-        .verifyToken((request.body as StringBody).data);
+        .decryptToken((request.body as StringBody).data);
     return (res.toMap());
   }
 }
