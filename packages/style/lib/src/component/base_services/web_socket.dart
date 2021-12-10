@@ -31,16 +31,16 @@ abstract class WebSocketService extends _BaseService {
   }
 
   ///
-  Component component(BuildContext context);
+  Component buildComponent(BuildContext context);
 
   /// WebSocket connections by client identifier
   HashMap<String, WebSocketConnection> connections = HashMap();
 }
 
 ///
-abstract class StyleWebSocketService extends WebSocketService {
+abstract class DefaultWebSocketService extends WebSocketService {
   ///
-  factory StyleWebSocketService({bool allowOnlyAuth = true}) {
+  factory DefaultWebSocketService({bool allowOnlyAuth = true}) {
     if (allowOnlyAuth) {
       return AuthWebSocketService();
     }
@@ -49,45 +49,54 @@ abstract class StyleWebSocketService extends WebSocketService {
 
   ///
   Future<WebSocketConnection> connect(HttpRequest request,
-      [WebSocketConnectionRequest? connectionRequest]);
+      [WebSocketConnectionTicket? connectionRequest]);
 
-  StyleWebSocketService._();
+  DefaultWebSocketService._();
 }
 
-class _StyleWebSocketService extends StyleWebSocketService {
+class _StyleWebSocketService extends DefaultWebSocketService {
   _StyleWebSocketService() : super._();
 
   @override
-  Component component(BuildContext context) {
-    return Gateway(children: [Route("ws")]);
+  Component buildComponent(BuildContext context) {
+    return Gateway(children: [
+      Route("ws", root: SimpleEndpoint((r, c) async {
+        if (r is! HttpStyleRequest) {
+          throw BadRequests();
+        }
+        var con = await connect(r.baseRequest);
+        connections[con.id] = con;
+        return NoResponseRequired(request: r);
+      }))
+    ]);
   }
 
   @override
   Future<WebSocketConnection> connect(HttpRequest request,
-      [WebSocketConnectionRequest? connectionRequest]) async {
+      [WebSocketConnectionTicket? connectionRequest]) async {
     var socket = await WebSocketTransformer.upgrade(request);
     return WebSocketConnection(
-        socket: socket, id: request.connectionInfo!.remoteAddress.host);
+        socket: socket, context: context, id: getRandomId(40));
   }
 }
 
 ///
-class AuthWebSocketService extends StyleWebSocketService {
+class AuthWebSocketService extends DefaultWebSocketService {
   ///
   AuthWebSocketService() : super._();
 
   /// WebSocket connection requests(tickets) by client identifier.
-  HashMap<String, WebSocketConnectionRequest> connectionTickets = HashMap();
+  HashMap<String, WebSocketConnectionTicket> connectionTickets = HashMap();
 
   @override
-  Component component(BuildContext context) {
+  Component buildComponent(BuildContext context) {
     return Gateway(children: [
-      Route("ws", root: SimpleEndpoint(_ws)),
-      Route("ws_req", root: SimpleEndpoint(_wsRequest))
+      Route("{id}", child: Route("ws", root: SimpleEndpoint(_ws))),
+      Route("ticket_req", root: SimpleEndpoint(_ticketRequest))
     ]);
   }
 
-  FutureOr<Object> _wsRequest(Request request, BuildContext context) async {
+  FutureOr<Object> _ticketRequest(Request request, BuildContext context) async {
     try {
       var token = request.token;
 
@@ -96,7 +105,7 @@ class AuthWebSocketService extends StyleWebSocketService {
       }
 
       var id = getRandomId(40);
-      var ticket = WebSocketConnectionRequest(
+      var ticket = WebSocketConnectionTicket(
           token: token,
           id: id,
           onTimeout: () {
@@ -105,7 +114,7 @@ class AuthWebSocketService extends StyleWebSocketService {
 
       connectionTickets[id] = ticket;
 
-      return request.response(Body({"ticket": ticket.id}));
+      return request.response(Body({"t": ticket.id}));
     } on Exception {
       rethrow;
     }
@@ -113,7 +122,7 @@ class AuthWebSocketService extends StyleWebSocketService {
 
   FutureOr<Object> _ws(Request request, BuildContext context) async {
     try {
-      var id = request.path.queryParameters["id"];
+      var id = request.arguments["id"];
       if (id == null) {
         throw PreconditionFailed();
       }
@@ -129,11 +138,7 @@ class AuthWebSocketService extends StyleWebSocketService {
 
       connections[id] = connection;
 
-      if (connection.connected) {
-        return {"connection_time": DateTime.now().millisecondsSinceEpoch};
-      }
-
-      throw BadRequests();
+      return NoResponseRequired(request: request);
     } on Exception {
       rethrow;
     }
@@ -141,8 +146,8 @@ class AuthWebSocketService extends StyleWebSocketService {
 
   @override
   Future<WebSocketConnection> connect(HttpRequest request,
-      [WebSocketConnectionRequest? connectionRequest]) async {
-    if (connectionRequest == null) {
+      [WebSocketConnectionTicket? connectionTicket]) async {
+    if (connectionTicket == null) {
       throw UnauthorizedException();
     }
 
@@ -150,8 +155,9 @@ class AuthWebSocketService extends StyleWebSocketService {
 
     return WebSocketConnection(
         socket: socket,
+        context: context,
         id: request.connectionInfo!.remoteAddress.host,
-        token: connectionRequest.token);
+        token: connectionTicket.token);
   }
 }
 
@@ -159,25 +165,54 @@ class AuthWebSocketService extends StyleWebSocketService {
 /// at connection end.
 class WebSocketConnection {
   ///
-  WebSocketConnection({required this.id, required this.socket, this.token});
+  WebSocketConnection(
+      {required this.id,
+      required this.socket,
+      this.token,
+      required this.context}) {
+
+    messages = socket.transform(
+        StreamTransformer<dynamic, WebSocketMessage>.fromBind((s) async* {
+      await for (var m in s) {}
+    })).asBroadcastStream();
+  }
+
+  ///
+  late WebSocketService service = WebSocketService.of(context);
 
   ///
   WebSocket socket;
 
   ///
+  BuildContext context;
+
+  ///
   AccessToken? token;
+
+  ///
+  late Stream<WebSocketMessage> messages;
 
   ///
   bool get connected => socket.closeCode == null;
 
   ///
   String id;
+
+  ///
+  void sendMessage(WebSocketMessage message) {
+    try {
+      socket.addUtf8Text(
+          utf8.encode(json.encode((message.body as JsonBody).data)));
+    } on Exception {
+      rethrow;
+    }
+  }
 }
 
 ///
-class WebSocketConnectionRequest {
+class WebSocketConnectionTicket {
   ///
-  WebSocketConnectionRequest(
+  WebSocketConnectionTicket(
       {required this.token,
       required this.id,
       Duration timeout = const Duration(seconds: 30),
