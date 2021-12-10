@@ -40,10 +40,13 @@ abstract class Authorization extends _BaseService {
   FutureOr<AccessToken> register(dynamic authData);
 
   ///
-  FutureOr<AccessToken> verifyToken(String token);
+  FutureOr<AccessToken> decryptToken(String token);
 
   ///
-  FutureOr<String> decryptToken(AccessToken token);
+  FutureOr<String> encryptToken(AccessToken token);
+
+  /// throw if token not verified
+  FutureOr<void> verifyToken(AccessToken token);
 
   ///
   Crypto get crypto => _crypto ??= context.crypto;
@@ -98,7 +101,7 @@ class SimpleAuthorization extends Authorization {
   }
 
   @override
-  FutureOr<String> decryptToken(AccessToken token) async {
+  FutureOr<String> encryptToken(AccessToken token) async {
     var header = <String, dynamic>{"alg": "HS256", "typ": "JWT"};
     var payload = token.toMap();
 
@@ -116,7 +119,7 @@ class SimpleAuthorization extends Authorization {
   }
 
   @override
-  FutureOr<AccessToken> verifyToken(String token) async {
+  FutureOr<AccessToken> decryptToken(String token) async {
     var parts = token.split(".");
     if (parts.length != 3) {
       throw UnauthorizedException();
@@ -137,5 +140,11 @@ class SimpleAuthorization extends Authorization {
 
     return AccessToken.fromMap(
         json.decode(utf8.decode(base64Url.decode(payloadText))));
+  }
+
+  @override
+  FutureOr<void> verifyToken(AccessToken token) {
+    // TODO: implement verifyToken
+    throw UnimplementedError();
   }
 }

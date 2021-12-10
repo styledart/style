@@ -417,7 +417,7 @@ class HttpStyleRequest extends Request {
     var t = req.headers[HttpHeaders.authorizationHeader]?.first ?? q["token"];
     AccessToken? token;
     if (t != null && context.hasService<Authorization>()) {
-      token = await Authorization.of(context).verifyToken(t);
+      token = await Authorization.of(context).decryptToken(t);
     }
     return HttpStyleRequest(
         baseRequest: req,
