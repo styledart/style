@@ -261,7 +261,7 @@ abstract class Binding extends BuildContext {
 
   ///
   TreeVisitor<Binding> visitChildren(TreeVisitor<Binding> visitor) {
-    if (visitor._stopped) return visitor;
+    if (visitor.stopped) return visitor;
     return visitor;
   }
 
@@ -366,7 +366,8 @@ abstract class Binding extends BuildContext {
     return result as CallingBinding?;
   }
 
-  void _build();
+  ///
+  void buildBinding();
 
   ///
 // Map<String, dynamic> toMapShort() => {
@@ -413,14 +414,15 @@ class TreeVisitor<T> {
   ///
   void Function(TreeVisitor<T> visitor)? visitor;
 
-  bool _stopped = false;
+  ///
+  bool stopped = false;
 
   ///
   late T currentValue;
 
   ///
   void call(T value) {
-    if (_stopped) throw Exception("Add stop checker");
+    if (stopped) throw Exception("Add stop checker");
     currentValue = value;
     visitor!.call(this);
   }
@@ -428,7 +430,7 @@ class TreeVisitor<T> {
   ///
   void stop() {
     result = currentValue;
-    _stopped = true;
+    stopped = true;
   }
 
   ///
@@ -443,34 +445,35 @@ abstract class DevelopmentBinding extends Binding {
   ///
   DevelopmentBinding(Component component) : super(component);
 
-  Binding? _child;
+  ///
+  Binding? child;
 
   ///
   Component build(Binding binding);
 
   @override
   TreeVisitor<Binding> visitChildren(TreeVisitor<Binding> visitor) {
-    if (visitor._stopped) return visitor;
+    if (visitor.stopped) return visitor;
     visitor(this);
-    _child!.visitChildren(visitor);
+    child!.visitChildren(visitor);
     return visitor;
   }
 
   @override
   TreeVisitor<Calling> visitCallingChildren(TreeVisitor<Calling> visitor) {
-    return _child!.visitCallingChildren(visitor);
+    return child!.visitCallingChildren(visitor);
   }
 
   @override
-  void _build() {
+  void buildBinding() {
     /// Build this binding component
     /// create child's binding
     /// attach this
-    _child = null;
+    child = null;
     var _childComponent = build(this);
-    _child = _childComponent.createBinding();
-    _child!.attachToParent(this);
-    _child!._build();
+    child = _childComponent.createBinding();
+    child!.attachToParent(this);
+    child!.buildBinding();
   }
 }
 
@@ -490,9 +493,9 @@ class StatelessBinding extends DevelopmentBinding {
 
   @override
   TreeVisitor<Binding> visitChildren(TreeVisitor<Binding> visitor) {
-    if (visitor._stopped) return visitor;
+    if (visitor.stopped) return visitor;
     visitor(this);
-    _child!.visitChildren(visitor);
+    child!.visitChildren(visitor);
     return visitor;
   }
 }
@@ -515,9 +518,9 @@ class StatefulBinding extends DevelopmentBinding {
 
   @override
   TreeVisitor<Binding> visitChildren(TreeVisitor<Binding> visitor) {
-    if (visitor._stopped) return visitor;
+    if (visitor.stopped) return visitor;
     visitor(this);
-    _child!.visitChildren(visitor);
+    child!.visitChildren(visitor);
     return visitor;
   }
 

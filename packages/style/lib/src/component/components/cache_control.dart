@@ -539,8 +539,8 @@ class _CacheControlBinding extends SingleChildCallingBinding {
   CacheControl get component => super.component as CacheControl;
 
   @override
-  void _build() {
-    super._build();
+  void buildBinding() {
+    super.buildBinding();
 
     if (component.cacheControl.revalidation?.method != null) {
       var ends = <EndpointCallingBinding>[];

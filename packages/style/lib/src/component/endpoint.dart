@@ -64,7 +64,13 @@ class _DefaultEndpointCalling extends EndpointCalling {
     } else if (value is DbResult) {
       return request.response(Body(value.data),
           headers: value.headers, statusCode: value.statusCode);
+    } else if (value is Access) {
+      var res = await DataAccess.of(binding)
+          .any(AccessEvent(access: value, request: request, context: binding));
+      return request.response(Body(res.data),
+          headers: res.headers, statusCode: res.statusCode);
     } else if (value is AccessEvent) {
+      value.request ??= request;
       var res = await DataAccess.of(binding).any(value);
       return request.response(Body(res.data),
           headers: res.headers, statusCode: res.statusCode);
@@ -87,6 +93,20 @@ class _DefaultEndpointCalling extends EndpointCalling {
   }
 }
 
+class _AccessEndpointCalling extends EndpointCalling {
+  _AccessEndpointCalling(EndpointCallingBinding endpoint) : super(endpoint);
+
+  @override
+  FutureOr<Message> onCall(Request request) async {
+    var access = (await _endpointOnCall(request)) as Access;
+    var event = AccessEvent(access: access, request: request, context: binding);
+    event.request ??= request;
+    var res = await DataAccess.of(binding).any(event);
+    return request.response(Body(res.data),
+        statusCode: res.statusCode, headers: res.headers);
+  }
+}
+
 class _AccessEventEndpointCalling extends EndpointCalling {
   _AccessEventEndpointCalling(EndpointCallingBinding endpoint)
       : super(endpoint);
@@ -94,6 +114,7 @@ class _AccessEventEndpointCalling extends EndpointCalling {
   @override
   FutureOr<Message> onCall(Request request) async {
     var event = (await _endpointOnCall(request)) as AccessEvent;
+    event.request ??= request;
     var res = await DataAccess.of(binding).any(event);
     return request.response(Body(res.data),
         statusCode: res.statusCode, headers: res.headers);
@@ -218,6 +239,21 @@ enum EndpointPreferredType {
   ///     statusCode: dbResult.statusCode);
   /// ````
   accessEvent,
+
+  /// The return type must be [Access].
+  /// in endpoint [onCall];
+  ///
+  /// ````dart
+  ///   //preferredType => access
+  ///   return Access(..);
+  /// ````
+  /// equal:
+  /// ````dart
+  ///   var dbResult = await db.read(AccessEvent(access: .. , ...));
+  ///   return request.response(dbResult.data, headers: dbResult.headers,
+  ///     statusCode: dbResult.statusCode);
+  /// ````
+  access,
 }
 
 ///
@@ -255,6 +291,8 @@ abstract class Endpoint extends CallingComponent {
         return _DbResultEndpointCalling(context as EndpointCallingBinding);
       case EndpointPreferredType.accessEvent:
         return _AccessEventEndpointCalling(context as EndpointCallingBinding);
+      case EndpointPreferredType.access:
+        return _AccessEndpointCalling(context as EndpointCallingBinding);
     }
   }
 
@@ -309,13 +347,13 @@ class EndpointCallingBinding extends CallingBinding {
 
   @override
   TreeVisitor<Binding> visitChildren(TreeVisitor<Binding> visitor) {
-    if (visitor._stopped) return visitor;
+    if (visitor.stopped) return visitor;
     visitor(this);
     return visitor;
   }
 
   @override
-  void _build() {
+  void buildBinding() {
     try {
       component._context = this;
       _calling = component.createCalling(this);
@@ -326,7 +364,7 @@ class EndpointCallingBinding extends CallingBinding {
 
   @override
   TreeVisitor<Calling> callingVisitor(TreeVisitor<Calling> visitor) {
-    if (visitor._stopped) return visitor;
+    if (visitor.stopped) return visitor;
     visitor(calling);
     return visitor;
   }

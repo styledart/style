@@ -200,7 +200,7 @@ class ServerBinding extends SingleChildCallingBinding with ServiceOwnerMixin {
   late GatewayCalling _childGateway;
 
   @override
-  void _build() {
+  void buildBinding() {
     serviceRootName = component.rootName;
     _calling = component.createCalling(this);
     _child = component.child.createBinding();
@@ -211,7 +211,7 @@ class ServerBinding extends SingleChildCallingBinding with ServiceOwnerMixin {
       _ancestor._owner = this;
       _ancestor = _ancestor._parent;
     }
-    _child._build();
+    _child.buildBinding();
     _childGateway = _child.visitCallingChildren(TreeVisitor((visitor) {
       if (visitor.currentValue is GatewayCalling) {
         visitor.stop();
@@ -222,9 +222,9 @@ class ServerBinding extends SingleChildCallingBinding with ServiceOwnerMixin {
 
   @override
   TreeVisitor<Binding> visitChildren(TreeVisitor<Binding> visitor) {
-    if (visitor._stopped) return visitor;
+    if (visitor.stopped) return visitor;
     visitor(this);
-    if (!visitor._stopped) {
+    if (!visitor.stopped) {
       return child.visitChildren(visitor);
     }
     return visitor;
@@ -232,9 +232,9 @@ class ServerBinding extends SingleChildCallingBinding with ServiceOwnerMixin {
 
   @override
   TreeVisitor<Calling> callingVisitor(TreeVisitor<Calling> visitor) {
-    if (visitor._stopped) return visitor;
+    if (visitor.stopped) return visitor;
     visitor(calling);
-    if (!visitor._stopped) {
+    if (!visitor.stopped) {
       return child.visitCallingChildren(visitor);
     }
     return visitor;

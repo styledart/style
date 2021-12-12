@@ -253,11 +253,11 @@ class SingleChildBinding extends Binding {
   Binding get child => _child;
 
   @override
-  void _build() {
+  void buildBinding() {
     _child = component.child.createBinding();
 
     _child.attachToParent(this);
-    _child._build();
+    _child.buildBinding();
   }
 
   @override
@@ -283,17 +283,17 @@ class SingleChildCallingBinding extends CallingBinding {
   Binding get child => _child;
 
   @override
-  void _build() {
+  void buildBinding() {
     _calling = component.createCalling(this);
     _child = component.child.createBinding();
 
     _child.attachToParent(this);
-    _child._build();
+    _child.buildBinding();
   }
 
   @override
   TreeVisitor<Calling> callingVisitor(TreeVisitor<Calling> visitor) {
-    if (visitor._stopped) return visitor;
+    if (visitor.stopped) return visitor;
     visitor(calling);
     return child.visitCallingChildren(visitor);
   }
@@ -316,7 +316,7 @@ class MultiChildCallingBinding extends CallingBinding {
   /// Bu mapde callingler bulunsun
   ///
   @override
-  void _build() {
+  void buildBinding() {
     var _bindings = <Binding>[];
     for (var element in component.children) {
       _bindings.add(element.createBinding());
@@ -324,16 +324,16 @@ class MultiChildCallingBinding extends CallingBinding {
     children = _bindings;
     for (var bind in children) {
       bind.attachToParent(this);
-      bind._build();
+      bind.buildBinding();
     }
     _calling = component.createCalling(this);
   }
 
   @override
   TreeVisitor<Calling> callingVisitor(TreeVisitor<Calling> visitor) {
-    if (visitor._stopped) return visitor;
+    if (visitor.stopped) return visitor;
     visitor(calling);
-    if (!visitor._stopped) {
+    if (!visitor.stopped) {
       for (var child in children) {
         child.visitCallingChildren(visitor);
       }
@@ -343,9 +343,9 @@ class MultiChildCallingBinding extends CallingBinding {
 
   @override
   TreeVisitor<Binding> visitChildren(TreeVisitor<Binding> visitor) {
-    if (visitor._stopped) return visitor;
+    if (visitor.stopped) return visitor;
     visitor(this);
-    if (!visitor._stopped) {
+    if (!visitor.stopped) {
       //
       for (var bind in children) {
         bind.visitChildren(visitor);
