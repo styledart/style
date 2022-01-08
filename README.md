@@ -2,7 +2,8 @@
 
 Style dart is a backend framework written in Flutter coding style.
 
-![](https://github.com/Mehmetyaz/style/blob/main/packages/style/documentation/images/pluginIcon.png | width=200))
+<img src="https://github.com/Mehmetyaz/style/blob/main/packages/style/documentation/images/pluginIcon.png" width="200" />
+
 
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/mehmetyaz)
