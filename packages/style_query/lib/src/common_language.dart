@@ -1,7 +1,8 @@
 /*
  * Copyright 2021 styledart.dev - Mehmet Yaz
  *
- * Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE, Version 3 (the "License");
+ * Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE,
+ *    Version 3 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -25,8 +26,6 @@ class CommonLanguage extends AccessLanguage {
 
 ///
 class CommonLanguageDelegate extends AccessLanguageDelegate<CommonLanguage> {
-
-
   @override
   CreateData<CommonLanguage> createFromRaw(Map<String, dynamic> raw) {
     // TODO: implement createFromRaw
@@ -44,7 +43,6 @@ class CommonLanguageDelegate extends AccessLanguageDelegate<CommonLanguage> {
     // TODO: implement fromCommonLanguage
     throw UnimplementedError();
   }
-
 
   @override
   Pipeline<CommonLanguage> pipelineFromRaw(Map<String, dynamic> raw) {

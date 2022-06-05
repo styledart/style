@@ -1,5 +1,5 @@
 name: style_object
-description: A starting point for Dart libraries or applications.
+description: Style object encodinf and decoding. More fast and space saver.
 version: 0.0.1
 homepage: https://github.com/styledart/style/tree/main/packages/object/style_object
 
