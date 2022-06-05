@@ -1,10 +1,10 @@
 name: style_object
 description: A starting point for Dart libraries or applications.
-version: 1.0.0
-# homepage: https://www.example.com
+version: 0.0.1
+homepage: https://github.com/styledart/style/tree/main/packages/object/style_object
 
 environment:
-  sdk: '>=2.18.0-92.0.dev <3.0.0'
+  sdk: '>=2.17.0 <3.0.0'
 
 
 dev_dependencies:

@@ -121,6 +121,12 @@
       <excludeFolder url="file://$MODULE_DIR$/style_monitoring/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/style_monitoring/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/style_monitoring/build" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/object/style_object_annotation/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/object/style_object_annotation/build" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/object/style_object_annotation/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/object/style_object/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/object/style_object/build" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/object/style_object/.pub" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
