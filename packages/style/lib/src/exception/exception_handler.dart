@@ -35,9 +35,7 @@ class ExceptionHandler {
   }
 
   ///
-  ExceptionEndpointCallingBinding getBinding(Exception e) {
-    return _map[e.runtimeType] ?? _findSuperTypes(e) ?? _map[Exception]!;
-  }
+  ExceptionEndpointCallingBinding getBinding(Exception e)=> _map[e.runtimeType] ?? _findSuperTypes(e) ?? _map[Exception]!;
 
   ExceptionEndpointCallingBinding? _findSuperTypes<T extends Exception>(
       Exception e) {

@@ -26,7 +26,8 @@ class RequestContext {
       required this.cause,
       required this.agent,
       required this.pathController,
-      this.accessToken});
+      this.accessToken,
+      this.tokenVerified = false});
 
   /// Path-Call Controller
   PathController pathController;
@@ -41,6 +42,9 @@ class RequestContext {
   /// [Request] agent.
   /// Example: The agent of all http/(s) requests received by the server is [Agent.http]
   Agent agent;
+
+  ///
+  bool tokenVerified;
 
   /// Access Token
   ///

@@ -61,10 +61,10 @@ abstract class StyleException<T extends Exception> implements Exception {
 
   ///
   Map<String, dynamic> toMap() => {
-        "code": statusCode,
-        "type": runtimeType,
-        "super_type": T,
-        "payload": payload
+        'code': statusCode,
+        'type': runtimeType,
+        'super_type': T,
+        'payload': payload
       };
 }
 
@@ -104,9 +104,7 @@ class NotFoundException extends ClientError {
   NotFoundException([this.route]);
 
   @override
-  String toString() {
-    return "$route not found";
-  }
+  String toString()=> '$route not found';
 
   ///
   String? route;

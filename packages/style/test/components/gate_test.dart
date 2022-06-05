@@ -20,25 +20,21 @@ import 'package:style_test/style_test.dart';
 
 void main() async {
   await initStyleTester(
-      "gate",
+      'gate',
       Server(children: [
         Gate(
             child: Gateway(children: [
-              Route("a", root: SimpleEndpoint((r, c) {
-                return "Body is ${r.body}";
-              })),
-              Route("b", root: SimpleEndpoint((r, c) {
-                return "responded with endpoint";
-              }))
+              Route('a', root: SimpleEndpoint((r, c) => 'Body is ${r.body}')),
+              Route('b', root: SimpleEndpoint((r, c) => 'responded with endpoint'))
             ]),
             onRequest: (r) {
-              if (r.nextPathSegment == "b") {
-                return r.response(Body("responded with gate"));
+              if (r.nextPathSegment == 'b') {
+                return r.response(Body('responded with gate'));
               }
-              return r..body = Body("in gate");
+              return r..body = Body('in gate');
             }),
       ]), (tester) async {
-    tester("/a", bodyIs("Body is in gate"));
-    tester("/b", bodyIs("responded with gate"));
+    tester('/a', bodyIs('Body is in gate'));
+    tester('/b', bodyIs('responded with gate'));
   });
 }

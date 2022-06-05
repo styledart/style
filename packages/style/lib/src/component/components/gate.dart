@@ -20,7 +20,7 @@ part of '../../style_base.dart';
 ///
 abstract class GateBase extends SingleChildCallingComponent {
   ///
-  GateBase({required Component child, Key? key}) : super(child);
+  GateBase({required super.child, super.key});
 
   ///
   FutureOr<Message> onRequest(Request request);
@@ -72,7 +72,7 @@ class GateCalling extends Calling {
 ///
 abstract class GateWithChild extends SingleChildCallingComponent {
   ///
-  GateWithChild({required Component child}) : super(child);
+  GateWithChild({required super.child});
 
   ///
   FutureOr<Message> onRequest(
@@ -107,11 +107,7 @@ class GateWithChildCalling extends Calling {
 ///
 class AuthFilterGate extends GateBase {
   ///
-  AuthFilterGate({Key? key, required this.child, this.authRequired = true})
-      : super(key: key, child: child);
-
-  ///
-  final Component child;
+  AuthFilterGate({super.key, required super.child, this.authRequired = true});
 
   /// If false, authorized requests blocked
   final bool authRequired;
@@ -130,6 +126,49 @@ class AuthFilterGate extends GateBase {
   FutureOr<Message> onRequest(Request request) => checkAuth(request);
 }
 
+class AgentFilterGate extends StatelessComponent {
+  ///
+  AgentFilterGate(
+      {Key? key,
+      required this.child,
+      this.allowedAgent = const [],
+      this.blockedAgents = const []})
+      : assert(() {
+          for (var blocked in blockedAgents) {
+            if (allowedAgent.contains(blocked)) {
+              return false;
+            }
+          }
+          return true;
+        }(), 'Allowed Methods Contains Blocked Methods'),
+        super(key: key);
+
+  ///
+  final List<Agent> allowedAgent;
+
+  ///
+  final List<Agent> blockedAgents;
+
+  ///
+  final Component child;
+
+  ///
+  Future<Message> checkAgent(Request request) async {
+    if (blockedAgents.contains(request.agent)) {
+      //TODO: Detail
+      throw Exception('${request.agent} Not Allowed');
+    } else if (allowedAgent.isNotEmpty &&
+        !allowedAgent.contains(request.agent)) {
+      throw Exception('${request.agent} Not Allowed');
+    }
+    return request;
+  }
+
+  @override
+  Component build(BuildContext context) =>
+      Gate(child: child, onRequest: checkAgent);
+}
+
 ///
 class MethodFilterGate extends StatelessComponent {
   ///
@@ -145,7 +184,7 @@ class MethodFilterGate extends StatelessComponent {
             }
           }
           return true;
-        }(), "Allowed Methods Contains Blocked Methods"),
+        }(), 'Allowed Methods Contains Blocked Methods'),
         super(key: key);
 
   ///
@@ -161,18 +200,17 @@ class MethodFilterGate extends StatelessComponent {
   Future<Message> checkMethods(Request request) async {
     if (blockedMethods.contains(request.method!)) {
       //TODO: Detail
-      throw Exception("${request.method} Not Allowed");
+      throw Exception('${request.method} Not Allowed');
     } else if (allowedMethods.isNotEmpty &&
         !allowedMethods.contains(request.method)) {
-      throw Exception("${request.method} Not Allowed");
+      throw Exception('${request.method} Not Allowed');
     }
     return request;
   }
 
   @override
-  Component build(BuildContext context) {
-    return Gate(child: child, onRequest: checkMethods);
-  }
+  Component build(BuildContext context) =>
+      Gate(child: child, onRequest: checkMethods);
 }
 
 ///
@@ -190,14 +228,14 @@ class ContentTypeFilterGate extends StatelessComponent {
             }
           }
           return true;
-        }(), "Allowed Methods Contains Blocked Methods"),
+        }(), 'Allowed Methods Contains Blocked Methods'),
         super(key: key);
 
   /// use mime type
-  final List<String> allowedTypes;
+  final List<Methods> allowedTypes;
 
   /// Use mime tpye
-  final List<String> blockedTypes;
+  final List<Methods> blockedTypes;
 
   ///
   final Component child;
@@ -216,9 +254,8 @@ class ContentTypeFilterGate extends StatelessComponent {
   }
 
   @override
-  Component build(BuildContext context) {
-    return Gate(child: child, onRequest: checkMethods);
-  }
+  Component build(BuildContext context) =>
+      Gate(child: child, onRequest: checkMethods);
 }
 
 // ///

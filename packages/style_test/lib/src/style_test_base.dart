@@ -20,26 +20,25 @@ import 'dart:io';
 
 import 'package:meta/meta.dart';
 import 'package:style_dart/style_dart.dart';
-import 'package:style_test/style_test.dart';
+import '../style_test.dart';
 
-typedef _Tester = FutureOr<void> Function(
-  String path,
-  Matcher matcher, {
-  Agent? agent,
-  Cause? cause,
-  String? description,
-  Methods? methods,
-  dynamic body,
-  List<Cookie>? cookies,
-  ContentType? contentType,
-  Map<String, dynamic>? headers,
-});
-
+///
 @visibleForTesting
 Future<FutureOr<Message> Function(Request request)> initStyleTester(
     String groupName,
     Component server,
-    Future<void> Function(_Tester tester) tester) async {
+    Future<void> Function(
+            FutureOr<void> Function(String, Matcher,
+                    {Agent? agent,
+                    Cause? cause,
+                    String? description,
+                    Methods? methods,
+                    dynamic body,
+                    List<Cookie>? cookies,
+                    ContentType? contentType,
+                    Map<String, dynamic>? headers})
+                tester)
+        tester) async {
   var app = runService(server);
 
   var respTest = ResponseTest(app);

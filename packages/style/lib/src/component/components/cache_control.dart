@@ -32,16 +32,16 @@ class Cacheability extends CacheControlDirective {
   const Cacheability(this._name);
 
   ///
-  Cacheability.public() : _name = "public";
+  Cacheability.public() : _name = 'public';
 
   ///
-  Cacheability.private() : _name = "private";
+  Cacheability.private() : _name = 'private';
 
   ///
-  Cacheability.noCache() : _name = "no-cache";
+  Cacheability.noCache() : _name = 'no-cache';
 
   ///
-  Cacheability.noStore() : _name = "no-store";
+  Cacheability.noStore() : _name = 'no-store';
 
   ///
   final String _name;
@@ -56,23 +56,23 @@ class Expiration extends CacheControlDirective {
   const Expiration(this._name, this.duration);
 
   ///
-  const Expiration.maxAge(this.duration) : _name = "max-age";
+  const Expiration.maxAge(this.duration) : _name = 'max-age';
 
   ///
-  const Expiration.sMaxAge(this.duration) : _name = "s-max-age";
+  const Expiration.sMaxAge(this.duration) : _name = 's-max-age';
 
   ///
-  const Expiration.maxStale(this.duration) : _name = "max-stale";
+  const Expiration.maxStale(this.duration) : _name = 'max-stale';
 
   ///
-  const Expiration.minFresh(this.duration) : _name = "min-fresh";
+  const Expiration.minFresh(this.duration) : _name = 'min-fresh';
 
   ///
   const Expiration.staleWhileRevalidation(this.duration)
-      : _name = "stale-while-revalidation";
+      : _name = 'stale-while-revalidation';
 
   ///
-  const Expiration.staleIfError(this.duration) : _name = "stale-if-error";
+  const Expiration.staleIfError(this.duration) : _name = 'stale-if-error';
 
   ///
   final Duration duration;
@@ -82,7 +82,7 @@ class Expiration extends CacheControlDirective {
 
   ///
   @override
-  String get name => "$_name=${duration.inSeconds}";
+  String get name => '$_name=${duration.inSeconds}';
 }
 
 ///
@@ -91,10 +91,10 @@ class Revalidation extends CacheControlDirective {
   const Revalidation(this._name, this.method);
 
   ///
-  const Revalidation.mustRevalidate(this.method) : _name = "must-revalidate";
+  const Revalidation.mustRevalidate(this.method) : _name = 'must-revalidate';
 
   ///
-  const Revalidation.proxyRevalidate(this.method) : _name = "proxy-revalidate";
+  const Revalidation.proxyRevalidate(this.method) : _name = 'proxy-revalidate';
 
   ///
   final String _name;
@@ -153,16 +153,7 @@ abstract class RevalidationMethod<T> {
 
     var valReq = createRequest(request);
 
-    var rrrR = request.path.calledPath ==
-        "/packages/build_web_compilers/src/dev_compiler_stack_trace/stack_trace_mapper.dart.js";
-
-    if (rrrR) {
-      print("Child Calling with $valReq");
-    }
     var res = await childCalling(valReq);
-    if (rrrR) {
-      print("Child res: $res");
-    }
     if (res is ValidationResponse<T>) {
       return res;
     } else if (res is ResponseWithCacheControl<T>) {
@@ -209,19 +200,13 @@ class IfModifiedSinceMethod extends RevalidationMethod<DateTime> {
     if (headers != null && headers[h] != null && headers[h]!.isNotEmpty) {
       return HttpDate.parse(headers[h]!.first);
     }
+    return null;
   }
 
   @override
-  ValidationRequest<DateTime> createRequest(Request request) {
-    var rrrR = request.path.calledPath ==
-        "/packages/build_web_compilers/src/dev_compiler_stack_trace/stack_trace_mapper.dart.js";
-
-    if (rrrR) {
-      print("REQ CREATING $request");
-    }
-    return ValidationRequest<DateTime>.fromRequest(
-        request, _getIfModifiedSince(request.headers), this);
-  }
+  ValidationRequest<DateTime> createRequest(Request request) =>
+      ValidationRequest<DateTime>.fromRequest(
+          request, _getIfModifiedSince(request.headers), this);
 }
 
 ///
@@ -254,10 +239,9 @@ class IfNoneMatchMethod extends RevalidationMethod<String> {
   }
 
   @override
-  ValidationRequest<String> createRequest(Request request) {
-    return ValidationRequest.fromRequest(
-        request, request.headers![HttpHeaders.ifNoneMatchHeader]?.first, this);
-  }
+  ValidationRequest<String> createRequest(Request request) =>
+      ValidationRequest.fromRequest(request,
+          request.headers![HttpHeaders.ifNoneMatchHeader]?.first, this);
 }
 
 ///
@@ -314,9 +298,8 @@ class ValidationRequest<T> extends Request {
   /// Not need sent data.
   ///
   /// If valid return etag or last-modified
-  ValidationResult validate(T? value) {
-    return revalidationMethod.validate(this, value);
-  }
+  ValidationResult validate(T? value) =>
+      revalidationMethod.validate(this, value);
 }
 
 ///
@@ -359,15 +342,13 @@ class CacheControlBuilder {
   Expiration? expiration;
 
   ///
-  Map<String, List<String>> get headers {
-    return {
-      HttpHeaders.cacheControlHeader: [
-        if (cacheability != null) cacheability!.name,
-        if (expiration != null) expiration!.name,
-        if (revalidation != null) revalidation!.name
-      ],
-    };
-  }
+  Map<String, List<String>> get headers => {
+        HttpHeaders.cacheControlHeader: [
+          if (cacheability != null) cacheability!.name,
+          if (expiration != null) expiration!.name,
+          if (revalidation != null) revalidation!.name
+        ],
+      };
 }
 
 ///
@@ -410,13 +391,6 @@ class CacheControl extends GateWithChild {
   @override
   FutureOr<Message> onRequest(Request request,
       FutureOr<Message> Function(Request p1) childCalling) async {
-    var rrrR = request.path.calledPath ==
-        "/packages/build_web_compilers/src/dev_compiler_stack_trace/stack_trace_mapper.dart.js";
-
-    if (rrrR) {
-      print("BURADAAAA");
-    }
-
     var res = await childCalling(request);
     addHeaders(res);
     return res;
@@ -433,13 +407,6 @@ class _CacheControlWithRevalidation extends CacheControl {
   @override
   FutureOr<Message> onRequest(Request request,
       FutureOr<Message> Function(Request p1) childCalling) async {
-    var rrrR = request.path.calledPath ==
-        "/packages/build_web_compilers/src/dev_compiler_stack_trace/stack_trace_mapper.dart.js";
-
-    if (rrrR) {
-      print("BURADAAAA2");
-    }
-
     var r = await cacheControl.revalidation!.method
         ._validateAndReturn(request, childCalling);
     addHeaders(r);
@@ -461,11 +428,11 @@ abstract class ResponseWithCacheControl<T> extends Response {
           request: request,
           lastModified: data as DateTime) as ResponseWithCacheControl<T>;
     }
-    throw UnimplementedError("Only String or DateTime implemented");
+    throw UnimplementedError('Only String or DateTime implemented');
   }
 
   ///
-  ResponseWithCacheControl._(dynamic body,
+  ResponseWithCacheControl._(Body? body,
       {required this.validationData,
       required Map<String, dynamic>? additionalHeaders,
       required Request request,
@@ -556,14 +523,14 @@ class _CacheControlBinding extends SingleChildCallingBinding {
         var nonCaches = ends.where((e) => e.component is! LastModifiedEndpoint);
         if (nonCaches.isNotEmpty) {
           throw UnsupportedError("All cache control's children on "
-              "the tree must be cache control endpoint."
-              " You can define cache control endpoint with use mixins:"
-              "Also endpoints cache control types must "
-              "match revalidation method"
-              "\nLastModifiedMixin\nLastModifiedStateMixin"
-              "\nEtagMixin\nEtagStateMixin"
-              "\n${nonCaches.map((e) => e.component).toList()} "
-              "is not cache control or type not match");
+              'the tree must be cache control endpoint.'
+              ' You can define cache control endpoint with use mixins:'
+              'Also endpoints cache control types must '
+              'match revalidation method'
+              '\nLastModifiedMixin\nLastModifiedStateMixin'
+              '\nEtagMixin\nEtagStateMixin'
+              '\n${nonCaches.map((e) => e.component).toList()} '
+              'is not cache control or type not match');
         }
       }
 
@@ -572,14 +539,14 @@ class _CacheControlBinding extends SingleChildCallingBinding {
         var nonCaches = ends.where((e) => e.component is! EtagEndpoint);
         if (nonCaches.isNotEmpty) {
           throw UnsupportedError("All cache control's children on "
-              "the tree must be cache control endpoint."
-              " You can define cache control endpoint with use mixins:"
-              "Also endpoints cache control types must "
-              "match revalidation method"
-              "\nLastModifiedMixin\nLastModifiedStateMixin"
-              "\nEtagMixin\nEtagStateMixin"
-              "\n${nonCaches.map((e) => e.component).toList()}"
-              " is not cache control or type not match");
+              'the tree must be cache control endpoint.'
+              ' You can define cache control endpoint with use mixins:'
+              'Also endpoints cache control types must '
+              'match revalidation method'
+              '\nLastModifiedMixin\nLastModifiedStateMixin'
+              '\nEtagMixin\nEtagStateMixin'
+              '\n${nonCaches.map((e) => e.component).toList()}'
+              ' is not cache control or type not match');
         }
       }
     }
@@ -591,46 +558,3 @@ class _CacheControlBinding extends SingleChildCallingBinding {
     super.attachToParent(parent);
   }
 }
-
-///
-// class EndpointCallingWithCacheControl<T> extends EndpointCalling {
-//   ///
-//   EndpointCallingWithCacheControl(
-//       EndpointCallingBinding endpoint)
-//       : super(endpoint);
-//
-//   //
-//   // @override
-//   // FutureOr<Message> onCall(Request request) async {
-//   //   try {
-//   //     if (request is ValidationRequest<T>) {
-//   //       var val = await validate(request);
-//   //       if (val is ValidationResponse<T>) {
-//   //         return val;
-//   //       } else if (val is T) {
-//   //         return ValidationResponse.fromRequest(request, val);
-//   //       } else {
-//   //         throw ArgumentError("Validate function should return"
-//   //             " validation data(String or DateTime) or ValidationRequest()");
-//   //       }
-//   //     } else {
-//   //       return await binding.component.onCall(request);
-//   //     }
-//   //   } on Exception {
-//   //     rethrow;
-//   //   }
-//   // }
-// }
-//
-// class _LastModifiedCalling extends
-// EndpointCallingWithCacheControl<DateTime> {
-//   _LastModifiedCalling(EndpointCallingBinding
-//   endpoint)
-//       : super(endpoint, (endpoint.component as
-//       LastModifiedMixin).lastModified);
-// }
-//
-// class _EtagCalling extends EndpointCallingWithCacheControl<String> {
-//   _EtagCalling(EndpointCallingBinding endpoint)
-//       : super(endpoint, (endpoint.component as EtagMixin).etag);
-// }

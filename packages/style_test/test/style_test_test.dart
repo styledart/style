@@ -22,12 +22,15 @@ import 'package:style_test/style_test.dart';
 
 void main() async {
   initStyleTester("MyServerBaseTest", MyTestServer(), (tester) async {
+
     tester("/onlyAuth", statusCodeIs(401));
 
     tester("/onlyAuth", anyOf(statusCodeIs(200), bodyIs("you are auth")),
         headers: {HttpHeaders.authorizationHeader: "Bearer MyToken"});
   });
 }
+
+
 
 class MyTestServer extends StatelessComponent {
   const MyTestServer({Key? key}) : super(key: key);
@@ -36,8 +39,8 @@ class MyTestServer extends StatelessComponent {
   Component build(BuildContext context) {
     return Server(children: [
       AuthFilterGate(
-          child:
-              RouteBase("onlyAuth", root: SimpleEndpoint.static("you are auth"))),
+          child: RouteBase("onlyAuth",
+              root: SimpleEndpoint.static("you are auth"))),
       RouteBase("everyone", root: SimpleEndpoint.static("it does not matter"))
     ]);
   }

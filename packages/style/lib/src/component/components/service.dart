@@ -41,7 +41,7 @@ class Server extends StatefulComponent {
       this.faviconDirectory,
       Map<Type, ExceptionEndpoint>? defaultExceptionEndpoints})
       : logger = logger ?? DefaultLogger(),
-        rootName = rootName ?? "style_server",
+        rootName = rootName ?? 'style_server',
         defaultExceptionEndpoints = defaultExceptionEndpoints ??
             {
               Exception: DefaultExceptionEndpoint<Exception>(),
@@ -94,9 +94,9 @@ class ServiceState extends State<Server> {
   Component build(BuildContext context) {
     Component result = Gateway(children: [
       if (component.faviconDirectory != null)
-        RouteBase("favicon.ico", root: Favicon(component.faviconDirectory!)),
+        RouteBase('favicon.ico', root: Favicon(component.faviconDirectory!)),
       if (component.rootEndpoint != null)
-        RouteBase("*root", root: component.rootEndpoint),
+        RouteBase('*root', root: component.rootEndpoint),
       ...component.children
     ]);
 
@@ -138,11 +138,12 @@ class ServiceCallingComponent extends SingleChildCallingComponent {
   ///
   ServiceCallingComponent({
     required this.rootName,
-    required this.child,
+    required super.child,
+    super.key,
     this.serviceMaxIdleDuration = const Duration(minutes: 180),
     this.createStateOnCall = true,
     this.createStateOnInitialize = true,
-  }) : super(child);
+  });
 
   ///
   final String rootName;
@@ -156,8 +157,6 @@ class ServiceCallingComponent extends SingleChildCallingComponent {
   ///
   final bool createStateOnCall;
 
-  ///
-  final Component child;
 
   /// type belirtilmezse bir üsttekini getirir
   /// type belirtilirse ve bir üstteki o type değilse
@@ -171,7 +170,7 @@ class ServiceCallingComponent extends SingleChildCallingComponent {
       var serviceComponent = context.findAncestorStateOfType<T>();
 
       if (serviceComponent == null) {
-        throw Exception("No $T found of binding tree");
+        throw Exception('No $T found of binding tree');
       }
       return serviceComponent;
     }
@@ -206,10 +205,10 @@ class ServerBinding extends SingleChildCallingBinding with ServiceOwnerMixin {
     _child = component.child.createBinding();
     _owner = this;
     _child.attachToParent(this);
-    var _ancestor = _parent;
-    while (_ancestor != null && _ancestor._owner == null) {
-      _ancestor._owner = this;
-      _ancestor = _ancestor._parent;
+    var ancestor = _parent;
+    while (ancestor != null && ancestor._owner == null) {
+      ancestor._owner = this;
+      ancestor = ancestor._parent;
     }
     _child.buildBinding();
     _childGateway = _child.visitCallingChildren(TreeVisitor((visitor) {
@@ -287,7 +286,7 @@ mixin ServiceOwnerMixin on Binding {
   @protected
   void executeCronJobs() {
     if (_cronJobController.runners.isNotEmpty) {
-      throw ArgumentError("Call only once executeCronJobs");
+      throw ArgumentError('Call only once executeCronJobs');
     }
     if (cronJobs.isNotEmpty) {
       for (var c in cronJobs.entries) {
@@ -305,6 +304,6 @@ mixin ServiceOwnerMixin on Binding {
   Future<void> callCronJob(String route, DateTime time) async {
     var res =
         await findCalling.calling(CronJobRequest(time: time, path: route));
-    Logger.of(this).info(this, "cron_job_executed", payload: res.body?.data);
+    Logger.of(this).info(this, 'cron_job_executed', payload: res.body?.data as Map<String,dynamic>?);
   }
 }

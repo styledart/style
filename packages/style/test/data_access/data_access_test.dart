@@ -21,60 +21,60 @@ import 'package:style_dart/style_dart.dart';
 import 'package:style_test/style_test.dart';
 
 void main() async {
-  await initStyleTester("data_access", _MyServer(), (tester) async {
+  await initStyleTester('data_access', _MyServer(), (tester) async {
     /// Post
     /// Crete data with body
     tester(
-        "/api/users",
+        '/api/users',
         allOf(statusCodeIs(201),
-            headerIs(HttpHeaders.locationHeader, equals("my_user1"))),
+            headerIs(HttpHeaders.locationHeader, equals('my_user1'))),
         methods: Methods.POST,
-        body: {"_id": "my_user1", "name": "Mehmet", "l_name": "Yaz"});
+        body: {'_id': 'my_user1', 'name': 'Mehmet', 'l_name': 'Yaz'});
 
     /// Read data
     tester(
-        "/api/users/my_user1",
+        '/api/users/my_user1',
         allOf(statusCodeIs(200),
-            bodyIs({"_id": "my_user1", "name": "Mehmet", "l_name": "Yaz"})),
+            bodyIs({'_id': 'my_user1', 'name': 'Mehmet', 'l_name': 'Yaz'})),
         methods: Methods.GET);
 
     /// Create one more
-    tester("/api/users", statusCodeIs(201),
+    tester('/api/users', statusCodeIs(201),
         methods: Methods.POST,
-        body: {"_id": "my_user2", "name": "Jack", "l_name": "Daniel"});
+        body: {'_id': 'my_user2', 'name': 'Jack', 'l_name': 'Daniel'});
 
     /// Read data
     tester(
-        "/api/users/my_user2",
+        '/api/users/my_user2',
         allOf(statusCodeIs(200),
-            bodyIs({"_id": "my_user2", "name": "Jack", "l_name": "Daniel"})),
+            bodyIs({'_id': 'my_user2', 'name': 'Jack', 'l_name': 'Daniel'})),
         methods: Methods.GET);
 
     /// Read list
     tester(
-        "/api/users",
+        '/api/users',
         allOf(bodyIs([
-          {"_id": "my_user1", "name": "Mehmet", "l_name": "Yaz"},
-          {"_id": "my_user2", "name": "Jack", "l_name": "Daniel"}
+          {'_id': 'my_user1', 'name': 'Mehmet', 'l_name': 'Yaz'},
+          {'_id': 'my_user2', 'name': 'Jack', 'l_name': 'Daniel'}
         ])),
         methods: Methods.GET);
 
     /// Update
-    tester("api/users/my_user1", statusCodeIs(200),
-        body: {"name": "Mehmet1"}, methods: Methods.PUT);
+    tester('api/users/my_user1', statusCodeIs(200),
+        body: {'name': 'Mehmet1'}, methods: Methods.PUT);
 
     /// Check updated
     tester(
-      "/api/users/my_user1",
+      '/api/users/my_user1',
       allOf(statusCodeIs(200),
-          bodyIs({"_id": "my_user1", "name": "Mehmet1", "l_name": "Yaz"})),
+          bodyIs({'_id': 'my_user1', 'name': 'Mehmet1', 'l_name': 'Yaz'})),
       methods: Methods.GET,
-      description: "my_user1_read2",
+      description: 'my_user1_read2',
     );
 
     ///
-    tester("/api/users/my_user1", statusCodeIs(200),
-        description: "my_user1_delete", methods: Methods.DELETE);
+    tester('/api/users/my_user1', statusCodeIs(200),
+        description: 'my_user1_delete', methods: Methods.DELETE);
   });
 }
 
@@ -82,10 +82,8 @@ class _MyServer extends StatelessComponent {
   const _MyServer({Key? key}) : super(key: key);
 
   @override
-  Component build(BuildContext context) {
-    return Server(
+  Component build(BuildContext context) => Server(
         dataAccess: DataAccess(SimpleCacheDataAccess(),
             defaultPermission: false, collections: []),
-        children: [RestAccessPoint("api")]);
-  }
+        children: [RestAccessPoint('api')]);
 }

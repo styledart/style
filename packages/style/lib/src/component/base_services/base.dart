@@ -29,7 +29,7 @@ part of '../../style_base.dart';
 ///   )
 /// ````
 ///
-class ServiceWrapper<B extends _BaseService> extends StatelessComponent {
+class ServiceWrapper<B extends BaseService> extends StatelessComponent {
   /// Annotate with service type
   ServiceWrapper({required this.service, required this.child});
 
@@ -48,13 +48,11 @@ class ServiceWrapper<B extends _BaseService> extends StatelessComponent {
   StatelessBinding createBinding() => ServiceWrapperBinding<B>(this);
 
   @override
-  Component build(BuildContext context) {
-    return child;
-  }
+  Component build(BuildContext context) => child;
 }
 
 ///
-class ServiceWrapperBinding<B extends _BaseService> extends StatelessBinding {
+class ServiceWrapperBinding<B extends BaseService> extends StatelessBinding {
   ///
   ServiceWrapperBinding(ServiceWrapper<B> component) : super(component);
 
@@ -74,13 +72,11 @@ class ServiceWrapperBinding<B extends _BaseService> extends StatelessBinding {
   }
 
   @override
-  TreeVisitor<Calling> visitCallingChildren(TreeVisitor<Calling> visitor) {
-    return child!.visitCallingChildren(visitor);
-  }
+  TreeVisitor<Calling> visitCallingChildren(TreeVisitor<Calling> visitor) => child!.visitCallingChildren(visitor);
 }
 
-abstract class _BaseService {
-  _BaseService();
+abstract class BaseService {
+  BaseService();
 
   /// The context in which the service attached
   late final BuildContext context;
@@ -101,7 +97,5 @@ abstract class _BaseService {
   /// Wait service is initialized.
   ///
   /// if service initializing is success returns true.
-  Future<bool> ensureInitialize() async {
-    return await _initializeCompleter.future;
-  }
+  Future<bool> ensureInitialize() async => await _initializeCompleter.future;
 }

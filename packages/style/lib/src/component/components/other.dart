@@ -20,12 +20,10 @@ part of '../../style_base.dart';
 ///
 class CallQueue extends SingleChildCallingComponent {
   ///
-  CallQueue(this.child,
-      {this.parallel = 1, this.timeout = const Duration(seconds: 10)})
-      : super(child);
-
-  ///
-  final Component child;
+  CallQueue(
+      {required super.child,
+      this.parallel = 1,
+      this.timeout = const Duration(seconds: 10)});
 
   ///
   final int parallel;
@@ -53,7 +51,6 @@ class _QueueCalling extends Calling {
       super.binding as SingleChildCallingBinding;
 
   @override
-  FutureOr<Message> onCall(Request request) async {
-    return queue.add(() async => binding.child.findCalling.calling(request));
-  }
+  FutureOr<Message> onCall(Request request) async =>
+      queue.add(() async => binding.child.findCalling.calling(request));
 }

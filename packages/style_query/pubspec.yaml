@@ -1,0 +1,18 @@
+name: style_query
+description: A starting point for Dart libraries or applications.
+version: 1.0.0
+# homepage: https://www.example.com
+
+environment:
+  sdk: '>=2.17.0 <3.0.0'
+
+
+dependencies:
+  meta: ^1.7.0
+
+# dependencies:
+#   path: ^1.8.0
+
+dev_dependencies:
+  effective_dart: ^1.3.2
+  test: ^1.20.1

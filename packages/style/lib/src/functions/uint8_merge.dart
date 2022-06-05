@@ -20,8 +20,8 @@ import 'dart:typed_data';
 ///
 Uint8List mergeList(List<Uint8List> list) {
   var uint = <int>[];
-  for (var _a in list) {
-    uint.addAll(_a);
+  for (var a in list) {
+    uint.addAll(a);
   }
   return Uint8List.fromList(uint);
 }

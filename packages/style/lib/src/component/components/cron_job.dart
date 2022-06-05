@@ -17,6 +17,8 @@
 
 part of '../../style_base.dart';
 
+RandomGenerator _cronIDGenerator = RandomGenerator('#/l(5)');
+
 ///
 class CronJob extends StatelessComponent {
   ///
@@ -25,9 +27,8 @@ class CronJob extends StatelessComponent {
       required this.onCall,
       this.resetPeriodOnExternalCall = true,
       this.allowExternal = false,
-      String? name,
-      GlobalKey? key})
-      : name = name ?? "cron_job_${timePeriod.runtimeType}${getRandomId(5)}";
+      String? name})
+      : name = name ?? 'cron_job_${_cronIDGenerator.generateString()}';
 
   ///
   final Future<Message?> Function(Request request, CronTimePeriod period)
@@ -49,8 +50,7 @@ class CronJob extends StatelessComponent {
   StatelessBinding createBinding() => _CronJobBinding(this);
 
   @override
-  Component build(BuildContext context) {
-    return Gate(
+  Component build(BuildContext context) => Gate(
         child: Route(name,
             root: _CronJobEndpoint(
                 resetPeriodOnExternalCall: resetPeriodOnExternalCall,
@@ -63,7 +63,6 @@ class CronJob extends StatelessComponent {
           }
           return r;
         });
-  }
 }
 
 class _CronJobBinding extends StatelessBinding {
@@ -76,7 +75,7 @@ class _CronJobBinding extends StatelessBinding {
   @override
   void buildBinding() {
     super.buildBinding();
-    owner.addCronJob("${getPath()}/${component.name}", component.timePeriod);
+    owner.addCronJob('${getPath()}/${component.name}', component.timePeriod);
   }
 }
 
@@ -113,25 +112,25 @@ class CronJobState extends EndpointState<_CronJobEndpoint> {
   ///
   CronTimePeriod get period => component.timePeriod;
 
+  @override
   void initState() {
-    print("Cron Job Created with name: ${component.name}");
+    print('Cron Job Created with name: ${component.name}');
   }
 
   @override
   FutureOr<Object> onCall(Request request) async {
     var stw = Stopwatch()..start();
     await component.onCall(request, period);
-    stw..stop();
+    stw.stop();
     if (request is! CronJobRequest &&
         component.resetPeriodOnExternalCall &&
         period is EveryX) {
-      print("RESET PERIOD");
       (period as EveryX).reset();
     }
     return {
-      "created": request.context.requestTime.toUtc().toString(),
-      "took_ms": stw.elapsedMilliseconds,
-      "path": request.fullPath
+      'created': request.context.requestTime.toUtc().toString(),
+      'took_ms': stw.elapsedMilliseconds,
+      'path': request.fullPath
     };
   }
 }

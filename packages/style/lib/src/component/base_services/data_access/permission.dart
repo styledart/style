@@ -23,20 +23,7 @@ typedef PermissionChecker = Map<String, Map<DbOperationType, Checker>> Function(
 ///
 typedef Checker = Future<bool> Function();
 
-///Mongo Db Operation Type
-enum DbOperationType {
-  ///Create Document
-  create,
 
-  ///Read Document
-  read,
-
-  ///Update Document
-  update,
-
-  ///Delete Document
-  delete,
-}
 
 ///
 class PermissionHandlerService {

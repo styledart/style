@@ -84,13 +84,6 @@ class CreateProjectCommand extends Command {
       throw UnimplementedError(
           "Only \"simple\" and \"database\" templates are available");
     }
-    // print("Arg Rest is ${argResults?.rest}");
-    // print("Arg Options is ${argResults?.options}");
-    // print("Arg Arguments is ${argResults?.arguments}");
-    // print("Arg Command is ${argResults?.command?.name}");
-    // print("Template is $template");
-    // print("Template was parsed ${argResults?.wasParsed("template")}");
-    // print("Directory: ${Directory.current}");
   }
 
   ///

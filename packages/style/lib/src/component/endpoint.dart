@@ -26,7 +26,7 @@ abstract class EndpointCalling extends Calling {
   EndpointCallingBinding get binding => super.binding as EndpointCallingBinding;
 
   ///
-  Object Function(Request request) get _endpointOnCall =>
+  FutureOr<Object> Function(Request request) get _endpointOnCall =>
       binding.component.onCall;
 
 // @override
@@ -74,6 +74,10 @@ class _DefaultEndpointCalling extends EndpointCalling {
       var res = await DataAccess.of(binding).any(value);
       return request.response(Body(res.data),
           headers: res.headers, statusCode: res.statusCode);
+    } else if (value is Stream) {
+      var st = StreamBody(value.map((event) => Body(event)));
+
+      return request.response(st);
     } else {
       return request.response(Body(value));
     }
@@ -82,9 +86,9 @@ class _DefaultEndpointCalling extends EndpointCalling {
   @override
   FutureOr<Message> onCall(Request request) async {
     try {
-      var val = await _endpointOnCall(request);
+      var val = _endpointOnCall(request);
       if (val is Future) {
-        return _get(await val, request);
+        return _get((await val) as Object, request);
       }
       return _get(val, request);
     } on Exception {
@@ -146,9 +150,8 @@ class _MessageEndpointCalling extends EndpointCalling {
   _MessageEndpointCalling(EndpointCallingBinding endpoint) : super(endpoint);
 
   @override
-  FutureOr<Message> onCall(Request request) async {
-    return (await _endpointOnCall(request)) as Message;
-  }
+  FutureOr<Message> onCall(Request request) async =>
+      (await _endpointOnCall(request)) as Message;
 }
 
 class _AnyEncodableEndpointCalling extends EndpointCalling {
@@ -174,9 +177,8 @@ class ExceptionEndpointCalling<T extends Exception> extends EndpointCalling {
 
   @override
   FutureOr<Message> onCall(Request request,
-      [T? exception, StackTrace? stackTrace]) {
-    return binding.component.onCall(request, exception, stackTrace);
-  }
+          [T? exception, StackTrace? stackTrace]) =>
+      binding.component.onCall(request, exception, stackTrace);
 }
 
 /// Endpoint preferred types for performance optimization.
@@ -271,9 +273,7 @@ abstract class Endpoint extends CallingComponent {
   EndpointPreferredType? get preferredType => null;
 
   @override
-  CallingBinding createBinding() {
-    return EndpointCallingBinding(this);
-  }
+  CallingBinding createBinding() => EndpointCallingBinding(this);
 
   @override
   Calling createCalling(BuildContext context) {
@@ -333,16 +333,16 @@ class EndpointCallingBinding extends CallingBinding {
       if (ancestor.component is PathSegmentCallingComponentMixin) {
         var seg =
             ((ancestor).component as PathSegmentCallingComponentMixin).segment;
-        list.add(seg is ArgumentSegment ? "{${seg.name}}" : seg.name);
+        list.add(seg is ArgumentSegment ? '{${seg.name}}' : seg.name);
       }
       ancestorComponents.add(ancestor.component);
       ancestor = ancestor.ancestorCalling;
     }
     if (list.isEmpty) {
-      throw Exception("No Service Found from: \nFrom:$ancestorComponents");
+      throw Exception('No Service Found from: \nFrom:$ancestorComponents');
     }
     list.add(owner.httpService.address);
-    return list.reversed.join("/");
+    return list.reversed.join('/');
   }
 
   @override
@@ -388,9 +388,7 @@ abstract class EndpointState<T extends StatefulEndpoint> extends State<T> {
   DataAccess get db => DataAccess.of(context);
 
   @override
-  Component build(BuildContext context) {
-    return _EndpointState(onCall);
-  }
+  Component build(BuildContext context) => _EndpointState(onCall);
 }
 
 ///
@@ -400,20 +398,21 @@ abstract class LastModifiedEndpointState<T extends StatefulEndpoint>
   FutureOr<ResponseWithLastModified> onRequest(
       ValidationRequest<DateTime> request);
 
+  @override
   FutureOr<ResponseWithLastModified> onCall(
           covariant ValidationRequest<DateTime> request) =>
       onRequest(request);
 
   @override
-  Component build(BuildContext context) {
-    return _LastModifiedEndpointState(onRequest);
-  }
+  Component build(BuildContext context) =>
+      _LastModifiedEndpointState(onRequest);
 }
 
 ///
 abstract class EtagEndpointState<T extends StatefulEndpoint>
     extends EndpointState<T> {
   // ///
+  @override
   FutureOr<ResponseWithEtag> onCall(
           covariant ValidationRequest<String> request) =>
       onRequest(request);
@@ -422,9 +421,7 @@ abstract class EtagEndpointState<T extends StatefulEndpoint>
   FutureOr<ResponseWithEtag> onRequest(ValidationRequest<String> request);
 
   @override
-  Component build(BuildContext context) {
-    return _EtagEndpointState(onRequest);
-  }
+  Component build(BuildContext context) => _EtagEndpointState(onRequest);
 }
 
 class _EndpointState extends Endpoint {
@@ -433,9 +430,7 @@ class _EndpointState extends Endpoint {
   final FutureOr<Object> Function(Request request) call;
 
   @override
-  FutureOr<Object> onCall(Request request) {
-    return call(request);
-  }
+  FutureOr<Object> onCall(Request request) => call(request);
 }
 
 class _LastModifiedEndpointState extends LastModifiedEndpoint {
@@ -446,9 +441,8 @@ class _LastModifiedEndpointState extends LastModifiedEndpoint {
 
   @override
   FutureOr<ResponseWithCacheControl<DateTime>> onRequest(
-      ValidationRequest<DateTime> request) {
-    return call(request);
-  }
+          ValidationRequest<DateTime> request) =>
+      call(request);
 }
 
 ///
@@ -460,9 +454,8 @@ class _EtagEndpointState extends EtagEndpoint {
 
   @override
   FutureOr<ResponseWithCacheControl<String>> onRequest(
-      ValidationRequest<String> request) {
-    return call(request);
-  }
+          ValidationRequest<String> request) =>
+      call(request);
 }
 
 ///
@@ -475,17 +468,9 @@ abstract class LastModifiedEndpoint extends Endpoint {
       ValidationRequest<DateTime> request);
 
   @override
-  FutureOr<Object> onCall(Request request) {
-    // if (request is! ValidationRequest<DateTime>) {
-    //   var _parent = (context as Binding).ancestorCalling;
-    //   while (_parent != null) {
-    //     print("$_parent");
-    //     _parent = _parent.ancestorCalling;
-    //   }
-    //   print("Req: ${request.path.calledPath}");
-    // }
-    return onRequest(request as ValidationRequest<DateTime>);
-  }
+  FutureOr<Object> onCall(Request request) =>
+      onRequest(request as ValidationRequest<DateTime>);
+
 }
 
 ///

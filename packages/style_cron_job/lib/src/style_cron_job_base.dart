@@ -17,6 +17,8 @@
 
 import 'dart:async';
 
+import 'package:meta/meta.dart';
+
 /// CronJobController manages multiple cron jobs
 /// processes not started before calling [start]
 ///
@@ -77,6 +79,7 @@ typedef CronCallback = FutureOr<void> Function(DateTime time);
 
 /// Runner for each cron jobs
 /// [onCall] call in period
+@immutable
 class CronJobRunner {
   CronJobRunner({required this.period, required this.onCall});
 

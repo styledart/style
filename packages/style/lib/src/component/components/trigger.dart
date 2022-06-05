@@ -21,12 +21,11 @@ part of '../../style_base.dart';
 class CallTrigger extends SingleChildCallingComponent {
   ///
   CallTrigger(
-      {required Component child,
+      {required super.child,
       this.responseTrigger,
       this.requestTrigger,
       this.ensureResponded = false,
-      this.ensureSent = false})
-      : super(child);
+      this.ensureSent = false});
 
   ///
   final void Function(Request request)? requestTrigger;
@@ -76,7 +75,7 @@ class _CallTriggerCalling extends Calling {
   FutureOr<Message> onCall(Request request) async {
     if (component.requestTrigger != null) {
       if (component.ensureResponded) {
-        _ensureResponded(request);
+        await _ensureResponded(request);
       } else {
         component.requestTrigger!.call(request);
       }
@@ -84,7 +83,7 @@ class _CallTriggerCalling extends Calling {
     if (component.responseTrigger != null) {
       var res = await binding.child.findCalling.calling(request);
       if (component.ensureSent) {
-        _ensureSent(res);
+        await _ensureSent(res);
       } else {
         component.responseTrigger!.call(request);
       }
@@ -115,12 +114,10 @@ class RequestTrigger extends StatelessComponent {
   final bool ensureResponded;
 
   @override
-  Component build(BuildContext context) {
-    return CallTrigger(
+  Component build(BuildContext context) => CallTrigger(
         child: child,
         requestTrigger: trigger,
         ensureResponded: ensureResponded);
-  }
 }
 
 ///
@@ -143,8 +140,6 @@ class ResponseTrigger extends StatelessComponent {
   final bool ensureSent;
 
   @override
-  Component build(BuildContext context) {
-    return CallTrigger(
+  Component build(BuildContext context) => CallTrigger(
         child: child, responseTrigger: trigger, ensureSent: ensureSent);
-  }
 }

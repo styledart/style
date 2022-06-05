@@ -21,12 +21,12 @@ import 'dart:math';
 import 'package:json_schema2/json_schema2.dart';
 
 ///
-class Instance {
+class Instance<T> {
   ///
   Instance(this.data, {this.path = ''});
 
   ///
-  dynamic data;
+  T data;
 
   ///
   String? path;
@@ -50,13 +50,11 @@ class StyleValidationError {
   String type;
 
   ///
-  MapEntry<String, Map<String, dynamic>> toMapEntry() {
-    return MapEntry(
-        schemaPath.isEmpty ? "root" : schemaPath,
-        {
-          "type": type,
-        }..addAll(payload ?? {}));
-  }
+  MapEntry<String, Map<String, dynamic>> toMapEntry() => MapEntry(
+      schemaPath.isEmpty ? 'root' : schemaPath,
+      {
+        'type': type,
+      }..addAll(payload ?? {}));
 }
 
 /// Initialized with schema, validates instances against it
@@ -134,7 +132,7 @@ class StyleValidator {
   }
 
   void _numberValidation(JsonSchema schema, Instance instance) {
-    final num? n = instance.data;
+    final n = instance.data as num?;
 
     final maximum = schema.maximum;
     final minimum = schema.minimum;
@@ -144,32 +142,32 @@ class StyleValidator {
     if (exclusiveMaximum != null) {
       if (n! >= exclusiveMaximum) {
         _err(
-            msg: "exclusive_max_exceeded",
+            msg: 'exclusive_max_exceeded',
             schemaPath: schema.path!,
-            payload: {"exclusive_max": exclusiveMaximum, "value": n});
+            payload: {'exclusive_max': exclusiveMaximum, 'value': n});
       }
     } else if (maximum != null) {
       if (n! > maximum) {
         _err(
-            msg: "maximum_exceeded",
+            msg: 'maximum_exceeded',
             schemaPath: schema.path!,
-            payload: {"maximum": maximum, "value": n});
+            payload: {'maximum': maximum, 'value': n});
       }
     }
 
     if (exclusiveMinimum != null) {
       if (n! <= exclusiveMinimum) {
         _err(
-            msg: "exclusive_min_exceeded",
+            msg: 'exclusive_min_exceeded',
             schemaPath: schema.path!,
-            payload: {"exclusive_min": exclusiveMinimum, "value": n});
+            payload: {'exclusive_min': exclusiveMinimum, 'value': n});
       }
     } else if (minimum != null) {
       if (n! < minimum) {
         _err(
-            msg: "minimum_violated",
+            msg: 'minimum_violated',
             schemaPath: schema.path!,
-            payload: {"minimum": minimum, "value": n});
+            payload: {'minimum': minimum, 'value': n});
       }
     }
 
@@ -178,82 +176,82 @@ class StyleValidator {
       if (multipleOf is int && n is int) {
         if (0 != n % multipleOf) {
           _err(
-              msg: "multiple_of_violated",
+              msg: 'multiple_of_violated',
               schemaPath: schema.path!,
-              payload: {"multiple_of": multipleOf, "value": n});
+              payload: {'multiple_of': multipleOf, 'value': n});
         }
       } else {
         final result = n! / multipleOf;
         if (result.truncate() != result) {
           _err(
-              msg: "multiple_of_violated",
+              msg: 'multiple_of_violated',
               schemaPath: schema.path!,
-              payload: {"multiple_of": multipleOf, "value": n});
+              payload: {'multiple_of': multipleOf, 'value': n});
         }
       }
     }
   }
 
-  void _typeValidation(JsonSchema schema, dynamic instance) {
+  void _typeValidation(JsonSchema schema, Instance instance) {
     final typeList = schema.typeList;
     if (typeList?.isNotEmpty == true) {
       if (!typeList!.any((type) => _typeMatch(type, schema, instance.data))) {
         _err(
-            msg: "type_validation_violated",
+            msg: 'type_validation_violated',
             schemaPath: schema.path!,
-            payload: {"wanted": typeList});
+            payload: {'wanted': typeList});
       }
     }
   }
 
-  void _constValidation(JsonSchema schema, dynamic instance) {
+  void _constValidation(JsonSchema schema, Instance instance) {
     if (schema.hasConst &&
         !JsonSchemaUtils.jsonEqual(instance.data, schema.constValue)) {
       _err(
-          msg: "const_violated",
+          msg: 'const_violated',
           schemaPath: schema.path!,
-          payload: {"instance_path": instance.path});
+          payload: {'instance_path': instance.path});
     }
   }
 
-  void _enumValidation(JsonSchema schema, dynamic instance) {
+  void _enumValidation(JsonSchema schema, Instance instance) {
     final enumValues = schema.enumValues;
     if (enumValues?.isNotEmpty == true) {
       try {
         enumValues!
             .singleWhere((v) => JsonSchemaUtils.jsonEqual(instance.data, v));
       } on StateError {
-        _err(msg: "enum_violated", schemaPath: schema.path!);
+        _err(msg: 'enum_violated', schemaPath: schema.path!);
       }
     }
   }
 
-  void _stringValidation(JsonSchema schema, Instance instance) {
-    final actual = instance.data.runes.length;
+  void _stringValidation(JsonSchema schema, Instance<String> instance) {
+    final actual = (instance.data).runes.length;
     final minLength = schema.minLength;
     final maxLength = schema.maxLength;
-    if (maxLength is int && actual > maxLength) {
+    if (maxLength is int && (actual > maxLength)) {
       _err(
-          msg: "max_length_exceeded",
+          msg: 'max_length_exceeded',
           schemaPath: schema.path!,
-          payload: {"max_length": maxLength, "actual": actual});
+          payload: {'max_length': maxLength, 'actual': actual});
     } else if (minLength is int && actual < minLength) {
       _err(
-          msg: "min_length_exceeded",
+          msg: 'min_length_exceeded',
           schemaPath: schema.path!,
-          payload: {"min_length": maxLength, "actual": actual});
+          payload: {'min_length': maxLength, 'actual': actual});
     }
     final pattern = schema.pattern;
     if (pattern != null && !pattern.hasMatch(instance.data)) {
       _err(
-          msg: "pattern_violated",
+          msg: 'pattern_violated',
           schemaPath: schema.path!,
-          payload: {"pattern": pattern});
+          payload: {'pattern': pattern});
     }
   }
 
-  void _itemsValidation(JsonSchema schema, Instance instance) {
-    final int? actual = instance.data.length;
+  void _itemsValidation(JsonSchema schema, Instance<List> instance) {
+    final actual = instance.data.length;
 
     final singleSchema = schema.items;
     if (singleSchema != null) {
@@ -266,7 +264,7 @@ class StyleValidator {
 
       if (items != null) {
         final expected = items.length;
-        final end = min(expected, actual!);
+        final end = min(expected, actual);
         for (var i = 0; i < end; i++) {
           final itemInstance =
               Instance(instance.data[i], path: '${instance.path}/$i');
@@ -280,7 +278,7 @@ class StyleValidator {
           }
         } else if (schema.additionalItemsBool != null) {
           if (!schema.additionalItemsBool! && actual > end) {
-            _err(msg: "additional_items_false", schemaPath: schema.path!);
+            _err(msg: 'additional_items_false', schemaPath: schema.path!);
           }
         }
       }
@@ -288,16 +286,16 @@ class StyleValidator {
 
     final maxItems = schema.maxItems;
     final minItems = schema.minItems;
-    if (maxItems is int && actual! > maxItems) {
+    if (maxItems is int && actual > maxItems) {
       _err(
-          msg: "max_item_exceeded",
+          msg: 'max_item_exceeded',
           schemaPath: schema.path!,
-          payload: {"actual": actual, "max_items": maxItems});
-    } else if (schema.minItems is int && actual! < schema.minItems!) {
+          payload: {'actual': actual, 'max_items': maxItems});
+    } else if (schema.minItems is int && actual < schema.minItems!) {
       _err(
-          msg: "min_item_violated",
+          msg: 'min_item_violated',
           schemaPath: schema.path!,
-          payload: {"actual": actual, "min_items": minItems});
+          payload: {'actual': actual, 'min_items': minItems});
     }
 
     if (schema.uniqueItems) {
@@ -307,9 +305,9 @@ class StyleValidator {
         for (var j = i + 1; j < end; j++) {
           if (JsonSchemaUtils.jsonEqual(instance.data[i], instance.data[j])) {
             _err(
-                msg: "unique_item_violated",
+                msg: 'unique_item_violated',
                 schemaPath: schema.path!,
-                payload: {"a": i, "b": j});
+                payload: {'a': i, 'b': j});
           }
         }
       }
@@ -318,7 +316,7 @@ class StyleValidator {
     if (schema.contains != null) {
       if (!instance.data
           .any((item) => StyleValidator(schema.contains).validate(item))) {
-        _err(msg: "contains_violated", schemaPath: schema.path!);
+        _err(msg: 'contains_violated', schemaPath: schema.path!);
       }
     }
   }
@@ -326,9 +324,9 @@ class StyleValidator {
   void _validateAllOf(JsonSchema schema, Instance instance) {
     if (!schema.allOf.every((s) => StyleValidator(s).validate(instance))) {
       _err(
-          msg: "all_of_violated",
+          msg: 'all_of_violated',
           schemaPath: schema.path!,
-          payload: {"all_of": schema.allOf});
+          payload: {'all_of': schema.allOf});
     }
   }
 
@@ -336,9 +334,9 @@ class StyleValidator {
     if (!schema.anyOf.any((s) => StyleValidator(s).validate(instance))) {
       // TODO: deal with /anyOf
       _err(
-          msg: "any_of_violated",
+          msg: 'any_of_violated',
           schemaPath: schema.path!,
-          payload: {"any_of": schema.anyOf});
+          payload: {'any_of': schema.anyOf});
     }
   }
 
@@ -349,9 +347,9 @@ class StyleValidator {
       schema.oneOf.singleWhere((s) => StyleValidator(s).validate(instance));
     } on StateError catch (notOneOf) {
       _err(
-          msg: "one_of_violated",
+          msg: 'one_of_violated',
           schemaPath: schema.path!,
-          payload: {"one_of": schema.oneOf, "not_one_of": notOneOf.toString()});
+          payload: {'one_of': schema.oneOf, 'not_one_of': notOneOf.toString()});
     }
   }
 
@@ -359,20 +357,20 @@ class StyleValidator {
     if (StyleValidator(schema.notSchema).validate(instance)) {
       // TODO: deal with .notSchema
       _err(
-          msg: "not_schema_violated",
+          msg: 'not_schema_violated',
           schemaPath: schema.path!,
-          payload: {"not_schema": schema.notSchema!.path!});
+          payload: {'not_schema': schema.notSchema!.path!});
     }
   }
 
-  void _validateFormat(JsonSchema schema, Instance instance) {
-    if (instance.data is! String) {
-      _err(
-          msg: "format_not_string",
-          schemaPath: schema.path!,
-          payload: {"actual": instance.data.runtimeType});
-      return;
-    }
+  void _validateFormat(JsonSchema schema, Instance<String> instance) {
+    // if (instance.data is! String) {
+    //   _err(
+    //       msg: "format_not_string",
+    //       schemaPath: schema.path!,
+    //       payload: {"actual": instance.data.runtimeType});
+    //   return;
+    // }
 
     // ignore_for_file: avoid_catches_without_on_clauses
     switch (schema.format) {
@@ -382,9 +380,9 @@ class StyleValidator {
             DateTime.parse(instance.data);
           } catch (e) {
             _err(
-                msg: "format_not_accepted",
+                msg: 'format_not_accepted',
                 schemaPath: schema.path!,
-                payload: {"accepted": "date_time"});
+                payload: {'accepted': 'date_time'});
           }
         }
         break;
@@ -396,9 +394,9 @@ class StyleValidator {
 
           if (!isValid(instance.data)) {
             _err(
-                msg: "format_not_accepted",
+                msg: 'format_not_accepted',
                 schemaPath: schema.path!,
-                payload: {"accepted": "uri"});
+                payload: {'accepted': 'uri'});
           }
         }
         break;
@@ -406,11 +404,11 @@ class StyleValidator {
         {
           if (schema.schemaVersion != SchemaVersion.draft6) {
             _err(
-                msg: "format_not_accepted",
+                msg: 'format_not_accepted',
                 schemaPath: schema.path!,
                 payload: {
-                  "accepted": "draft6_or_higher",
-                  "format": schema.format
+                  'accepted': 'draft6_or_higher',
+                  'format': schema.format
                 });
           }
           final isValid = defaultValidators.uriReferenceValidator as bool
@@ -419,9 +417,9 @@ class StyleValidator {
 
           if (!isValid(instance.data)) {
             _err(
-                msg: "format_not_accepted",
+                msg: 'format_not_accepted',
                 schemaPath: schema.path!,
-                payload: {"accepted": "uri-reference"});
+                payload: {'accepted': 'uri-reference'});
           }
         }
         break;
@@ -429,11 +427,11 @@ class StyleValidator {
         {
           if (schema.schemaVersion != SchemaVersion.draft6) {
             _err(
-                msg: "format_not_accepted",
+                msg: 'format_not_accepted',
                 schemaPath: schema.path!,
                 payload: {
-                  "accepted": "uri-draft6_or_higher",
-                  "format": schema.format
+                  'accepted': 'uri-draft6_or_higher',
+                  'format': schema.format
                 });
           }
           final isValid = defaultValidators.uriTemplateValidator as bool
@@ -442,10 +440,10 @@ class StyleValidator {
 
           if (!isValid(instance.data)) {
             _err(
-                msg: "format_not_accepted",
+                msg: 'format_not_accepted',
                 schemaPath: schema.path!,
                 payload: {
-                  "accepted": "uri_template",
+                  'accepted': 'uri_template',
                 });
           }
         }
@@ -458,11 +456,11 @@ class StyleValidator {
 
           if (!isValid(instance.data)) {
             _err(
-                msg: "format_not_accepted",
+                msg: 'format_not_accepted',
                 schemaPath: schema.path!,
                 payload: {
-                  "accepted": "uri-draft6_or_higher",
-                  "format": schema.format
+                  'accepted': 'uri-draft6_or_higher',
+                  'format': schema.format
                 });
           }
         }
@@ -472,10 +470,10 @@ class StyleValidator {
           if (JsonSchemaValidationRegexes.ipv4.firstMatch(instance.data) ==
               null) {
             _err(
-                msg: "format_not_accepted",
+                msg: 'format_not_accepted',
                 schemaPath: schema.path!,
                 payload: {
-                  "accepted": "ipv4",
+                  'accepted': 'ipv4',
                 });
           }
         }
@@ -485,10 +483,10 @@ class StyleValidator {
           if (JsonSchemaValidationRegexes.ipv6.firstMatch(instance.data) ==
               null) {
             _err(
-                msg: "format_not_accepted",
+                msg: 'format_not_accepted',
                 schemaPath: schema.path!,
                 payload: {
-                  "accepted": "ipv6",
+                  'accepted': 'ipv6',
                 });
           }
         }
@@ -498,10 +496,10 @@ class StyleValidator {
           if (JsonSchemaValidationRegexes.hostname.firstMatch(instance.data) ==
               null) {
             _err(
-                msg: "format_not_accepted",
+                msg: 'format_not_accepted',
                 schemaPath: schema.path!,
                 payload: {
-                  "accepted": "host_name",
+                  'accepted': 'host_name',
                 });
           }
         }
@@ -510,21 +508,21 @@ class StyleValidator {
         {
           if (schema.schemaVersion != SchemaVersion.draft6) {
             _err(
-                msg: "format_not_accepted",
+                msg: 'format_not_accepted',
                 schemaPath: schema.path!,
                 payload: {
-                  "accepted": "uri-draft6_or_higher",
-                  "format": schema.format
+                  'accepted': 'uri-draft6_or_higher',
+                  'format': schema.format
                 });
           }
           if (JsonSchemaValidationRegexes.jsonPointer
                   .firstMatch(instance.data) ==
               null) {
             _err(
-                msg: "format_not_accepted",
+                msg: 'format_not_accepted',
                 schemaPath: schema.path!,
                 payload: {
-                  "accepted": "json_pointer",
+                  'accepted': 'json_pointer',
                 });
           }
         }
@@ -532,14 +530,15 @@ class StyleValidator {
       default:
         {
           _err(
-              msg: "format_not_accepted",
+              msg: 'format_not_accepted',
               schemaPath: schema.path!,
-              payload: {"accepted": "any", "format": schema.format});
+              payload: {'accepted': 'any', 'format': schema.format});
         }
     }
   }
 
-  void _objectPropertyValidation(JsonSchema schema, Instance instance) {
+  void _objectPropertyValidation(
+      JsonSchema schema, Instance<Map<String, dynamic>> instance) {
     final propMustValidate = schema.additionalPropertiesBool != null &&
         !schema.additionalPropertiesBool!;
 
@@ -570,54 +569,57 @@ class StyleValidator {
           _validate(schema.additionalPropertiesSchema!, newInstance);
         } else if (propMustValidate) {
           _err(
-              msg: "unallowed_additional_property",
+              msg: 'un-allowed_additional_property',
               schemaPath: schema.path!,
-              payload: {"property": k});
+              payload: {'property': k});
         }
       }
     });
   }
 
-  void _propertyDependenciesValidation(JsonSchema schema, Instance instance) {
+  void _propertyDependenciesValidation(
+      JsonSchema schema, Instance<Map<String, dynamic>> instance) {
     schema.propertyDependencies?.forEach((k, dependencies) {
       if (instance.data.containsKey(k)) {
         if (!dependencies.every((prop) => instance.data.containsKey(prop))) {
           _err(
-              msg: "property_required",
+              msg: 'property_required',
               schemaPath: schema.path!,
-              payload: {"property": k, "dependencies": dependencies});
+              payload: {'property': k, 'dependencies': dependencies});
         }
       }
     });
   }
 
-  void _schemaDependenciesValidation(JsonSchema schema, Instance instance) {
+  void _schemaDependenciesValidation(
+      JsonSchema schema, Instance<Map<String, dynamic>> instance) {
     schema.schemaDependencies?.forEach((k, otherSchema) {
       if (instance.data.containsKey(k)) {
         if (!StyleValidator(otherSchema).validate(instance)) {
-          _err(msg: "property_violated", schemaPath: schema.path!, payload: {
-            "property": k,
+          _err(msg: 'property_violated', schemaPath: schema.path!, payload: {
+            'property': k,
           });
         }
       }
     });
   }
 
-  void _objectValidation(JsonSchema schema, Instance instance) {
+  void _objectValidation(
+      JsonSchema schema, Instance<Map<String, dynamic>> instance) {
     // Min / Max Props
     final numProps = instance.data.length;
     final minProps = schema.minProperties;
     final maxProps = schema.maxProperties;
     if (numProps < minProps) {
       _err(
-          msg: "min_properties_violated",
+          msg: 'min_properties_violated',
           schemaPath: schema.path!,
-          payload: {"num": numProps, "min": minProps});
+          payload: {'num': numProps, 'min': minProps});
     } else if (maxProps != null && numProps > maxProps) {
       _err(
-          msg: "max_properties_violated",
+          msg: 'max_properties_violated',
           schemaPath: schema.path!,
-          payload: {"num": numProps, "max": maxProps});
+          payload: {'num': numProps, 'max': maxProps});
     }
 
     // Required Properties
@@ -625,10 +627,10 @@ class StyleValidator {
       for (var prop in schema.requiredProperties!) {
         if (!instance.data.containsKey(prop)) {
           _err(
-              msg: "missing_property",
-              schemaPath: schema.path!.isEmpty ? "root/$prop" : schema.path!,
+              msg: 'missing_property',
+              schemaPath: schema.path!.isEmpty ? 'root/$prop' : schema.path!,
               payload: {
-                "missing": prop,
+                'missing': prop,
               });
         }
       }
@@ -654,7 +656,7 @@ class StyleValidator {
     if (schema.schemaBool != null) {
       if (schema.schemaBool == false) {
         _err(
-          msg: "never_validate",
+          msg: 'never_validate',
           schemaPath: schema.path!,
         );
       }
@@ -671,10 +673,10 @@ class StyleValidator {
     _constValidation(schema, instance);
     _enumValidation(schema, instance);
     if (instance.data is List) {
-      _itemsValidation(schema, instance);
+      _itemsValidation(schema, instance as Instance<List>);
     }
     if (instance.data is String) {
-      _stringValidation(schema, instance);
+      _stringValidation(schema, instance as Instance<String>);
     }
     if (instance.data is num) {
       _numberValidation(schema, instance);
@@ -692,10 +694,10 @@ class StyleValidator {
       _validateNot(schema, instance);
     }
     if (schema.format != null) {
-      _validateFormat(schema, instance);
+      _validateFormat(schema, instance as Instance<String>);
     }
     if (instance.data is Map) {
-      _objectValidation(schema, instance);
+      _objectValidation(schema, instance as Instance<Map<String, dynamic>>);
     }
   }
 

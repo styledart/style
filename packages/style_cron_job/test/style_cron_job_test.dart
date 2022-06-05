@@ -21,13 +21,9 @@ import 'package:test/scaffolding.dart';
 
 void main() {
   test("runner", () async {
-
-
     every.x(3).second.listen((time) {
       print("Hello World!");
     });
-
-
 
     var runner = CronJobController();
     var count = 0;
@@ -169,7 +165,8 @@ void main() {
     }
     stop.stop();
     print(
-        "each_day: ${time.add(Duration(seconds: i))} ms: ${stop.elapsedMilliseconds}");
+        "each_day: ${time.add(Duration(seconds: i))}"
+            " ms: ${stop.elapsedMilliseconds}");
     expect(tCount, 7);
   });
 

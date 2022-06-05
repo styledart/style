@@ -20,15 +20,110 @@ import 'dart:io';
 
 import 'package:style_cron_job/style_cron_job.dart';
 import 'package:style_dart/style_dart.dart';
+import 'package:style_random/style_random.dart';
 
-void main() async {
-  runService(ShelfExample());
-  Stream.periodic(Duration(seconds: 1), (i) => i).listen(print);
+void main(arg) async {
+  runService(ExampleServer());
+}
+
+/// Widget - Element - RenderObject
+///
+/// Component - Binding - Calling - Leaf(Endpoint)
+///
+
+class ExampleServer extends StatelessComponent {
+  @override
+  Component build(BuildContext context) {
+    return Server(
+        httpService: DefaultHttpServiceHandler(host: 'localhost', port: 8080),
+        children: [
+          Route('hello',
+              root: HelloEnd('my_col'),
+              child: Gateway(children: [
+                TranslationServer(),
+                Route('a', root: SimpleEndpoint.static('aaa'))
+              ]))
+        ]);
+  }
+}
+
+class TranslationServer extends StatefulComponent {
+  const TranslationServer({GlobalKey? key}) : super(key: key);
+
+  @override
+  TranslationServerState createState() => TranslationServerState();
+}
+
+class TranslationServerState extends State<TranslationServer> {
+  @override
+  Component build(BuildContext context) => Gateway(children: [
+        Route('end1', root: SimpleEndpoint.static('body')),
+        Route('end2', root: SimpleEndpoint.static('body')),
+        Route('end3', root: SimpleEndpoint.static('body')),
+      ]);
+}
+
+class HelloEnd extends Endpoint {
+  HelloEnd(this.xCollection);
+
+  final String xCollection;
+
+  @override
+  FutureOr<Object> onCall(Request request) {
+    print('Hello Endp');
+
+    return 'hello';
+  }
+}
+
+class Unauth extends ExceptionEndpoint<UnauthorizedException> {
+  @override
+  FutureOr<Object> onError(Message message, UnauthorizedException exception,
+          StackTrace stackTrace) =>
+      'Yetkisizsin';
+}
+
+class CounterEndpoint extends StatefulEndpoint {
+  @override
+  EndpointState<StatefulEndpoint> createState() => _CounterEndpointState();
+}
+
+class _CounterEndpointState extends LastModifiedEndpointState<CounterEndpoint> {
+  _CounterEndpointState() {
+    Timer.periodic(Duration(seconds: 10), (timer) {
+      last = DateTime.now();
+    });
+  }
+
+  int count = 0;
+
+  // @override
+  // FutureOr<Object> onCall(Request request) async {
+  //   count++;
+  //   return "${request.path.arguments['deg']} Hello. You are $count.";
+  // }
+
+  DateTime last = DateTime.now();
+
+  @override
+  FutureOr<ResponseWithLastModified> onRequest(
+          ValidationRequest<DateTime> request) =>
+      ResponseWithLastModified(
+          '${request.path.arguments['deg']} Hello. You are $count.',
+          request: request,
+          lastModified: last);
+}
+
+class HelloEndpoint extends Endpoint {
+  @override
+  FutureOr<Object> onCall(Request request) => '''<html>
+      <h1>Hello World!</h1>
+      </html>''';
 }
 
 class MyEx implements Exception {
   @override
-  String toString() => "TEST EXCEPTION";
+  String toString() => 'TEST EXCEPTION';
 }
 
 class UnauthorizedEndpoint extends ExceptionEndpoint<UnauthorizedException> {
@@ -36,7 +131,7 @@ class UnauthorizedEndpoint extends ExceptionEndpoint<UnauthorizedException> {
   FutureOr<Object> onError(
       Message message, UnauthorizedException exception, StackTrace stackTrace) {
     if (message.contentType?.mimeType == ContentType.json.mimeType) {
-      return ({"error": "unauthorized_error"});
+      return ({'error': 'unauthorized_error'});
     } else {
       return (message as Request).response(HtmlBody("""
 <html lang="en">
@@ -67,14 +162,16 @@ class GetUserAppointments extends Endpoint {
 }
 
 class ShelfExample extends StatelessComponent {
-  const ShelfExample({Key? key}) : super(key: key);
+  ShelfExample({Key? key}) : super(key: key);
+
+  final RandomGenerator _generator =
+      RandomGenerator('/l(5)A{-}/l(10)[#a]/e(#)/s({AEIOU})');
 
   @override
   Component build(BuildContext context) {
     print(InternetAddress.anyIPv4.host);
     return Server(
-        httpService:
-            DefaultHttpServiceHandler(host: InternetAddress.anyIPv4.host),
+        httpService: DefaultHttpServiceHandler(host: 'localhost', port: 8080),
         children: [
           // ContentDelivery("D:\\style\\packages\\style\\data\\",
           //     cacheFiles: true, useLastModified: true),
@@ -108,15 +205,21 @@ class ShelfExample extends StatelessComponent {
           //       </html>""");
           //     }))),
           MathRoutes(),
-
-          Route("cron",
+          Route('random',
+              root: SimpleEndpoint((c, _) => _generator.generateString()),
+              child: Route('{temp}',
+                  root: SimpleEndpoint((c, _) =>
+                      RandomGenerator(c.arguments['temp'] as String)
+                          .generateString()))),
+          Route('cron',
               child: CronJob(
-                  name: "5_sec",
+                  name: '5_sec',
                   resetPeriodOnExternalCall: false,
                   allowExternal: true,
                   timePeriod: every.x(15).second.period,
                   onCall: (r, p) async {
-                    print("P: ${p.toTimeString()}");
+                    print('P: ${p.toTimeString()}');
+                    return null;
                   })),
 
           // ExceptionWrapper<StyleException>(
@@ -145,14 +248,12 @@ class MathRoutes extends StatelessComponent {
   const MathRoutes({Key? key}) : super(key: key);
 
   @override
-  Component build(BuildContext context) {
-    return Gateway(children: [
-      MathOperationRoute("sum", (a, b) => a + b),
-      MathOperationRoute("mul", (a, b) => a * b),
-      MathOperationRoute("div", (a, b) => a / b),
-      MathOperationRoute("dif", (a, b) => a - b),
-    ]);
-  }
+  Component build(BuildContext context) => Gateway(children: [
+        MathOperationRoute('sum', (a, b) => a + b),
+        MathOperationRoute('mul', (a, b) => a * b),
+        MathOperationRoute('div', (a, b) => a / b),
+        MathOperationRoute('dif', (a, b) => a - b),
+      ]);
 }
 
 /// TODO: Document
@@ -161,14 +262,13 @@ class ClientExEnd extends ExceptionEndpoint<StyleException> {
 
   @override
   FutureOr<Object> onError(
-      Message message, StyleException exception, StackTrace stackTrace) {
-    return ({
-      "err": "client_error_received",
-      "type": "${exception.runtimeType}",
-      "sup": "${exception.superType}",
-      "st": stackTrace.toString()
-    });
-  }
+          Message message, StyleException exception, StackTrace stackTrace) =>
+      ({
+        'err': 'client_error_received',
+        'type': '${exception.runtimeType}',
+        'sup': '${exception.superType}',
+        'st': stackTrace.toString()
+      });
 }
 
 /// TODO: Document
@@ -183,14 +283,14 @@ class _EndState extends EndpointState<MyIfNoneMatchEnd> {
   ///
   DateTime last = DateTime.now();
 
-  late String val = getRandomId(30);
+  late String val = RandomGenerator('[*#]/l(30)').generateString();
 
   @override
   FutureOr<Object> onCall(Request request) {
-    print("Request: ${request.headers}");
-    return request.response(Body("""
+    print('Request: ${request.headers}');
+    return request.response(Body('''
     document.write(5 + 6);
-    """), contentType: ContentType("application", "javascript"));
+    '''), contentType: ContentType('application', 'javascript'));
   }
 }
 // /// TODO: Document
@@ -227,6 +327,23 @@ class _EndState extends EndpointState<MyIfNoneMatchEnd> {
 //
 // }
 
+class MathOperationRoute1 extends StatelessComponent {
+  MathOperationRoute1(this.name, this.operation);
+
+  final String name;
+  final num Function(int a, int b) operation;
+
+  @override
+  Component build(BuildContext context) => Route(name,
+      child: Route('{a}',
+          root: Throw(FormatException()),
+          child: Route('{b}', root: SimpleEndpoint((request, _) {
+            var a = int.parse(request.arguments['a'] as String);
+            var b = int.parse(request.arguments['b'] as String);
+            return {'a': a, 'b': b, name: operation(a, b)};
+          }))));
+}
+
 class MathOperationRoute extends StatelessComponent {
   MathOperationRoute(this.name, this.operation);
 
@@ -234,120 +351,111 @@ class MathOperationRoute extends StatelessComponent {
   final num Function(int a, int b) operation;
 
   @override
-  Component build(BuildContext context) {
-    return ExceptionWrapper(
+  Component build(BuildContext context) => ExceptionWrapper(
+        exceptionEndpoint: FormatExEnd(),
         child: RouteBase(name,
             root: Throw(FormatException()),
-            child: SubRoute("{a}",
+            child: Route('{a}',
                 root: Throw(FormatException()),
-                child: SubRoute("{b}", root: SimpleEndpoint((request, _) {
-                  var a = int.parse(request.arguments["a"]);
-                  var b = int.parse(request.arguments["b"]);
-                  return {
-                    "isolate": request.body?.data,
-                    "a": a,
-                    "b": b,
-                    name: operation(a, b)
-                  };
+                child: Route('{b}', root: SimpleEndpoint((request, _) {
+                  var a = int.parse(request.arguments['a'] as String);
+                  var b = int.parse(request.arguments['b'] as String);
+                  return {'a': a, 'b': b, name: operation(a, b)};
                 })))),
-        exceptionEndpoint: FormatExEnd());
-  }
+      );
 }
 
 ///
 class FormatExEnd extends ExceptionEndpoint<FormatException> {
   @override
   FutureOr<Object> onError(
-      Message message, FormatException exception, StackTrace stackTrace) {
-    return "please ensure path like: \"host/{sum|div|dif|mul}/{number}/{number}\"";
-  }
+          Message message, FormatException exception, StackTrace stackTrace) =>
+      'please ensure path like: "host/{sum|div|dif|mul}/{number}/{number}"';
 }
 
 ///
 class MyServer extends StatelessComponent {
   @override
-  Component build(BuildContext context) {
-    return Server(
-        rootName: "my_server",
-        defaultExceptionEndpoints: {
-          UnauthorizedException: UnauthorizedEndpoint(),
-        },
-        faviconDirectory: "D:\\style\\packages\\style\\assets",
-        children: [
-          RouteBase("any_ex",
-              root: SimpleEndpoint(
-                  (request, _) => throw UnauthorizedException())),
-          // AuthFilterGate(
-          //     authRequired: true,
-          //     child: Route(
-          //         "appointments",
-          //         root: GetUserAppointments(),
-          //         child: RouteTo(
-          //             "{stylist_id}",
-          //             child: RouteTo("{day}",
-          //                 child: CallQueue(
-          //                     Gateway(
-          //                       children: [
-          //
-          //                         Route(
-          //                            "create",
-          //                            root: MethodFilterGate(
-          //                                allowedMethods: [Methods.GET],
-          //                                child: SimpleEndpoint(/**/))),
-          //                         Route("delete", root: SimpleEndpoint(/**/))
-          //                       ]
-          //                     )
-          //                 )
-          //             )
-          //         )
-          //     )
-          // ),
-          AuthFilterGate(
-              authRequired: true,
-              child: RouteBase("appointments",
-                  root: GetUserAppointments(),
-                  child: SubRoute("{stylist_id}",
-                      child: SubRoute("{day}",
-                          child: CallQueue(Gateway(children: [
-                            RouteBase("create",
-                                root: MethodFilterGate(
-                                    allowedMethods: [Methods.GET],
-                                    child: SimpleEndpoint((req, _) async {
-                                      await Future.delayed(
-                                          Duration(milliseconds: 500));
-                                      throw Exception("unimplemented");
-                                    }))),
-                            RouteBase("delete",
-                                root: SimpleEndpoint((req, _) async {
-                              await Future.delayed(Duration(milliseconds: 500));
-                              throw Exception("unimplemented");
-                            }))
-                          ])))))),
+  Component build(BuildContext context) => Server(
+      rootName: 'my_server',
+      defaultExceptionEndpoints: {
+        UnauthorizedException: UnauthorizedEndpoint(),
+      },
+      faviconDirectory: 'D:\\style\\packages\\style\\assets',
+      children: [
+        RouteBase('any_ex',
+            root:
+                SimpleEndpoint((request, _) => throw UnauthorizedException())),
+        // AuthFilterGate(
+        //     authRequired: true,
+        //     child: Route(
+        //         "appointments",
+        //         root: GetUserAppointments(),
+        //         child: RouteTo(
+        //             "{stylist_id}",
+        //             child: RouteTo("{day}",
+        //                 child: CallQueue(
+        //                     Gateway(
+        //                       children: [
+        //
+        //                         Route(
+        //                            "create",
+        //                            root: MethodFilterGate(
+        //                                allowedMethods: [Methods.GET],
+        //                                child: SimpleEndpoint(/**/))),
+        //                         Route("delete", root: SimpleEndpoint(/**/))
+        //                       ]
+        //                     )
+        //                 )
+        //             )
+        //         )
+        //     )
+        // ),
+        AuthFilterGate(
+            authRequired: true,
+            child: RouteBase('appointments',
+                root: GetUserAppointments(),
+                child: SubRoute('{stylist_id}',
+                    child: SubRoute('{day}',
+                        child: CallQueue(
+                            child: Gateway(children: [
+                          RouteBase('create',
+                              root: MethodFilterGate(
+                                  allowedMethods: [Methods.GET],
+                                  child: SimpleEndpoint((req, _) async {
+                                    await Future<void>.delayed(
+                                        Duration(milliseconds: 500));
+                                    throw Exception('unimplemented');
+                                  }))),
+                          RouteBase('delete',
+                              root: SimpleEndpoint((req, _) async {
+                            await Future<void>.delayed(
+                                Duration(milliseconds: 500));
+                            throw Exception('unimplemented');
+                          }))
+                        ])))))),
 
-          // Post(),
-          User(),
-          RouteBase("c_t",
-              root: SimpleEndpoint((request, _) => ({
-                    "type": request.contentType?.mimeType,
-                    "body": request.body?.data.runtimeType.toString()
-                  }))),
-          RestAccessPoint("api"),
-          RouteBase("doc",
-              handleUnknownAsRoot: true,
-              root:
-                  ContentDelivery("D:\\style\\packages\\style\\source\\web\\")),
-          MethodFilterGate(
-              allowedMethods: [Methods.GET],
-              child: AuthFilterGate(
-                  authRequired: true,
-                  child: RouteBase("auth", root: AuthEnd()))),
-          RouteBase("un-auth", root: CallQueue(UnAuthEnd())),
-        ],
-        // defaultUnknownEndpoint: SimpleEndpoint((r) {
-        //   return r.createResponse({"route": "un"});
-        // }),
-        rootEndpoint: Redirect("http://localhost/doc/index.html"));
-  }
+        // Post(),
+        User(),
+        RouteBase('c_t',
+            root: SimpleEndpoint((request, _) => ({
+                  'type': request.contentType?.mimeType,
+                  'body': (request.body?.data as Object?).runtimeType.toString()
+                }))),
+        RestAccessPoint('api'),
+        RouteBase('doc',
+            handleUnknownAsRoot: true,
+            root: ContentDelivery('D:\\style\\packages\\style\\source\\web\\')),
+        MethodFilterGate(
+            allowedMethods: [Methods.GET],
+            child: AuthFilterGate(
+                authRequired: true, child: RouteBase('auth', root: AuthEnd()))),
+        RouteBase('un-auth', root: CallQueue(child: UnAuthEnd())),
+      ],
+      // defaultUnknownEndpoint: SimpleEndpoint((r) {
+      //   return r.createResponse({"route": "un"});
+      // }),
+      rootEndpoint: Redirect('http://localhost/doc/index.html'));
 }
 
 /// TODO: Document
@@ -368,29 +476,27 @@ class User extends StatelessComponent {
   const User({Key? key}) : super(key: key);
 
   @override
-  Component build(BuildContext context) {
-    return RouteBase("user",
-        handleUnknownAsRoot: true,
-        child: SubRoute("{api_key}",
-            root: GeneratedRedirect(generate: (req) async {
-          if (req.path.arguments["api_key"] == "v1") {
-            return "../../auth";
-          } else if (req.path.arguments["api_key"] == "v2") {
-            return "../../un-auth";
-          }
-          return "*unknown";
-        })),
-        root: AuthRedirect(authorized: "../auth", unauthorized: "../un-auth"));
-  }
+  Component build(BuildContext context) => RouteBase('user',
+      handleUnknownAsRoot: true,
+      child:
+          SubRoute('{api_key}', root: GeneratedRedirect(generate: (req) async {
+        if (req.path.arguments['api_key'] == 'v1') {
+          return '../../auth';
+        } else if (req.path.arguments['api_key'] == 'v2') {
+          return '../../un-auth';
+        }
+        return '*unknown';
+      })),
+      root: AuthRedirect(authorized: '../auth', unauthorized: '../un-auth'));
 }
 
 class UnAuthEnd extends Endpoint {
   @override
   FutureOr<Object> onCall(Request request) async {
     try {
-      return {"args": "FROM UN-AUTH"};
+      return {'args': 'FROM UN-AUTH'};
     } on Exception catch (e) {
-      print("ON 2 $e");
+      print('ON 2 $e');
       rethrow;
     }
   }
@@ -398,30 +504,26 @@ class UnAuthEnd extends Endpoint {
 
 class AuthEnd extends Endpoint {
   @override
-  FutureOr<Object> onCall(Request request) {
-    return {"args": "FROM AUTH"};
-  }
+  FutureOr<Object> onCall(Request request) => {'args': 'FROM AUTH'};
 }
 
 class Post extends StatelessComponent {
   const Post({Key? key}) : super(key: key);
 
   @override
-  Component build(BuildContext context) {
-    return RouteBase("{post_id}",
-        root: Redirect("https://www.google.com/search?q={post_id}"),
-        // root: Gate(
-        //     child: PostEnd(),
-        //     onRequest: (req) async {
-        //       if (req.path.arguments["post_id"] == "user") {
-        //         throw Exception("Exception");
-        //
-        //         return req.createJsonResponse({"mes": "Gate"});
-        //       }
-        //       return req;
-        //     }),
-        handleUnknownAsRoot: false);
-  }
+  Component build(BuildContext context) => RouteBase('{post_id}',
+      root: Redirect('https://www.google.com/search?q={post_id}'),
+      // root: Gate(
+      //     child: PostEnd(),
+      //     onRequest: (req) async {
+      //       if (req.path.arguments["post_id"] == "user") {
+      //         throw Exception("Exception");
+      //
+      //         return req.createJsonResponse({"mes": "Gate"});
+      //       }
+      //       return req;
+      //     }),
+      handleUnknownAsRoot: false);
 }
 
 /// TODO: Document
@@ -429,16 +531,13 @@ class PostEnd extends Endpoint {
   PostEnd() : super();
 
   @override
-  FutureOr<Object> onCall(Request request) {
-    return ({"args": request.path.arguments});
-  }
+  FutureOr<Object> onCall(Request request) =>
+      ({'args': request.path.arguments});
 }
 
 class MyUserEndpoint extends Endpoint {
   @override
-  FutureOr<Object> onCall(Request request) {
-    return ({"args": "FROM LANG"});
-  }
+  FutureOr<Object> onCall(Request request) => ({'args': 'FROM LANG'});
 }
 
 //

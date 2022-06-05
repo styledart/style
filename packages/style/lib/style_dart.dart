@@ -15,11 +15,13 @@
  *
  */
 
+
+
 /// Support for doing something awesome.
 ///
 /// More dartdocs go here.
-library styledart;
+library style_dart;
 
+export 'package:style_query/style_query.dart';
 export 'src/component/components/web_dev.dart';
-export 'src/functions/random.dart';
 export 'src/style_base.dart';

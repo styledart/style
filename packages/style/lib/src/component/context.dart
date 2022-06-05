@@ -26,7 +26,7 @@ abstract class BuildContext {
 
   Binding? _parent;
 
-  void _setServiceToThisAndParents<B extends _BaseService>(B newService,
+  void _setServiceToThisAndParents<B extends BaseService>(B newService,
       {bool onChild = false}) {
     if (B == Crypto) {
       if (onChild && _crypto != null) return;
@@ -83,7 +83,7 @@ abstract class BuildContext {
   Crypto get crypto => _crypto!;
 
   ///
-  bool hasService<T extends _BaseService>() {
+  bool hasService<T extends BaseService>() {
     if (T == DataAccess) {
       return _dataAccess != null;
     } else if (T == WebSocketService) {
@@ -106,7 +106,7 @@ abstract class BuildContext {
   ///
   DataAccess get dataAccess {
     if (_dataAccess == null) {
-      throw ServiceUnavailable("data_access");
+      throw ServiceUnavailable('data_access');
     }
     return _dataAccess!;
   }
@@ -116,7 +116,7 @@ abstract class BuildContext {
   ///
   WebSocketService get socketService {
     if (_socketService == null) {
-      throw ServiceUnavailable("socket_service");
+      throw ServiceUnavailable('socket_service');
     }
 
     return _socketService!;
@@ -127,7 +127,7 @@ abstract class BuildContext {
   ///
   Authorization get authorization {
     if (_authorization == null) {
-      throw ServiceUnavailable("authorization");
+      throw ServiceUnavailable('authorization');
     }
 
     return _authorization!;
@@ -139,7 +139,7 @@ abstract class BuildContext {
   ///
   HttpService get httpService {
     if (_httpService == null) {
-      throw ServiceUnavailable("http_service");
+      throw ServiceUnavailable('http_service');
     }
     return _httpService!;
   }
@@ -149,7 +149,7 @@ abstract class BuildContext {
   ///
   Logger get logger {
     if (_logger == null) {
-      throw ServiceUnavailable("logger");
+      throw ServiceUnavailable('logger');
     }
     return _logger!;
   }
@@ -187,13 +187,13 @@ abstract class BuildContext {
 
   /// Get current context path
   String getPath() {
-    BuildContext? _parent = this;
+    BuildContext? parent = this;
     var segments = <PathSegment>[];
-    while (_parent != null && _parent is! ServiceOwnerMixin) {
-      if ((_parent as Binding?) is RouteBinding) {
-        segments.add((_parent as RouteBinding).component.segment);
+    while (parent != null && parent is! ServiceOwnerMixin) {
+      if ((parent as Binding?) is RouteBinding) {
+        segments.add((parent as RouteBinding).component.segment);
       }
-      _parent = _parent._parent;
+      parent = parent._parent;
     }
     return "/${segments.map((e) => e.name).join("/")}";
   }
@@ -230,16 +230,17 @@ abstract class Binding extends BuildContext {
   String get _errorWhere {
     var list = <Type>[];
 
-    Binding? _anc = this;
-    while (_anc != null) {
-      if (_anc.component is! ServiceWrapper) {
-        list.add(_anc.component.runtimeType);
+    Binding? anc = this;
+    while (anc != null) {
+      if (anc.component is! ServiceWrapper) {
+        list.add(anc.component.runtimeType);
       }
-      _anc = _anc._parent;
+      anc = anc._parent;
     }
-    return list.reversed.join(" -> ");
+    return list.reversed.join(' -> ');
   }
 
+  @override
   ExceptionHandler get exceptionHandler => _exceptionHandler!;
 
   ExceptionHandler? _exceptionHandler;
@@ -343,11 +344,10 @@ abstract class Binding extends BuildContext {
   }
 
   @override
-  CallingBinding get findCalling {
-    return _foundCalling ??= visitCallingChildren(TreeVisitor((visitor) {
-      visitor.stop();
-    })).currentValue.binding;
-  }
+  CallingBinding get findCalling =>
+      _foundCalling ??= visitCallingChildren(TreeVisitor((visitor) {
+        visitor.stop();
+      })).currentValue.binding;
 
   CallingBinding? _foundCalling;
 
@@ -422,7 +422,7 @@ class TreeVisitor<T> {
 
   ///
   void call(T value) {
-    if (stopped) throw Exception("Add stop checker");
+    if (stopped) throw Exception('Add stop checker');
     currentValue = value;
     visitor!.call(this);
   }
@@ -460,9 +460,8 @@ abstract class DevelopmentBinding extends Binding {
   }
 
   @override
-  TreeVisitor<Calling> visitCallingChildren(TreeVisitor<Calling> visitor) {
-    return child!.visitCallingChildren(visitor);
-  }
+  TreeVisitor<Calling> visitCallingChildren(TreeVisitor<Calling> visitor) =>
+      child!.visitCallingChildren(visitor);
 
   @override
   void buildBinding() {
@@ -470,8 +469,8 @@ abstract class DevelopmentBinding extends Binding {
     /// create child's binding
     /// attach this
     child = null;
-    var _childComponent = build(this);
-    child = _childComponent.createBinding();
+    var childComponent = build(this);
+    child = childComponent.createBinding();
     child!.attachToParent(this);
     child!.buildBinding();
   }

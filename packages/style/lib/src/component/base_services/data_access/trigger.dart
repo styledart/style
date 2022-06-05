@@ -23,7 +23,7 @@ typedef OnEvent = Future<void> Function(AccessEvent event);
 class TriggerService {
   // ignore_for_file: lines_longer_than_80_chars
   ///
-  TriggerService.create({bool? streamSupport, List<DbCollection>? collections})
+  TriggerService.create({List<DbCollection>? collections})
       : /*streamSupport = streamSupport ?? false,*/
         _triggers = _getTriggers(collections);
 
@@ -36,16 +36,16 @@ class TriggerService {
       return HashMap.from({});
     }
 
-    var _map = <String, HashMap<TriggerType, List<Trigger>>>{};
+    var map = <String, HashMap<TriggerType, List<Trigger>>>{};
 
     for (var col in collections) {
       for (var trigger in col.triggers ?? <Trigger>[]) {
-        _map[col.collectionName] ??= HashMap<TriggerType, List<Trigger>>.of({});
-        _map[col.collectionName]![trigger.type] ??= <Trigger>[];
-        _map[col.collectionName]![trigger.type]!.add(trigger);
+        map[col.collectionName] ??= HashMap<TriggerType, List<Trigger>>.of({});
+        map[col.collectionName]![trigger.type] ??= <Trigger>[];
+        map[col.collectionName]![trigger.type]!.add(trigger);
       }
     }
-    return HashMap.from(_map);
+    return HashMap.from(map);
   }
 
   ///
@@ -72,92 +72,58 @@ class TriggerService {
   }
 
   ///Trigger
-  FutureOr<T> triggerAndReturn<T extends DbResult>(
-      AccessEvent event, FutureOr<T> Function() interoperation) async {
+  FutureOr<T> triggerAndReturn<T extends DbResult, L extends AccessLanguage>(
+      AccessEvent<L> event,
+      FutureOr<T> Function(Access<L> acc) interoperation) async {
     var type = _getTriggerType(event.type);
-    if (type == TriggerType.non) return interoperation();
+    if (type == TriggerType.non) return interoperation(event.access);
 
-    var _trs = <Trigger>[
+    var trs = <Trigger>[
       ...?_triggers[event.access.collection]?[type],
       ...?_triggers[event.access.collection]?[TriggerType.onWrite]
     ];
 
-    if (_trs.isEmpty) return interoperation();
+    if (trs.isEmpty) return interoperation(event.access);
 
-    var _befNeed = _trs.where((element) => element._beforeNeed).isNotEmpty;
-    var _afterNeed = _trs.where((element) => element._afterNeed).isNotEmpty;
+    var befNeed = trs.where((element) => element._beforeNeed).isNotEmpty;
+    var afterNeed = trs.where((element) => element._afterNeed).isNotEmpty;
 
     switch (type) {
       case TriggerType.onCreate:
-        var _inter = await interoperation();
-        if (_inter.success) {
-          for (var tr in _trs) {
-            tr.onEvent(event);
-          }
+        var inter = await interoperation(event.access);
+        for (var tr in trs) {
+          await tr.onEvent(event);
         }
-        return _inter;
+        return inter;
       case TriggerType.onUpdate:
-        if (_befNeed) {
+        if (befNeed) {
           event.before ??= (await dataAccess._read(event.access)).data;
         }
 
         ///
-        var _inter = (await interoperation()) as UpdateDbResult;
-        if (_inter.success) {
-          if (_afterNeed && _inter.newData == null) {
-            event.after ??= (await dataAccess._read(event.access)).data;
-          }
-          for (var tr in _trs) {
-            tr.onEvent(event);
-          }
-        } else {
-          return _inter as T;
+        var inter = (await interoperation(event.access)) as UpdateDbResult;
+        if (afterNeed && inter.newData == null) {
+          event.after ??= (await dataAccess._read(event.access)).data;
+        }
+        for (var tr in trs) {
+          await tr.onEvent(event);
         }
 
-        return _inter as T;
+        return inter as T;
       case TriggerType.onDelete:
-        if (_befNeed) {
+        if (befNeed) {
           event.before ??= (await dataAccess._read(event.access)).data;
         }
-        var _inter = await interoperation();
-        if (_inter.success) {
-          for (var tr in _trs) {
-            tr.onEvent(event);
-          }
+        var inter = await interoperation(event.access);
+        for (var tr in trs) {
+          await tr.onEvent(event);
         }
-        return _inter;
+        return inter;
       case TriggerType.onWrite:
         throw UnsupportedError(
-            "Operation base trigger type can not be onWrite");
+            'Operation base trigger type can not be onWrite');
       case TriggerType.non:
         throw UnimplementedError();
     }
   }
 }
-//
-// ///
-// @immutable
-// class StreamListener {
-//   ///
-//   StreamListener(this.consumer, {String? customId})
-//       : identifier = customId ?? getRandomId(30);
-//
-//   ///
-//   final String identifier;
-//
-//   ///
-//   final StreamController consumer;
-//
-//   @override
-//   bool operator ==(Object other) {
-//     return other is StreamListener && other.identifier == identifier;
-//   }
-//
-//   @override
-//   int get hashCode => identifier.hashCode;
-//
-//   ///
-//   void close() {
-//
-//   }
-// }

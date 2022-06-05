@@ -15,8 +15,15 @@
  *
  */
 
+import 'dart:io';
+
+import 'package:args/command_runner.dart';
 import 'package:style_cli/style_cli.dart';
 
 void main(List<String> arguments) {
-  runner.run(arguments);
+  runner.run(arguments).catchError((error) {
+    if (error is! UsageException) throw error;
+    print(error);
+    exit(64); // Exit code 64 indicates a usage error.
+  });
 }

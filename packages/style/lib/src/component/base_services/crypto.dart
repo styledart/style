@@ -18,11 +18,9 @@
 part of '../../style_base.dart';
 
 ///
-abstract class Crypto extends _BaseService {
+abstract class Crypto extends BaseService {
   ///
-  static Crypto of(BuildContext context) {
-    return context.crypto;
-  }
+  static Crypto of(BuildContext context) => context.crypto;
 
   ///
   FutureOr<String> passwordHash(String clearText);

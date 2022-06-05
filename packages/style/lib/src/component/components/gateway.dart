@@ -42,22 +42,22 @@ class GatewayBinding extends MultiChildCallingBinding {
   void attachToParent(Binding parent) {
     super.attachToParent(parent);
 
-    var _route = findAncestorBindingOfType<RouteBinding>();
-    var _service = findAncestorBindingOfType<ServerBinding>();
+    var route = findAncestorBindingOfType<RouteBinding>();
+    var service = findAncestorBindingOfType<ServerBinding>();
 
-    if (_route == null && _service == null) {
-      throw UnsupportedError("Each Gateway must ancestor of Service or Route"
-          "\nwhere:$_errorWhere");
+    if (route == null && service == null) {
+      throw UnsupportedError('Each Gateway must ancestor of Service or Route'
+          '\nwhere:$_errorWhere');
     }
   }
 
   @override
   void buildBinding() {
     super.buildBinding();
-    var _callings = <PathSegment, Binding>{};
+    var callings = <PathSegment, Binding>{};
     PathSegment? arg;
     for (var child in children) {
-      var _childCalling = child.visitCallingChildren(TreeVisitor((visitor) {
+      var childCalling = child.visitCallingChildren(TreeVisitor((visitor) {
         if (visitor.currentValue is GatewayCalling) {
           visitor.stop();
           return;
@@ -66,13 +66,13 @@ class GatewayBinding extends MultiChildCallingBinding {
           visitor.stop();
         }
       }));
-      if (_childCalling.result == null) {
-        throw UnsupportedError("Each Gateway child (or Service child) must have"
-            "[Route] in the tree."
-            "\nwhere: child ${child.component} in $_errorWhere");
+      if (childCalling.result == null) {
+        throw UnsupportedError('Each Gateway child (or Service child) must have'
+            '[Route] in the tree.'
+            '\nwhere: child ${child.component} in $_errorWhere');
       }
-      if (_childCalling.result is GatewayCalling) {
-        var segments = ((_childCalling.result! as GatewayCalling).binding
+      if (childCalling.result is GatewayCalling) {
+        var segments = ((childCalling.result! as GatewayCalling).binding
                 as GatewayBinding)
             .calling
             .childrenBinding;
@@ -80,35 +80,35 @@ class GatewayBinding extends MultiChildCallingBinding {
         for (var seg in segments.entries) {
           if (seg.key.isArgument) {
             if (arg != null) {
-              throw Exception("Gateways allow only once argument segment."
-                  "\nbut found $arg and"
-                  " $seg\nWHERE: $_errorWhere");
+              throw Exception('Gateways allow only once argument segment.'
+                  '\nbut found $arg and'
+                  ' $seg\nWHERE: $_errorWhere');
             } else {
               arg = seg.key;
             }
           }
-          _callings[seg.key] = child;
+          callings[seg.key] = child;
         }
       } else {
         var seg =
-            (_childCalling.result! as RouteCalling).binding.component.segment;
+            (childCalling.result! as RouteCalling).binding.component.segment;
 
         if (seg.isArgument) {
           if (arg != null) {
-            throw Exception("Gateways allow only once argument segment."
-                " \nbut found $arg and"
-                " $seg\nWHERE: $_errorWhere");
+            throw Exception('Gateways allow only once argument segment.'
+                ' \nbut found $arg and'
+                ' $seg\nWHERE: $_errorWhere');
           } else {
             arg = seg;
           }
         }
-        _callings[seg] = child;
+        callings[seg] = child;
       }
     }
     //
     // print(
     //     "${_callings.map((key, value) => MapEntry(key, value.))}");
-    calling.childrenBinding = _callings;
+    calling.childrenBinding = callings;
   }
 }
 

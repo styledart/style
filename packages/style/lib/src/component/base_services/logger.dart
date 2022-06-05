@@ -18,51 +18,47 @@
 part of '../../style_base.dart';
 
 /// Log everything
-abstract class Logger extends _BaseService {
+abstract class Logger extends BaseService {
   ///
-  static Logger of(BuildContext context) {
-    return context.logger;
-  }
+  Logger({RandomGenerator? logIdGenerator})
+      : loggerIdGenerator = logIdGenerator ?? RandomGenerator('[*#]/l(30)');
+
+  ///
+  static Logger of(BuildContext context) => context.logger;
+
+  ///
+  final RandomGenerator loggerIdGenerator;
 
   ///
   void log(LogMessage logMessage);
 
   void _log(LogLevel level, BuildContext context, String name,
-      {Map<String, dynamic>? payload, String? title, String? customId}) {
-    return log(LogMessage(
+      {Map<String, dynamic>? payload, String? title, String? customId}) => log(LogMessage(
         loggerContext: context,
         customId: customId,
         payload: payload,
         name: name,
         title: title,
         level: level));
-  }
 
   ///
   void verbose(BuildContext context, String name,
-      {Map<String, dynamic>? payload, String? customId, String? title}) {
-    return _log(LogLevel.verbose, context, name,
+      {Map<String, dynamic>? payload, String? customId, String? title}) => _log(LogLevel.verbose, context, name,
         title: title, payload: payload, customId: customId);
-  }
 
   ///
   void info(BuildContext context, String name,
-      {Map<String, dynamic>? payload, String? customId, String? title}) {
-    return _log(LogLevel.info, context, name,
+      {Map<String, dynamic>? payload, String? customId, String? title}) => _log(LogLevel.info, context, name,
         payload: payload, customId: customId, title: title);
-  }
 
   ///
   void error(BuildContext context, String name,
-      {Map<String, dynamic>? payload, String? customId, String? title}) {
-    return _log(LogLevel.error, context, name,
+      {Map<String, dynamic>? payload, String? customId, String? title}) => _log(LogLevel.error, context, name,
         payload: payload, customId: customId, title: title);
-  }
 
   ///
   void warn(BuildContext context, String name,
-      {Map<String, dynamic>? payload, String? customId, String? title}) {
-    return _log(
+      {Map<String, dynamic>? payload, String? customId, String? title}) => _log(
       LogLevel.warn,
       context,
       name,
@@ -70,27 +66,25 @@ abstract class Logger extends _BaseService {
       payload: payload,
       customId: customId,
     );
-  }
 
   ///
   void important(BuildContext context, String name,
-      {Map<String, dynamic>? payload, String? customId, String? title}) {
-    return _log(LogLevel.important, context, name,
+      {Map<String, dynamic>? payload, String? customId, String? title}) => _log(LogLevel.important, context, name,
         title: title, payload: payload, customId: customId);
-  }
 }
 
 ///
 class DefaultLogger extends Logger {
+  ///
+  DefaultLogger({RandomGenerator? logIdGenerator})
+      : super(logIdGenerator: logIdGenerator);
+
   @override
-  FutureOr<bool> init([bool inInterface = true]) async {
-    return true;
-  }
+  FutureOr<bool> init([bool inInterface = true]) async => true;
 
   @override
   void log(LogMessage logMessage) {
     print(logMessage.name);
-    // TODO: implement log
   }
 }
 
@@ -116,7 +110,8 @@ class LogMessage {
       required this.level,
       this.payload,
       this.title})
-      : id = customId ?? getRandomId(20),
+      : id = customId ??
+            Logger.of(loggerContext).loggerIdGenerator.generateString(),
         time = DateTime.now();
 
   ///

@@ -34,5 +34,8 @@ enum Cause {
 
   /// Requests created by [Admin]
   /// Admin is style monitoring app user or internal server coders
-  admin
+  admin,
+
+  ///
+  serverRequest,
 }

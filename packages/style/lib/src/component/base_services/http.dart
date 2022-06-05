@@ -18,14 +18,12 @@
 part of '../../style_base.dart';
 
 ///
-abstract class HttpService extends _BaseService {
+abstract class HttpService extends BaseService {
   ///
   HttpService();
 
   ///
-  static HttpService of(BuildContext context) {
-    return context.httpService;
-  }
+  static HttpService of(BuildContext context) => context.httpService;
 
   ///
   String get address;
@@ -58,8 +56,8 @@ class DefaultHttpServiceHandler extends HttpService {
   ///
   DefaultHttpServiceHandler({String? host, int? port})
       : _address =
-            host ?? String.fromEnvironment("HOST", defaultValue: "localhost"),
-        port = port ?? int.fromEnvironment("PORT", defaultValue: 80);
+            host ?? String.fromEnvironment('HOST', defaultValue: 'localhost'),
+        port = port ?? int.fromEnvironment('PORT', defaultValue: 80);
 
   ///
   final String _address;
@@ -68,53 +66,55 @@ class DefaultHttpServiceHandler extends HttpService {
   int port;
 
   ///
+  @override
   Future<void> handleHttpRequest(HttpRequest request) async {
-    var body = await request.toList();
-    var uInt8List = mergeList(body);
+    var bodyBytes = await request.toList();
+    var uInt8List = mergeList(bodyBytes);
 
-    var _body;
+    Object? body;
     if (uInt8List.isEmpty) {
-      _body = null;
+      body = null;
     } else if (request.headers.contentType?.mimeType ==
         ContentType.json.mimeType) {
       try {
-        _body = json.decode(utf8.decode(uInt8List));
+        body = json.decode(utf8.decode(uInt8List));
       } on Exception {
-        _body = null;
+        body = null;
       }
     } else if (request.headers.contentType?.mimeType ==
             ContentType.html.mimeType ||
         request.headers.contentType == ContentType.text) {
       try {
-        _body = utf8.decode(uInt8List);
+        body = utf8.decode(uInt8List);
       } on Exception {
-        _body = null;
+        body = null;
       }
     } else if (request.headers.contentType?.mimeType ==
         ContentType.binary.mimeType) {
       try {
-        _body = (uInt8List);
+        body = (uInt8List);
       } on Exception {
-        _body = null;
+        body = null;
       }
     } else {
       try {
-        _body = json.decode(utf8.decode(uInt8List));
+        body = json.decode(utf8.decode(uInt8List));
       } on Exception {
         try {
-          _body = utf8.decode(uInt8List);
+          body = utf8.decode(uInt8List);
         } on Exception {
           try {
-            _body = (uInt8List);
+            body = (uInt8List);
           } on Exception {
-            _body = null;
+            body = null;
           }
         }
       }
     }
 
     var req = await HttpStyleRequest.fromRequest(
-        req: request, body: Body(_body), context: context);
+        req: request, body: Body(body), context: context);
+
     try {
       var res = await context.owner.calling(req);
       if (res is Response && res is! NoResponseRequired) {
@@ -123,10 +123,13 @@ class DefaultHttpServiceHandler extends HttpService {
         request.response.headers.contentType = res.contentType;
         for (var head in res.additionalHeaders?.entries.toList() ??
             <MapEntry<String, dynamic>>[]) {
-          request.response.headers.add(head.key, head.value);
+          request.response.headers.add(head.key, head.value as Object);
         }
 
-        if (res.body != null && res.body is BinaryBody) {
+        if (res.body != null && res.body is StreamBody) {
+          await request.response
+              .addStream((res.body as StreamBody).streamBytes);
+        } else if (res.body != null && res.body is BinaryBody) {
           request.response.add((res.body as BinaryBody).data);
         } else {
           if (res.body?.data != null) {
@@ -140,8 +143,8 @@ class DefaultHttpServiceHandler extends HttpService {
     } on Exception catch (e) {
       request.response.statusCode = 400;
       request.response.headers.contentType = ContentType.json;
-      request.response.write(json.encode({"error": e.toString()}));
-      request.response.close();
+      request.response.write(json.encode({'error': e.toString()}));
+      await request.response.close();
     }
 
     return;
@@ -151,7 +154,7 @@ class DefaultHttpServiceHandler extends HttpService {
   Map<String, dynamic>? get defaultResponseHeaders => {};
 
   @override
-  String get address => "http://$_address:$port";
+  String get address => 'http://$_address:$port';
 
   ///
   Future<HttpServer> get serverBind => HttpServer.bind(_address, port);
@@ -165,7 +168,7 @@ class DefaultHttpServiceHandler extends HttpService {
     server = await serverBind;
     if (defaultResponseHeaders != null) {
       for (var h in defaultResponseHeaders!.entries) {
-        server.defaultResponseHeaders.add(h.key, h.value);
+        server.defaultResponseHeaders.add(h.key, h.value as Object);
       }
     }
     server.listen(handleHttpRequest);

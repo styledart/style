@@ -18,16 +18,22 @@
 import 'dart:io';
 
 import 'package:style_dart/style_dart.dart';
-import 'package:style_test/src/requests.dart';
 import 'package:test/test.dart';
 
+import 'requests.dart';
+
+///
 class ResponseTest {
+  ///
   ResponseTest(this.binding);
 
+  ///
   Binding binding;
 
+  ///
   bool initChecked = false;
 
+  ///
   Future<bool> init() async {
     if (!initChecked) {
       ///
@@ -79,6 +85,7 @@ class ResponseTest {
     return true;
   }
 
+  ///
   void testRequest(
     String path,
     Matcher matcher, {
