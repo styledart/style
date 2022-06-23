@@ -130,7 +130,7 @@ void main() {
       count3: 146654,
       enumV: MyEnum.c,
       boolV: false,
-      bytes: "Style".codeUnits,
+      bytes: "Style Object Created by Mehmet Yaz".codeUnits,
       string: "Style Object Created by Mehmet Yaz");
 
   var codec = StyleObjectCodec(
@@ -151,7 +151,7 @@ void main() {
   print("How To Stored?");
 
   print("STYLE: Not human readable!");
-  var aJson = json.encode(a.toJson()).codeUnits;
+  var aJson = utf8.encode(json.encode(a.toJson()));
   print("JSON: ${json.encode(a.toJson())}");
 
   print("\nHow Much Space?");
@@ -199,6 +199,7 @@ void main() {
   // Style encode
   while (i < 1000000) {
     encoder.convert(a.toObject());
+    //a.toObject().getLength(encoder.keyMapper);
     i++;
   }
   stEn.stop();

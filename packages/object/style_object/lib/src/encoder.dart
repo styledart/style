@@ -43,6 +43,7 @@ class StyleObjectCodec extends Codec<dynamic, ByteData> {
 ///   }
 /// }
 class KeyCollection with KeyFactory {
+
   @override
   final StyleKey root;
 

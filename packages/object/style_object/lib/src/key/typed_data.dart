@@ -44,11 +44,6 @@ abstract class TypedDataKey<T> extends StyleKey<List<T>> {
       offset += itemLength;
     }
     return DataRead(data: list, offset: offset);
-    // var lengthInBytes = (itemLength * listMeta.count);
-    //
-    // return DataRead(
-    //     data: readItems(byteData, offset, lengthInBytes),
-    //     offset: offset + lengthInBytes);
   }
 
   @override

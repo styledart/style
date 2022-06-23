@@ -12,9 +12,9 @@ environment:
 dependencies:
   #args: ^2.3.1
   queue: ^3.1.0+1
-  json_schema2: ^2.0.2
+  json_schema2: ^2.0.2+3
   style_cron_job: ^1.0.4+2
-  vm_service: ^8.3.0
+  vm_service: ^9.0.0
   meta: ^1.8.0
 
   style_random: ^0.0.1+1
@@ -27,5 +27,5 @@ dev_dependencies:
     path: ../style_cli
   cryptography: ^2.0.5
   lints: ^2.0.0
-  test: ^1.21.1
+  test: ^1.21.2
   style_test: ^1.0.0+2

@@ -28,111 +28,97 @@ class CommonLanguage extends AccessLanguage {
 class CommonLanguageDelegate extends AccessLanguageDelegate<CommonLanguage> {
   @override
   CreateData<CommonLanguage> createFromRaw(Map<String, dynamic> raw) {
-    // TODO: implement createFromRaw
-    throw UnimplementedError();
+    return CommonCreate(raw);
   }
 
   @override
   Fields<CommonLanguage> fieldsFromRaw(Map<String, dynamic> raw) {
-    // TODO: implement fieldsFromRaw
-    throw UnimplementedError();
+    return CommonFields(
+        excludeKeys: raw['exclude'], includeKeys: raw['include']);
   }
 
   @override
   Access<CommonLanguage> fromCommonLanguage(CommonAccess access) {
-    // TODO: implement fromCommonLanguage
-    throw UnimplementedError();
+    return access;
   }
 
   @override
   Pipeline<CommonLanguage> pipelineFromRaw(Map<String, dynamic> raw) {
-    // TODO: implement pipelineFromRaw
     throw UnimplementedError();
   }
 
   @override
   Query<CommonLanguage> queryFromRaw(Map<String, dynamic> raw) {
-    // TODO: implement queryFromRaw
-    throw UnimplementedError();
+    var filter = raw['filter'];
+
+    FilterExpression? expression;
+
+    if (filter is Map) {
+      if (filter.length > 1) {
+
+
+
+        expression = AndExpression([]);
+      }
+
+
+      if (filter.containsKey('or') || filter.containsKey('and')){
+
+      }
+    }
+
+
+    return CommonQuery(identifier: raw['identifier']);
   }
 
   @override
-  CommonAccess toCommonLanguage(Access<CommonLanguage> access) {
-    // TODO: implement toCommonLanguage
-    throw UnimplementedError();
+  CommonAccess toCommonLanguage(covariant CommonAccess access) {
+    return access;
   }
 
   @override
   UpdateData<CommonLanguage> updateFromRaw(Map<String, dynamic> raw) {
-    // TODO: implement updateFromRaw
-    throw UnimplementedError();
+    return CommonUpdate(raw);
   }
 }
 
 ///
 class CommonQuery extends Query<CommonLanguage> {
   ///
-  CommonQuery({this.id, FilterExpression? filter}) : _filter = filter;
-
-  ///
-  FilterExpression? _filter;
-
-  ///
-  String? id;
-
-  ///
-  Map<String, dynamic>? selector, sort;
+  CommonQuery({this.identifier,
+    FilterExpression? filter,
+    Map<String, Sorting>? sort,
+    this.offset,
+    this.limit,
+    this.fields})
+      : sortExpression = SortExpression(sort ?? {});
 
   ///
   @override
   int? limit, offset;
 
-  ///
-  factory CommonQuery.fromMap(Map<String, dynamic> map) {
-    return CommonQuery(
-        // sort: map["sort"],
-        // offset: map["offset"],
-        // limit: map["limit"],
-        // selector: map["selector"],
-        );
-  }
-
   @override
-  FilterExpression? filteredBy(String key) {
-    throw UnimplementedError();
-  }
-
-  @override
-  bool? fieldIsExcluded(String key) {
-    throw UnimplementedError();
-  }
-
-  @override
-  bool? fieldIsIncluded(String key) {
-    throw UnimplementedError();
-  }
-
-  @override
-  JsonMap toMap() => {
-        if (sort != null) "sort": sort,
+  JsonMap toMap() =>
+      {
+        if (identifier != null) "id": identifier,
         if (offset != null) "offset": offset,
         if (limit != null) "limit": limit,
-        if (selector != null) "selector": selector
+        if (fields != null) 'fields': fields!.toMap(),
+        if (filter != null) 'filter': filter!.toMap(),
+        if (sortExpression != null) 'sort': sortExpression!.sorts
       };
 
   @override
-  String? get identifier => null;
+  String? identifier;
 
   @override
   Fields<CommonLanguage>? fields;
 
   @override
-  FilterExpression? get filter => _filter;
+  FilterExpression? filter;
 
   @override
-  // TODO: implement sortExpression
-  SortExpression<AccessLanguage>? get sortExpression =>
-      throw UnimplementedError();
+  SortExpression<AccessLanguage>? sortExpression;
 }
 
 ///
@@ -181,28 +167,33 @@ class CommonCreate extends CreateData<CommonLanguage> {
 ///
 class CommonAccess extends Access<CommonLanguage> {
   ///
-  CommonAccess(
-      {required AccessType type,
-      required String collection,
-      CommonQuery? query,
-      CommonCreate? create,
-      UpdateData<CommonLanguage>? update,
-      OperationSettings? settings})
-      : super(
+  CommonAccess({required super.type,
+    required super.collection,
+    CommonQuery? super.query,
+    CommonCreate? super.create,
+    CommonUpdate? super.update,
+    OperationSettings? settings})
+  /* : super(
             type: type,
             collection: collection,
             settings: settings,
             query: query,
             create: create,
-            update: update);
+            update: update)*/
+  ;
 }
 
 ///
-class CommonReadMultiple extends CommonAccess {
+class CommonFields extends Fields<CommonLanguage> {
   ///
-  CommonReadMultiple({required String collection, CommonQuery? query})
-      : super(
-            type: AccessType.readMultiple,
-            collection: collection,
-            query: query);
+  CommonFields({this.includeKeys, this.excludeKeys});
+
+  @override
+  final List<String>? excludeKeys;
+
+  @override
+  final List<String>? includeKeys;
+
+  @override
+  JsonMap toMap() => {'include': includeKeys, 'exclude': excludeKeys};
 }

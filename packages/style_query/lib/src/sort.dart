@@ -19,7 +19,11 @@
 import 'access_language.dart';
 
 ///
-abstract class SortExpression<L extends AccessLanguage> {
+class SortExpression<L extends AccessLanguage> {
+
+  ///
+  SortExpression(this.sorts);
+
   /// AccessEvent is sort by key.<br>
   /// returns true if sorted ascending, <br>
   /// returns false if sorted descending, <br>
@@ -43,7 +47,7 @@ abstract class SortExpression<L extends AccessLanguage> {
   }
 
   ///
-  Map<String, Sorting> get sorts;
+  final Map<String, Sorting> sorts;
 }
 
 ///

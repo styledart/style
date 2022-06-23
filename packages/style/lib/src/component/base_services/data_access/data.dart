@@ -487,13 +487,13 @@ class SimpleCacheDataAccess extends DataAccessImplementation<CommonLanguage> {
   FutureOr<ReadListResult> readList(covariant CommonAccess access) {
     var q = access.query as CommonQuery?;
 
-    if (q?.selector != null) {
+    if (q?.filter != null) {
       Logger.of(context).warn(context, 'query_not_supported',
           title: 'Query selector '
               'not supported with SimpleCacheDataAccess , so its skipped');
     }
 
-    if (q?.sort != null) {
+    if (q?.sortExpression != null) {
       Logger.of(context).warn(context, 'sort_not_supported',
           title: 'Query sort '
               'not supported with SimpleCacheDataAccess , so its skipped');

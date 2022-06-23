@@ -203,7 +203,7 @@ class RestAccessPoint extends StatelessComponent {
       return CommonAccess(
         type: AccessType.read,
         collection: request.path.next,
-        query: CommonQuery(id: request.path.notProcessedValues.first),
+        query: CommonQuery(identifier: request.path.notProcessedValues.first),
       );
     } on Exception {
       rethrow;
@@ -213,16 +213,17 @@ class RestAccessPoint extends StatelessComponent {
   ///
   Access _readList(Request request) {
     try {
-      return CommonAccess(
-          type: AccessType.readMultiple,
-          collection: request.path.next,
-          query: queryBuilder?.call(request.path.queryParameters) ??
-              CommonQuery.fromMap(request.path.queryParameters['q'] != null
-                  ? (json.decode(request.path.queryParameters['q']!)
-                      as Map<String, dynamic>)
-                  : () {
-                      throw Exception();
-                    }()));
+      throw UnimplementedError();
+      // return CommonAccess(
+      //     type: AccessType.readMultiple,
+      //     collection: request.path.next,
+      //     query: queryBuilder?.call(request.path.queryParameters) ??
+      //         CommonQuery.fromMap(request.path.queryParameters['q'] != null
+      //             ? (json.decode(request.path.queryParameters['q']!)
+      //                 as Map<String, dynamic>)
+      //             : () {
+      //                 throw Exception();
+      //               }()));
     } on Exception {
       rethrow;
     }
@@ -234,7 +235,7 @@ class RestAccessPoint extends StatelessComponent {
       return CommonAccess(
           type: AccessType.update,
           collection: request.path.next,
-          query: CommonQuery(id: request.path.notProcessedValues.first),
+          query: CommonQuery(identifier: request.path.notProcessedValues.first),
           update: CommonUpdate((request.body?.data) as Map<String, dynamic>));
     } on Exception {
       rethrow;
@@ -248,7 +249,7 @@ class RestAccessPoint extends StatelessComponent {
       return CommonAccess(
         type: AccessType.delete,
         collection: request.path.next,
-        query: CommonQuery(id: request.path.notProcessedValues.first),
+        query: CommonQuery(identifier: request.path.notProcessedValues.first),
       );
     } on Exception {
       rethrow;

@@ -96,5 +96,3 @@ class SetFieldsDifference<T> extends UpdateDifference<T> {
   @override
   DifferenceType get type => DifferenceType.set;
 }
-
-//TODO: Implement other type of differences
