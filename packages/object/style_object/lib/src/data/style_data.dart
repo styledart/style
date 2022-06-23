@@ -18,13 +18,12 @@
 
 part of style_object;
 
-class DataRead<T> {
-  DataRead({required this.data, required this.offset});
-
-  T data;
-
-  int offset;
-}
+// class DataRead<T> {
+//   DataRead({required this.data});
+//
+//   T data;
+//
+// }
 
 abstract class StyleData<T> {
   StyleData(this.value);
@@ -60,12 +59,9 @@ abstract class StyleData<T> {
 
   T value;
 
-  //late StyleKey key;
+  int getLength(StyleKey<T> key);
 
-  int getLength(KeyFactory<T> key);
+  void write(ByteDataWriter builder, StyleKey<T> key, bool withKey);
 
-  WriteMeta write(
-      ByteData byteData, int offset, KeyFactory<T> key, bool withKey);
-
-  KeyFactory createKey(int key);
+  StyleKey createKey(int key);
 }

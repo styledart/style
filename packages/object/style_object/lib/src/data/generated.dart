@@ -32,13 +32,11 @@ class StringData extends StyleData<String> {
 
   @override
   int getLength(covariant StringKey key) =>
-      (_utf8.length) + (key.fixedCount == null ? k16BitLength : 0);
+      (_utf8.length) + (key.fixedCount == null ? kLengthLength : 0);
 
   @override
-  WriteMeta write(ByteData byteData, int offset,covariant  StringKey key, bool withKey,) {
-    offset = key.writeKeyAndMeta(byteData, offset, _utf8.length, withKey);
-    var e = offset + _utf8.length;
-    var b = byteData.buffer.asUint8List()..setRange(offset, e, _utf8);
-    return WriteMeta(b.buffer.asByteData(), e);
+  void write(ByteDataWriter builder, covariant StringKey key, bool withKey) {
+    key.writeKeyAndMeta(builder, _utf8.length, withKey);
+    builder.setBytes(_utf8);
   }
 }

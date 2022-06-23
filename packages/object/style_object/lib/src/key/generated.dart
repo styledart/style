@@ -23,41 +23,33 @@ class StringKey extends StyleKey<String> {
   final int? fixedCount;
 
   @override
-  DataRead<String> read(
-      ByteData byteData, int offset, KeyFactory keyMapper, bool withTag) {
-    var listMeta = readMeta(byteData, offset, keyMapper);
-    offset = listMeta.offset;
-    return DataRead(
-        data: utf8.decode(byteData.buffer.asUint8List(offset, listMeta.count)),
-        offset: offset + listMeta.count);
+  String read(ByteDataReader byteData, bool withTag) {
+    var listMeta = readMeta(byteData);
+    return byteData.getString(listMeta.count);
   }
 
   @override
-  TypedDataMeta readMeta(ByteData data, int offset, KeyFactory keyMapper) {
+  TypedDataMeta readMeta(ByteDataReader data) {
     if (fixedCount != null) {
-      return TypedDataMeta(fixedCount!, offset);
+      return TypedDataMeta(fixedCount!);
     } else {
-      return TypedDataMeta(data.getUint16(offset), offset + k16BitLength);
+      return TypedDataMeta(data.getUint16());
     }
   }
 
-  int writeKeyAndMeta(ByteData byteData, int offset, int count, bool withKey) {
+  void writeKeyAndMeta(ByteDataWriter builder, int count, bool withKey) {
     if (withKey) {
-      byteData.setUint16(offset, key);
-      offset += kKeyLength;
+      builder.setUint16(key);
     }
 
     if (fixedCount == null) {
-      byteData.setUint16(offset, count);
-      offset += kKeyLength;
+      builder.setUint16(count);
     }
-    return offset;
   }
 
   @override
   int? get fixedLength => fixedCount;
 
   @override
-  int get type => 16;
-
+  int get type => 20;
 }

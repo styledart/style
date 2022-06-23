@@ -24,13 +24,13 @@ void main() async {
   var encoder = codec.encoder;
   var decoder = codec.decoder;
   var d = StyleObjectWithKeys({
-    1: ListData([
+    10: ListData([
       {2: StringData("Ali")},
       {2: StringData("Veli")},
       {2: StringData("Can")},
     ]),
     4: StringData('String 4'),
-    5: IntData(6),
+    5: Uint16Data(6),
     6: StyleObjectWithKeys({
       100: IntData(1500),
       200: IntData(1800),
@@ -38,6 +38,8 @@ void main() async {
   });
 
   var bytes = encoder.convert(d);
+
+  print(bytes.buffer.asUint8List());
 
   var res = decoder.convert(bytes);
   print(res);

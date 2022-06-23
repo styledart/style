@@ -21,42 +21,40 @@ part of style_object;
 abstract class StyleObject extends StyleData<Map<Object, dynamic>> {
   StyleObject(super.value);
 
-  Map<StyleKey, StyleData> get _data;
+  final Map<StyleKey, StyleData> _data = {};
 
-  void setData(KeyCollection keyMapper);
+  void setData(ObjectKey keyMapper);
 
   @override
-  WriteMeta write(
-    ByteData byteData,
-    int offset,
-    covariant ObjectKey key,
-    bool withKey,
-  ) {
-    var kOffset = offset;
-    offset += withKey ? kObjectMetaLength : k16BitLength;
-    for (var d in _data.entries) {
-      var meta = d.value.write(byteData, offset, d.key, true);
-      offset = meta.offset;
-      byteData = meta.byteData;
+  void write(ByteDataWriter builder, covariant ObjectKey key, bool withKey) {
+    if (withKey) {
+      builder.setUint16(key.key);
     }
-    key.writeKeyAndMeta(byteData, kOffset, _data.length, withKey);
-    return WriteMeta(byteData, offset);
+
+    if (key.fixedLength == null) {
+      builder.setUint16(_data.length);
+    }
+
+    for (var d in _data.entries) {
+      d.value.write(builder, d.key, true);
+    }
   }
 
   @override
-  KeyFactory createKey(int key) {
-    return KeyCollection.withRoot(ObjectKey(key), []);
+  ObjectKey createKey(int key) {
+    return ObjectKey(key);
   }
 
   @override
-  int getLength(covariant KeyFactory key) {
-    setData(key as KeyCollection);
-    var len = kObjectMetaLength;
+  int getLength(covariant ObjectKey key) {
+    setData(key);
+
+    var len = kLengthLength;
 
     for (var d in _data.entries) {
-      len += d.key.fixedLength ?? (d.value).getLength(key.getChild(d.key.key));
+      len += kKeyLength + (d.key.fixedLength ?? d.value.getLength(d.key));
     }
-    return len + (kKeyLength * value.length);
+    return len;
   }
 }
 
@@ -68,7 +66,7 @@ class StyleObjectAdvanced extends StyleObject {
       value as Map<StyleKey, StyleData>;
 
   @override
-  void setData(KeyCollection keyMapper) {
+  void setData(ObjectKey keyMapper) {
     return;
   }
 }
@@ -76,16 +74,10 @@ class StyleObjectAdvanced extends StyleObject {
 class StyleObjectWithData extends StyleObject {
   StyleObjectWithData(Map<int, StyleData> map) : super(map);
 
-  Map<StyleKey, StyleData>? _map;
-
   @override
-  Map<StyleKey, StyleData<dynamic>> get _data => _map!;
-
-  @override
-  void setData(KeyCollection keyMapper) {
-    _map = <StyleKey, StyleData>{};
+  void setData(ObjectKey keyMapper) {
     (value as Map<int, StyleData>).forEach((key, value) {
-      _map![keyMapper.getKey(key, value)] = value;
+      _data[keyMapper.getKey(key, value)] = value;
     });
     return;
   }
@@ -112,17 +104,11 @@ class StyleObjectWithData extends StyleObject {
 class StyleObjectWithKeys extends StyleObject {
   StyleObjectWithKeys(Map<int, dynamic> map) : super(map);
 
-  Map<StyleKey, StyleData>? _map;
-
   @override
-  void setData(KeyCollection keyMapper) {
-    _map = {};
-    (value as Map<int, dynamic>).forEach((key, value) {
-      _map![keyMapper.getKey(key, value)] = StyleData.create(value);
-    });
+  void setData(ObjectKey keyMapper) {
+    for (var kv in (value as Map<int, dynamic>).entries) {
+      _data[keyMapper.getKey(kv.key, kv.value)] = StyleData.create(kv.value);
+    }
     return;
   }
-
-  @override
-  Map<StyleKey, StyleData<dynamic>> get _data => _map!;
 }

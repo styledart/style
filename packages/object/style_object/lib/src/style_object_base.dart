@@ -22,9 +22,15 @@ import 'dart:convert';
 
 import 'dart:typed_data';
 
-part 'encoder.dart';
+part 'utils/encoder.dart';
 
-part 'constants.dart';
+part 'utils/constants.dart';
+
+part 'utils/key_collection.dart';
+
+part 'utils/byte_data_reader.dart';
+
+part 'utils/byte_data_writer.dart';
 
 part 'key/style_key.dart';
 
@@ -43,13 +49,17 @@ part 'data/fixed_length.dart';
 part 'data/list.dart';
 
 part 'data/typed_data.dart';
+
 part 'key/typed_data.dart';
 
 part 'data/generated.dart';
+
 part 'key/generated.dart';
 
 part 'meta/object.dart';
-part 'meta/dynamic.dart';
-part 'meta/meta.dart';
-part 'meta/list.dart';
 
+part 'meta/dynamic.dart';
+
+part 'meta/meta.dart';
+
+part 'meta/list.dart';

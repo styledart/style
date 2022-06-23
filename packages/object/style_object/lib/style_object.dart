@@ -22,4 +22,3 @@
 library style_object;
 
 export 'src/style_object_base.dart';
-

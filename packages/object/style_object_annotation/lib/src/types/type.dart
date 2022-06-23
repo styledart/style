@@ -16,17 +16,10 @@
  *
  */
 
-part of style_object;
+class StyleType {
+  const StyleType({this.key, required this.type, this.name});
 
-class ObjectKeyMeta extends KeyMetaRead {
-  ObjectKeyMeta(this.entryCount);
-
-  int entryCount;
+  final int type;
+  final String? name;
+  final int? key;
 }
-
-// class WriteMeta {
-//   WriteMeta(this.byteData, this.offset);
-//
-//   Uint8List byteData;
-//   int offset;
-// }

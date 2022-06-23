@@ -16,21 +16,33 @@
  *
  */
 
-class DuplicateKeyException implements Exception {
-  DuplicateKeyException({this.key, this.tag});
+import 'package:style_object_annotation/src/types/type.dart';
 
-  int? key;
-  String? tag;
+enum ListType {
+  uint8(9),
+  uint16(11),
+  uint32(13),
+  uint64(19),
+  int8(10),
+  int16(12),
+  int32(14),
+  int64(15),
+  float32(21),
+  float64(22);
 
-  @override
-  String toString() {
-    return 'Duplicated ${key != null ? 'key' : 'tag'} : ${key ?? tag}';
-  }
+  const ListType(this.type);
+
+  final int type;
 }
 
-class ReservedException implements Exception {
-  @override
-  String toString() {
-    return 'Key "0" and tag "#root" are reserved';
-  }
+class TypedDataType extends StyleType {
+  const TypedDataType(
+      {required this.listType,
+      this.fixedLength,
+      super.key,
+      super.name,
+      required super.type});
+
+  final int? fixedLength;
+  final ListType listType;
 }

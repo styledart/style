@@ -18,44 +18,36 @@
 
 part of style_object;
 
-class ListKey extends StyleKey<List> {
-  ListKey(super.key, /*[this.fixedType]*/);
+class ListKey extends StyleKey<List> with KeyCollection {
+  ListKey(super.key, List<StyleKey> keys);
 
   @override
   int? get fixedLength => null;
 
-  //int? fixedType;
-
   @override
-  DataRead<List> read(
-      ByteData byteData, int offset, KeyFactory keyMapper, bool withTag) {
-    var listMeta = readMeta(byteData, offset, keyMapper);
-    offset = listMeta.offset;
+  List read(ByteDataReader byteData, bool withTag) {
+    var listMeta = readMeta(byteData);
     var list = [];
     while (list.length < listMeta.count) {
-      var key = _createFakeKeyForType(byteData.getUint8(offset), null);
-      offset += kByteLength;
-      var o = key.read(
-          byteData, offset, key is ObjectKey ? keyMapper : key, withTag);
-      list.add(o.data);
-      offset = o.offset;
+      var k = byteData.getUint8();
+      var key = _keys[-k] ??= _createFakeKeyForType(k, null);
+      var o = key.read(byteData, false);
+      list.add(o);
     }
-    return DataRead(data: list, offset: offset);
+    return list;
   }
 
   @override
-  ListMeta readMeta(ByteData data, int offset, KeyFactory keyMapper) {
-    return ListMeta(data.getUint16(offset), offset + k16BitLength);
+  ListMeta readMeta(ByteDataReader data) {
+    return ListMeta(data.getUint16());
   }
 
-  int writeKeyAndMeta(
-      ByteData byteData, int offset, int count, int type, bool withKey) {
+  void writeKeyAndMeta(ByteDataWriter builder, int count, bool withKey) {
     if (withKey) {
-      byteData.setUint16(offset, key);
-      offset += kKeyLength;
+      builder.setUint16(key);
     }
-    byteData.setUint16(offset, count);
-    return offset + k16BitLength;
+
+    builder.setUint16(count);
   }
 
   // static DataRead<List<dynamic>> dynamicReader(
@@ -84,39 +76,45 @@ class ListKey extends StyleKey<List> {
   // }
 
   static StyleKey _createFakeKeyForType(int type, [int? fixedCount]) {
+    print('TYPE: $type');
     return _typeKeys[type]!.call(fixedCount);
   }
 
   static final Map<int, StyleKey Function(int? fixed)> _typeKeys = {
     1: (f) => BoolKey(-1),
-    2: (f) => Uint8Key(-1),
-    3: (f) => Int8Key(-1),
-    4: (f) => Uint16Key(-1),
-    5: (f) => Int16Key(-1),
-    6: (f) => Uint32Key(-1),
-    7: (f) => Int32Key(-1),
-    8: (f) => IntKey(-1),
-
-    21: (f) => Float32Key(-1),
-    22: (f) => DoubleKey(-1),
+    2: (f) => Uint8Key(-2),
+    3: (f) => Int8Key(-3),
+    4: (f) => Uint16Key(-4),
+    5: (f) => Int16Key(-5),
+    6: (f) => Uint32Key(-6),
+    7: (f) => Int32Key(-7),
+    8: (f) => IntKey(-8),
+    9: (f) => Int64Key(-9),
 
     // typed data
-    9: (f) => Uint8ListKey(-1, f),
-    10: (f) => Int8ListKey(-1, f),
-    11: (f) => Uint16ListKey(-1, f),
-    12: (f) => Int16ListKey(-1, f),
-    13: (f) => Uint32ListKey(-1, f),
-    14: (f) => Int32ListKey(-1, f),
-    15: (f) => Int64ListKey(-1, f),
+    10: (f) => Uint8ListKey(-10, f),
+    11: (f) => Int8ListKey(-11, f),
+    12: (f) => Uint16ListKey(-12, f),
+    13: (f) => Int16ListKey(-13, f),
+    14: (f) => Uint32ListKey(-14, f),
+    15: (f) => Int32ListKey(-15, f),
+    16: (f) => Uint64ListKey(-16, f),
+    17: (f) => Int64ListKey(-17, f),
+
+    23: (f) => Float32ListKey(-23, f),
+    24: (f) => Float64ListKey(-24, f),
+
+    18: (f) => Float32Key(-18),
+    19: (f) => DoubleKey(-19),
 
     // generated
-    16: (f) => StringKey(-1, f),
+    20: (f) => StringKey(-20, f),
 
     // structures
-    17: (f) => ObjectKey(-1),
-    18: (f) => ListKey(-1),
+    21: (f) => ObjectKey(-21),
+    22: (f) => ListKey(-22, []),
   };
 
   @override
-  int get type => 18;
+  int get type => 22;
 }

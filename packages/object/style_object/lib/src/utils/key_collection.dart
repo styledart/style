@@ -18,15 +18,22 @@
 
 part of style_object;
 
-class ObjectKeyMeta extends KeyMetaRead {
-  ObjectKeyMeta(this.entryCount);
+mixin KeyCollection<T> on StyleKey<T> {
+  final Map<int, StyleKey> _keys = {};
 
-  int entryCount;
+  StyleKey getKey(int key, StyleData value) {
+    var k = _keys[key] ??= value.createKey(key);
+
+    if (k is KeyCollection) {}
+
+    return k;
+  }
+
+  void addKey(StyleKey key) {
+    _keys[key.key] = key;
+  }
+
+  StyleKey readKey(ByteDataReader data) {
+    return _keys[data.getUint16()]!;
+  }
 }
-
-// class WriteMeta {
-//   WriteMeta(this.byteData, this.offset);
-//
-//   Uint8List byteData;
-//   int offset;
-// }

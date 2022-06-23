@@ -18,48 +18,41 @@
 
 part of style_object;
 
-class ObjectKey extends StyleKey<Map<Object, dynamic>> {
-  const ObjectKey(super.key);
+class ObjectKey extends StyleKey<Map<Object, dynamic>> with KeyCollection {
+  ObjectKey(super.key);
 
   @override
   int? get fixedLength => null;
 
   @override
-  DataRead<Map<Object, dynamic>> read(ByteData byteData, int offset,
-      covariant KeyCollection keyMapper, bool withTag) {
+  Map<Object, dynamic> read(ByteDataReader byteData, bool withTag) {
     var readCount = 0;
-    var map = <Object, dynamic>{};
-    var meta = readMeta(byteData, offset, keyMapper) as ObjectKeyMeta;
-
-    offset = meta.offset;
+    var map = <int, dynamic>{};
+    var meta = readMeta(byteData) as ObjectKeyMeta;
 
     while (readCount < meta.entryCount) {
-      var entryKey = keyMapper.readKey(byteData, offset);
-      offset += kKeyLength;
-      var dataRead = entryKey.root.read(byteData, offset, entryKey, withTag);
-      offset = dataRead.offset;
-      map[(entryKey.factoryKey)] =
-          dataRead.data;
-
+      var entryKey = readKey(byteData);
+      var dataRead = entryKey.read(byteData, withTag);
+      map[entryKey.key] = dataRead;
       readCount++;
     }
-    return DataRead<Map<Object, dynamic>>(data: map, offset: offset);
+
+    return map;
   }
 
   @override
-  KeyMetaRead readMeta(ByteData data, int offset, KeyFactory keyMapper) {
-    return ObjectKeyMeta(data.getUint16(offset), offset + kKeyLength);
+  KeyMetaRead readMeta(ByteDataReader data) {
+    return ObjectKeyMeta(data.getUint16());
   }
 
-  int writeKeyAndMeta(ByteData byteData, int offset, int count, bool withKey) {
+  void writeKeyAndMeta(ByteDataWriter builder, int count, bool withKey) {
     if (withKey) {
-      byteData.setUint16(offset, key);
-      offset += kKeyLength;
+      builder.setUint16(key);
     }
-    byteData.setUint16(offset, count);
-    return offset + k16BitLength;
+
+    builder.setUint16(count);
   }
 
   @override
-  int get type => 17;
+  int get type => 21;
 }

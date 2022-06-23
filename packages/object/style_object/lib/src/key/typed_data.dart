@@ -28,61 +28,132 @@ abstract class TypedDataKey<T> extends StyleKey<List<T>> {
   @override
   int? get fixedLength => fixedCount != null ? fixedCount! * itemLength : null;
 
-  List<T> readItems(ByteData byteData, int offset, int lengthInBytes);
+  List<T> readItems(ByteDataReader byteData);
 
-  T readItem(ByteData data, int offset);
+  T readItem(ByteDataReader data);
 
   @override
-  DataRead<List<T>> read(
-      ByteData byteData, int offset, KeyFactory keyMapper, bool withTag) {
-    var listMeta = readMeta(byteData, offset, keyMapper);
-    offset = listMeta.offset;
+  List<T> read(ByteDataReader byteData, bool withTag) {
+    return readItems(byteData);
+
+    var listMeta = readMeta(byteData);
     var list = <T>[];
 
     while (list.length < listMeta.count) {
-      list.add(readItem(byteData, offset));
-      offset += itemLength;
+      list.add(readItem(byteData));
     }
-    return DataRead(data: list, offset: offset);
+    return list;
   }
 
   @override
-  TypedDataMeta readMeta(ByteData data, int offset, KeyFactory keyMapper) {
+  TypedDataMeta readMeta(ByteDataReader data) {
     if (fixedCount != null) {
-      return TypedDataMeta(fixedCount!, offset);
+      return TypedDataMeta(fixedCount!);
     } else {
-      return TypedDataMeta(data.getUint16(offset), offset + k16BitLength);
+      return TypedDataMeta(data.getUint16());
     }
-  }
-
-  int writeKeyAndMeta(ByteData byteData, int offset, int count, bool withKey) {
-    if (withKey) {
-      byteData.setUint16(offset, key);
-      offset += kKeyLength;
-    }
-    if (fixedCount == null) {
-      byteData.setUint16(offset, count);
-      offset += kKeyLength;
-    }
-    return offset;
   }
 }
 
-class Uint8ListKey extends TypedDataKey<int> {
-  const Uint8ListKey(int key, [int? fixedCount])
+// create float32list key
+class Float32ListKey extends TypedDataKey<double> {
+  const Float32ListKey(int key, [int? fixedCount])
+      : super(k32BitLength, key, fixedCount: fixedCount);
+
+  @override
+  List<double> readItems(ByteDataReader byteData) {
+    var listMeta = readMeta(byteData);
+    var list = <double>[];
+
+    while (list.length < listMeta.count) {
+      list.add(byteData.getFloat32());
+    }
+    return list;
+  }
+
+  @override
+  double readItem(ByteDataReader data) {
+    return data.getFloat32();
+  }
+
+  @override
+  int get type => 23;
+}
+
+// create float64list key
+class Float64ListKey extends TypedDataKey<double> {
+  const Float64ListKey(int key, [int? fixedCount])
+      : super(k64BitLength, key, fixedCount: fixedCount);
+
+  @override
+  List<double> readItems(ByteDataReader byteData) {
+    var listMeta = readMeta(byteData);
+    var list = <double>[];
+
+    while (list.length < listMeta.count) {
+      list.add(byteData.getFloat64());
+    }
+    return list;
+  }
+
+  @override
+  double readItem(ByteDataReader data) {
+    return data.getFloat64();
+  }
+
+  @override
+  int get type => 24;
+}
+
+class Uint8ListKey extends StyleKey<Uint8List> {
+  const Uint8ListKey(int key, [this.fixedCount]) : super(key);
+
+  @override
+  int get type => 10;
+
+  final int? fixedCount;
+
+  @override
+  int? get fixedLength => fixedCount;
+
+  @override
+  Uint8List read(ByteDataReader byteData, bool withTag) {
+    var listMeta = readMeta(byteData);
+
+    return byteData.getBytes(listMeta.count);
+  }
+
+  @override
+  TypedDataMeta readMeta(ByteDataReader data) {
+    if (fixedCount != null) {
+      return TypedDataMeta(fixedCount!);
+    } else {
+      return TypedDataMeta(data.getUint16());
+    }
+  }
+}
+
+class Uint8ListKeyWithTyped extends TypedDataKey<int> {
+  const Uint8ListKeyWithTyped(int key, [int? fixedCount])
       : super(kByteLength, key, fixedCount: fixedCount);
 
   @override
-  List<int> readItems(ByteData byteData, int offset, int lengthInBytes) {
-    return byteData.buffer.asUint8List(offset, lengthInBytes);
+  List<int> readItems(ByteDataReader byteData) {
+    var listMeta = readMeta(byteData);
+    var list = <int>[];
+
+    while (list.length < listMeta.count) {
+      list.add(byteData.getUint8());
+    }
+    return list;
   }
 
   @override
   int get type => 9;
 
   @override
-  int readItem(ByteData data, int offset) {
-    return data.getUint8(offset);
+  int readItem(ByteDataReader data) {
+    return data.getUint8();
   }
 }
 
@@ -91,16 +162,22 @@ class Int8ListKey extends TypedDataKey<int> {
       : super(kByteLength, key, fixedCount: fixedCount);
 
   @override
-  List<int> readItems(ByteData byteData, int offset, int lengthInBytes) {
-    return byteData.buffer.asInt8List(offset, lengthInBytes);
+  List<int> readItems(ByteDataReader byteData) {
+    var listMeta = readMeta(byteData);
+    var list = <int>[];
+
+    while (list.length < listMeta.count) {
+      list.add(byteData.getInt8());
+    }
+    return list;
   }
 
   @override
-  int get type => 10;
+  int get type => 11;
 
   @override
-  int readItem(ByteData data, int offset) {
-    return data.getInt8(offset);
+  int readItem(ByteDataReader data) {
+    return data.getInt8();
   }
 }
 
@@ -109,16 +186,22 @@ class Uint16ListKey extends TypedDataKey<int> {
       : super(k16BitLength, key, fixedCount: fixedCount);
 
   @override
-  List<int> readItems(ByteData byteData, int offset, int lengthInBytes) {
-    return byteData.buffer.asUint16List(offset, lengthInBytes);
+  List<int> readItems(ByteDataReader byteData) {
+    var listMeta = readMeta(byteData);
+    var list = <int>[];
+
+    while (list.length < listMeta.count) {
+      list.add(byteData.getUint16());
+    }
+    return list;
   }
 
   @override
-  int get type => 11;
+  int get type => 12;
 
   @override
-  int readItem(ByteData data, int offset) {
-    return data.getUint16(offset);
+  int readItem(ByteDataReader data) {
+    return data.getUint16();
   }
 }
 
@@ -127,16 +210,22 @@ class Int16ListKey extends TypedDataKey<int> {
       : super(k16BitLength, key, fixedCount: fixedCount);
 
   @override
-  List<int> readItems(ByteData byteData, int offset, int lengthInBytes) {
-    return byteData.buffer.asInt16List(offset, lengthInBytes);
+  List<int> readItems(ByteDataReader byteData) {
+    var listMeta = readMeta(byteData);
+    var list = <int>[];
+
+    while (list.length < listMeta.count) {
+      list.add(byteData.getInt16());
+    }
+    return list;
   }
 
   @override
-  int get type => 12;
+  int get type => 13;
 
   @override
-  int readItem(ByteData data, int offset) {
-    return data.getInt16(offset);
+  int readItem(ByteDataReader data) {
+    return data.getInt16();
   }
 }
 
@@ -145,16 +234,22 @@ class Int32ListKey extends TypedDataKey<int> {
       : super(k32BitLength, key, fixedCount: fixedCount);
 
   @override
-  List<int> readItems(ByteData byteData, int offset, int lengthInBytes) {
-    return byteData.buffer.asInt32List(offset, lengthInBytes);
+  List<int> readItems(ByteDataReader byteData) {
+    var listMeta = readMeta(byteData);
+    var list = <int>[];
+
+    while (list.length < listMeta.count) {
+      list.add(byteData.getInt32());
+    }
+    return list;
   }
 
   @override
-  int get type => 18;
+  int get type => 15;
 
   @override
-  int readItem(ByteData data, int offset) {
-    return data.getInt32(offset);
+  int readItem(ByteDataReader data) {
+    return data.getInt32();
   }
 }
 
@@ -163,16 +258,22 @@ class Uint32ListKey extends TypedDataKey<int> {
       : super(k32BitLength, key, fixedCount: fixedCount);
 
   @override
-  List<int> readItems(ByteData byteData, int offset, int lengthInBytes) {
-    return byteData.buffer.asUint32List(offset, lengthInBytes);
+  List<int> readItems(ByteDataReader byteData) {
+    var listMeta = readMeta(byteData);
+    var list = <int>[];
+
+    while (list.length < listMeta.count) {
+      list.add(byteData.getUint32());
+    }
+    return list;
   }
 
   @override
-  int get type => 13;
+  int get type => 14;
 
   @override
-  int readItem(ByteData data, int offset) {
-    return data.getUint32(offset);
+  int readItem(ByteDataReader data) {
+    return data.getUint32();
   }
 }
 
@@ -181,14 +282,45 @@ class Int64ListKey extends TypedDataKey<int> {
       : super(k64BitLength, key, fixedCount: fixedCount);
 
   @override
-  List<int> readItems(ByteData byteData, int offset, int lengthInBytes) =>
-      byteData.buffer.asInt64List(offset, lengthInBytes);
+  List<int> readItems(ByteDataReader byteData) {
+    var listMeta = readMeta(byteData);
+    var list = <int>[];
+
+    while (list.length < listMeta.count) {
+      list.add(byteData.getInt64());
+    }
+    return list;
+  }
 
   @override
-  int get type => 15;
+  int get type => 17;
 
   @override
-  int readItem(ByteData data, int offset) {
-    return data.getInt64(offset);
+  int readItem(ByteDataReader data) {
+    return data.getInt64();
+  }
+}
+
+class Uint64ListKey extends TypedDataKey<int> {
+  const Uint64ListKey(int key, [int? fixedCount])
+      : super(k64BitLength, key, fixedCount: fixedCount);
+
+  @override
+  List<int> readItems(ByteDataReader byteData) {
+    var listMeta = readMeta(byteData);
+    var list = <int>[];
+
+    while (list.length < listMeta.count) {
+      list.add(byteData.getUint64());
+    }
+    return list;
+  }
+
+  @override
+  int get type => 16;
+
+  @override
+  int readItem(ByteDataReader data) {
+    return data.getInt64();
   }
 }

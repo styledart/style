@@ -17,53 +17,79 @@
  */
 part of style_object;
 
-abstract class StyleTypedData<T extends num>
-    extends StyleData<List<T>> {
+abstract class StyleTypedData<T extends num> extends StyleData<List<T>> {
   StyleTypedData(this.itemLength, super.value);
 
   int itemLength;
 
-  // @override
-  // TypedDataKey<T> createKey(int key,StyleKey? parent);
-
   @override
   int getLength(covariant TypedDataKey<T> key) =>
-      (value.length * itemLength) + (key.fixedCount != null ? 0 : 2);
+      (value.length * itemLength) +
+      (key.fixedCount == null ? kLengthLength : 0);
 
-  void writeItem(ByteData data, int offset, T value);
+  void writeItem(ByteDataWriter data, T value);
 
   @override
-  WriteMeta write(ByteData byteData, int offset,covariant  TypedDataKey<T> key, bool withKey) {
-    offset = key.writeKeyAndMeta(byteData, offset, value.length, withKey);
-
-    // var bt = typedData.buffer.asUint8List();
-    // var e = offset + bt.length;
-    // var b = byteData.buffer.asUint8List()..setRange(offset, e, bt);
-    for (var v in value) {
-      writeItem(byteData, offset, v);
-      offset += itemLength;
+  void write(
+      ByteDataWriter builder, covariant TypedDataKey<T> key, bool withKey) {
+    if (withKey) {
+      builder.setUint16(key.key);
     }
 
-    return WriteMeta(byteData, offset);
+    if (key.fixedCount == null) {
+      builder.setUint16(value.length);
+    }
+    for (var v in value) {
+      writeItem(builder, v);
+    }
   }
 
   TypedData get typedData;
 }
 
-class Uint8ListData extends StyleTypedData<int> {
-  Uint8ListData(List<int> value) : super(kByteLength, value);
+class Uint8ListDataWithTyped extends StyleTypedData<int> {
+  Uint8ListDataWithTyped(List<int> value) : super(kByteLength, value);
 
   @override
-  TypedDataKey<int> createKey(int key) {
+  StyleKey createKey(int key) {
+    return Uint8ListKeyWithTyped(key);
+  }
+
+  @override
+  TypedData get typedData => throw UnimplementedError();
+
+  @override
+  void writeItem(ByteDataWriter data, int value) {
+    data.setUint8(value);
+  }
+}
+
+class Uint8ListData extends StyleData<Uint8List> {
+  Uint8ListData(Uint8List value) : super(value);
+
+  @override
+  Uint8ListKey createKey(int key) {
     return Uint8ListKey(key);
   }
 
   @override
-  TypedData get typedData => Uint8List.fromList(value);
+  int getLength(covariant Uint8ListKey key) {
+    return key.fixedCount != null
+        ? key.fixedCount!
+        : (kLengthLength + value.length);
+  }
 
   @override
-  void writeItem(ByteData data, int offset, int value) {
-    data.setUint8(offset, value);
+  void write(ByteDataWriter builder, covariant Uint8ListKey key, bool withKey) {
+    if (withKey) {
+      builder.setUint16(key.key);
+    }
+
+    if (key.fixedCount == null) {
+      builder.setUint16(value.length);
+    }
+
+    builder.setBytes(value);
   }
 }
 
@@ -72,17 +98,16 @@ class Int8ListData extends StyleTypedData<int> {
 
   @override
   TypedDataKey<int> createKey(int key) {
-    return Uint8ListKey(key);
+    return Int8ListKey(key);
   }
 
   @override
   TypedData get typedData => Int8List.fromList(value);
 
   @override
-  void writeItem(ByteData data, int offset, int value) {
-    data.setInt8(offset, value);
+  void writeItem(ByteDataWriter data, int value) {
+    data.setInt8(value);
   }
-
 }
 
 class Uint16ListData extends StyleTypedData<int> {
@@ -96,12 +121,10 @@ class Uint16ListData extends StyleTypedData<int> {
   @override
   TypedData get typedData => Uint16List.fromList(value);
 
-
   @override
-  void writeItem(ByteData data, int offset, int value) {
-    data.setUint16(offset, value);
+  void writeItem(ByteDataWriter data, int value) {
+    data.setUint16(value);
   }
-
 }
 
 class Int16ListData extends StyleTypedData<int> {
@@ -115,12 +138,10 @@ class Int16ListData extends StyleTypedData<int> {
   @override
   TypedData get typedData => Int16List.fromList(value);
 
-
   @override
-  void writeItem(ByteData data, int offset, int value) {
-    data.setInt16(offset, value);
+  void writeItem(ByteDataWriter data, int value) {
+    data.setInt16(value);
   }
-
 }
 
 class Uint32ListData extends StyleTypedData<int> {
@@ -135,8 +156,8 @@ class Uint32ListData extends StyleTypedData<int> {
   TypedData get typedData => Uint32List.fromList(value);
 
   @override
-  void writeItem(ByteData data, int offset, int value) {
-    data.setUint32(offset, value);
+  void writeItem(ByteDataWriter data, int value) {
+    data.setUint32(value);
   }
 }
 
@@ -151,12 +172,10 @@ class Int32ListData extends StyleTypedData<int> {
   @override
   TypedData get typedData => Int32List.fromList(value);
 
-
   @override
-  void writeItem(ByteData data, int offset, int value) {
-    data.setInt32(offset, value);
+  void writeItem(ByteDataWriter data, int value) {
+    data.setInt32(value);
   }
-
 }
 
 class Int64ListData extends StyleTypedData<int> {
@@ -171,8 +190,24 @@ class Int64ListData extends StyleTypedData<int> {
   TypedData get typedData => Int64List.fromList(value);
 
   @override
-  void writeItem(ByteData data, int offset, int value) {
-    data.setInt64(offset, value);
+  void writeItem(ByteDataWriter data, int value) {
+    data.setInt64(value);
+  }
+}
+
+class Uint64ListData extends StyleTypedData<int> {
+  Uint64ListData(List<int> value) : super(k64BitLength, value);
+
+  @override
+  TypedDataKey<int> createKey(int key) {
+    return Uint64ListKey(key);
   }
 
+  @override
+  TypedData get typedData => Uint64List.fromList(value);
+
+  @override
+  void writeItem(ByteDataWriter data, int value) {
+    data.setUint64(value);
+  }
 }

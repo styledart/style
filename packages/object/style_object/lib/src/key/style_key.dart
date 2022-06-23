@@ -17,33 +17,14 @@
  */
 part of style_object;
 
-mixin KeyFactory<T> {
-  int get factoryKey;
-
-  StyleKey get root;
-
-  StyleKey getKey(int key, StyleData data);
-}
-
-abstract class StyleKey<T> with KeyFactory<T> {
+abstract class StyleKey<T> {
   const StyleKey(this.key);
 
   final int key;
 
-  @override
-  int get factoryKey => key;
-
   int? get fixedLength;
 
   int get type;
-
-  //final StyleKey? parent;
-
-  @override
-  StyleKey get root => this;
-
-  @override
-  StyleKey getKey(int key, StyleData data) => this;
 
   @override
   int get hashCode => key.hashCode;
@@ -53,9 +34,7 @@ abstract class StyleKey<T> with KeyFactory<T> {
     return other is StyleKey && other.key == key;
   }
 
-  KeyMetaRead readMeta(ByteData data, int offset, KeyFactory keyMapper);
+  KeyMetaRead readMeta(ByteDataReader data);
 
-  DataRead<T> read(
-      ByteData byteData, int offset, KeyFactory keyMapper, bool withTag);
+  T read(ByteDataReader byteData, bool withTag);
 }
-
