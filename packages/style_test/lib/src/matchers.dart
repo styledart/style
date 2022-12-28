@@ -1,11 +1,12 @@
 /*
  * Copyright 2021 styledart.dev - Mehmet Yaz
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE,
+ *    Version 3 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *       https://www.gnu.org/licenses/agpl-3.0.en.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -123,7 +124,7 @@ _HeaderMatcher headerIs(String key, Matcher value) =>
 /// Request matcher checks the response.
 abstract class _ResponseMatcher extends Matcher {
   @override
-  bool matches(item, Map matchState) {
+  bool matches(dynamic item, Map matchState) {
     if (item is! Response) {
       return false;
     } else {
@@ -153,8 +154,8 @@ class _BodyMatcher extends _ResponseMatcher {
   }
 
   @override
-  Description describeMismatch(
-      item, Description mismatchDescription, Map matchState, bool verbose) {
+  Description describeMismatch(dynamic item, Description mismatchDescription,
+      Map matchState, bool verbose) {
     return mismatchDescription
         .add("body: ")
         .add((item is Response) ? "${item.body?.data} " : "$item ");
@@ -193,8 +194,8 @@ abstract class _StatusCodeMatcher extends _ResponseMatcher {
   }
 
   @override
-  Description describeMismatch(
-      item, Description mismatchDescription, Map matchState, bool verbose) {
+  Description describeMismatch(dynamic item, Description mismatchDescription,
+      Map matchState, bool verbose) {
     return mismatchDescription
         .add("status_code: ")
         .add((item is Response) ? "${item.statusCode} " : "$item ");
@@ -248,8 +249,8 @@ class _HeaderMatcher extends _ResponseMatcher {
   Matcher value;
 
   @override
-  Description describeMismatch(
-      item, Description mismatchDescription, Map matchState, bool verbose) {
+  Description describeMismatch(dynamic item, Description mismatchDescription,
+      Map matchState, bool verbose) {
     return mismatchDescription
         .add("header: ")
         .add((item is Response) ? "${item.additionalHeaders} " : "$item ");

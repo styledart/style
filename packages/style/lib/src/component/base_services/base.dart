@@ -1,11 +1,12 @@
 /*
  * Copyright 2021 styledart.dev - Mehmet Yaz
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE,
+ *    Version 3 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *       https://www.gnu.org/licenses/agpl-3.0.en.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,7 +30,7 @@ part of '../../style_base.dart';
 ///   )
 /// ````
 ///
-class ServiceWrapper<B extends _BaseService> extends StatelessComponent {
+class ServiceWrapper<B extends BaseService> extends StatelessComponent {
   /// Annotate with service type
   ServiceWrapper({required this.service, required this.child});
 
@@ -48,13 +49,11 @@ class ServiceWrapper<B extends _BaseService> extends StatelessComponent {
   StatelessBinding createBinding() => ServiceWrapperBinding<B>(this);
 
   @override
-  Component build(BuildContext context) {
-    return child;
-  }
+  Component build(BuildContext context) => child;
 }
 
 ///
-class ServiceWrapperBinding<B extends _BaseService> extends StatelessBinding {
+class ServiceWrapperBinding<B extends BaseService> extends StatelessBinding {
   ///
   ServiceWrapperBinding(ServiceWrapper<B> component) : super(component);
 
@@ -74,13 +73,11 @@ class ServiceWrapperBinding<B extends _BaseService> extends StatelessBinding {
   }
 
   @override
-  TreeVisitor<Calling> visitCallingChildren(TreeVisitor<Calling> visitor) {
-    return child!.visitCallingChildren(visitor);
-  }
+  TreeVisitor<Calling> visitCallingChildren(TreeVisitor<Calling> visitor) => child!.visitCallingChildren(visitor);
 }
 
-abstract class _BaseService {
-  _BaseService();
+abstract class BaseService {
+  BaseService();
 
   /// The context in which the service attached
   late final BuildContext context;
@@ -101,7 +98,5 @@ abstract class _BaseService {
   /// Wait service is initialized.
   ///
   /// if service initializing is success returns true.
-  Future<bool> ensureInitialize() async {
-    return await _initializeCompleter.future;
-  }
+  Future<bool> ensureInitialize() async => await _initializeCompleter.future;
 }

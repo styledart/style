@@ -1,11 +1,12 @@
 /*
  * Copyright 2021 styledart.dev - Mehmet Yaz
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE,
+ *    Version 3 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *       https://www.gnu.org/licenses/agpl-3.0.en.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,16 +19,22 @@
 import 'dart:io';
 
 import 'package:style_dart/style_dart.dart';
-import 'package:style_test/src/requests.dart';
 import 'package:test/test.dart';
 
+import 'requests.dart';
+
+///
 class ResponseTest {
+  ///
   ResponseTest(this.binding);
 
+  ///
   Binding binding;
 
+  ///
   bool initChecked = false;
 
+  ///
   Future<bool> init() async {
     if (!initChecked) {
       ///
@@ -79,6 +86,7 @@ class ResponseTest {
     return true;
   }
 
+  ///
   void testRequest(
     String path,
     Matcher matcher, {

@@ -1,11 +1,12 @@
 /*
  * Copyright 2021 styledart.dev - Mehmet Yaz
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE,
+ *    Version 3 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *       https://www.gnu.org/licenses/agpl-3.0.en.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,8 +16,15 @@
  *
  */
 
+import 'dart:io';
+
+import 'package:args/command_runner.dart';
 import 'package:style_cli/style_cli.dart';
 
 void main(List<String> arguments) {
-  runner.run(arguments);
+  runner.run(arguments).catchError((error) {
+    if (error is! UsageException) throw error;
+    print(error);
+    exit(64); // Exit code 64 indicates a usage error.
+  });
 }

@@ -1,11 +1,12 @@
 /*
  * Copyright 2021 styledart.dev - Mehmet Yaz
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE,
+ *    Version 3 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *       https://www.gnu.org/licenses/agpl-3.0.en.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -90,20 +91,19 @@ class RouteBase extends CallingComponent with PathSegmentCallingComponentMixin {
         _root = root,
         _child = child,
         handleUnknownAsRoot = handleUnknownAsRoot ?? false,
-        assert(child != null || root != null, "Child or Root must be defined"),
+        assert(child != null || root != null, 'Child or Root must be defined'),
         super();
 
   /// For argument segments use segment with "{segment}" .
   /// [child], [root] and [unknown] is parent [unknown] in default
   /// for custom [PathSegment] to use constructor [PathRouter.withPathSegment]
   factory RouteBase(String segment,
-      {Component? child, Component? root, bool? handleUnknownAsRoot}) {
-    return RouteBase.withPathSegment(
-        segment: PathSegment(segment),
-        child: child,
-        root: root,
-        handleUnknownAsRoot: handleUnknownAsRoot);
-  }
+          {Component? child, Component? root, bool? handleUnknownAsRoot}) =>
+      RouteBase.withPathSegment(
+          segment: PathSegment(segment),
+          child: child,
+          root: root,
+          handleUnknownAsRoot: handleUnknownAsRoot);
 
   final PathSegment _segment;
 
@@ -114,9 +114,7 @@ class RouteBase extends CallingComponent with PathSegmentCallingComponentMixin {
   PathSegment get segment => _segment;
 
   @override
-  String toString() {
-    return "PathRouter(\"${segment.name}\")";
-  }
+  String toString() => 'PathRouter("${segment.name}")';
 
   @override
   Calling createCalling(BuildContext context) =>
@@ -143,13 +141,13 @@ class RouteBinding extends CallingBinding {
   void attachToParent(Binding parent) {
     super.attachToParent(parent);
     if (findAncestorBindingOfType<GatewayBinding>() == null) {
-      throw UnsupportedError("""
+      throw UnsupportedError('''
       Incorrect use of parent component
       [Route] working with Gateway.
       But using with: $parent , ${parent.component}
       if you want to only one route use [RouteTo] component
       WHERE: $_errorWhere
-      """);
+      ''');
     }
   }
 
@@ -187,7 +185,7 @@ class RouteBinding extends CallingBinding {
     rootBinding?.buildBinding();
 
     if (rootBinding != null) {
-      var _rootGateway =
+      var rootGateway =
           rootBinding!.visitCallingChildren(TreeVisitor<Calling>((visitor) {
         if (visitor.currentValue is GatewayCalling) {
           visitor.stop();
@@ -201,9 +199,9 @@ class RouteBinding extends CallingBinding {
       }));
 
       assert(
-          _rootGateway.result == null,
-          "Not push gateway or new sub-route from root"
-          "\nwhere: $_errorWhere");
+          rootGateway.result == null,
+          'Not push gateway or new sub-route from root'
+          '\nwhere: $_errorWhere');
     }
 
     if (childBinding != null) {
@@ -215,13 +213,13 @@ class RouteBinding extends CallingBinding {
         }
       }));
       if (childGateway.result == null) {
-        throw UnsupportedError("""
+        throw UnsupportedError('''
           if use child, must put gateway the tree
           Route child using for define sub-segments
           
           WHERE: $_errorWhere
           
-          """);
+          ''');
       }
 
       _childGateway = childGateway.result as GatewayCalling;
@@ -229,14 +227,14 @@ class RouteBinding extends CallingBinding {
 
     if ((component.segment.isRoot || component.segment.isUnknown)) {
       if (component.child != null) {
-        throw UnsupportedError("""
+        throw UnsupportedError('''
         root route of [Route] or root route of [Service]
         or unknown routes,
         Must not create any new route 
         
         WHERE: $_errorWhere
           
-        """);
+        ''');
       }
     }
   }
@@ -284,6 +282,7 @@ class RouteCalling extends Calling {
   /// if child isn't null, creating bindings
   RouteCalling(RouteBinding binding) : super(binding);
 
+  @override
   RouteBinding get binding => super.binding as RouteBinding;
 
   @override
@@ -292,14 +291,14 @@ class RouteCalling extends Calling {
         .resolveFor(binding._childGateway?.childrenBinding.keys.toList() ?? []);
     if (n.segment.isRoot && binding.component.root == null) {
       throw NotFoundException(
-          "/${request.path.processed.last.segment.name}/$n");
+          '/${request.path.processed.last.segment.name}/$n');
     }
     if (n.segment.isUnknown) {
       if (binding.component.handleUnknownAsRoot) {
         return binding.rootBinding!.findCalling.calling(request);
       }
       throw NotFoundException(
-          "${request.path.next} : /${request.path.processed.last.segment.name}");
+          '${request.path.next} : /${request.path.processed.last.segment.name}');
     }
     if (n.segment.isRoot) {
       return binding.rootBinding!.findCalling.calling(request);
@@ -355,14 +354,15 @@ abstract class PathSegment {
   ///
   /// For [ArgumentSegment], name must be starts with ":" or wrapped with "{}"
   factory PathSegment(String name) {
-    if (name.startsWith(":") || (name.startsWith("{") && name.endsWith("}"))) {
-      String _name;
-      if (name.startsWith(":")) {
-        _name = name.substring(1, name.length);
+    name = name.trim();
+    if (name.startsWith(':') || (name.startsWith('{') && name.endsWith('}'))) {
+      String segment;
+      if (name.startsWith(':')) {
+        segment = name.substring(1, name.length);
       } else {
-        _name = name.substring(1, name.length - 1);
+        segment = name.substring(1, name.length - 1);
       }
-      return ArgumentSegment(_name);
+      return ArgumentSegment(segment);
     } else {
       return NamedSegment(name);
     }
@@ -379,23 +379,20 @@ abstract class PathSegment {
   /// Path Segment is unknown.
   /// if isUnknown is true, calling
   /// unknown route of binding
-  bool get isUnknown => name == "*unknown";
+  bool get isUnknown => name == '*unknown';
 
   /// Is root of parent segment
   ///
   /// if client call `host/user`,
   /// path converting to 'host/user/*root'
   /// for only internal operations
-  bool get isRoot => name == "*root";
+  bool get isRoot => name == '*root';
 
   @override
-  bool operator ==(Object other) =>
-      other.runtimeType == runtimeType && (other as PathSegment).name == name;
+  bool operator ==(Object other) => other is PathSegment && other.name == name;
 
   @override
-  String toString() {
-    return name;
-  }
+  String toString() => name;
 
   @override
   int get hashCode => Object.hash(name, runtimeType);
@@ -411,9 +408,7 @@ class NamedSegment extends PathSegment {
   const NamedSegment(String name) : super._(name);
 
   @override
-  String toString() {
-    return "$name";
-  }
+  String toString() => name;
 }
 
 /// ```
@@ -427,9 +422,7 @@ class ArgumentSegment extends PathSegment {
   const ArgumentSegment(String name) : super._(name);
 
   @override
-  String toString() {
-    return "{$name}";
-  }
+  String toString() => '{$name}';
 }
 
 /// Happening [PathSegment] on during the call
@@ -448,10 +441,8 @@ abstract class CallingPathSegment {
   }
 
   /// create unknown path segment
-  factory CallingPathSegment.unknown() {
-    return CallingPathSegment(
-        segment: PathSegment("*unknown"), value: "*unknown");
-  }
+  factory CallingPathSegment.unknown() =>
+      CallingPathSegment(segment: PathSegment('*unknown'), value: '*unknown');
 
   const CallingPathSegment._({required this.value, required this.segment});
 
@@ -465,9 +456,7 @@ abstract class CallingPathSegment {
   final String value;
 
   @override
-  String toString() {
-    return value;
-  }
+  String toString() => value;
 }
 
 /// Happening [NamedSegment] on during the call
@@ -477,9 +466,7 @@ class NamedCallingSegment extends CallingPathSegment {
       : super._(segment: segment, value: segment.name);
 
   @override
-  String toString() {
-    return "CallingPath($value) match $segment";
-  }
+  String toString() => 'CallingPath($value) match $segment';
 }
 
 /// Happening [ArgumentSegment] on during the call
@@ -490,9 +477,7 @@ class ArgumentCallingSegment extends CallingPathSegment {
       : super._(value: value, segment: segment);
 
   @override
-  String toString() {
-    return "CallingPath({$value}) match $segment";
-  }
+  String toString() => 'CallingPath({$value}) match $segment';
 }
 
 /// Each object in the call tree is generated by a [CallingComponent].
@@ -521,7 +506,7 @@ class PathController {
   ///
   PathController.fromFullPath(this.calledPath)
       : notProcessedValues = List.from(Uri.parse(calledPath).pathSegments) {
-    next = notProcessedValues.isEmpty ? "*root" : notProcessedValues.first;
+    next = notProcessedValues.isEmpty ? '*root' : notProcessedValues.first;
     queryParameters = Uri.parse(calledPath).queryParameters;
   }
 
@@ -530,7 +515,7 @@ class PathController {
       : notProcessedValues = List.from(request.uri.pathSegments),
         calledPath = request.uri.path,
         queryParameters = request.uri.queryParameters {
-    next = notProcessedValues.isEmpty ? "*root" : notProcessedValues.first;
+    next = notProcessedValues.isEmpty ? '*root' : notProcessedValues.first;
   }
 
   ///
@@ -558,7 +543,7 @@ class PathController {
   final List<CallingPathSegment> processed = [];
 
   /// First segment to be processed
-  String next = "";
+  String next = '';
 
   /// Next segments to be processed,
   /// include current
@@ -570,7 +555,7 @@ class PathController {
     CallingPathSegment? result;
     if (notProcessedValues.isEmpty) {
       result =
-          CallingPathSegment(segment: PathSegment("*root"), value: "*root");
+          CallingPathSegment(segment: PathSegment('*root'), value: '*root');
     } else {
       next = notProcessedValues.first;
       if (segments.contains(PathSegment(next))) {
@@ -578,18 +563,17 @@ class PathController {
         result = NamedCallingSegment(segment: seg as NamedSegment);
       } else {
         var argSeg = segments.firstWhere(
-            (element) => element.runtimeType == ArgumentSegment, orElse: () {
-          return PathSegment("*unknown");
-        });
+            (element) => element.runtimeType == ArgumentSegment,
+            orElse: () => PathSegment('*unknown'));
 
         if (argSeg.isUnknown) {
-          result = NamedCallingSegment(segment: NamedSegment("*unknown"));
+          result = NamedCallingSegment(segment: NamedSegment('*unknown'));
         } else {
           result = ArgumentCallingSegment(
               value: next, segment: argSeg as ArgumentSegment);
 
           arguments[argSeg.name] = next;
-          next = "{${argSeg.name}}";
+          next = '{${argSeg.name}}';
         }
       }
       processed.add(result);
@@ -600,9 +584,9 @@ class PathController {
 
   ///
   Map<String, dynamic> toMap() => {
-        "path": calledPath,
-        "query_parameters": queryParameters,
-        "arguments": arguments
+        'path': calledPath,
+        'query_parameters': queryParameters,
+        'arguments': arguments
       };
 }
 
@@ -624,12 +608,10 @@ class SubRoute extends StatelessComponent {
   final bool? handleUnknownAsRoot;
 
   @override
-  Component build(BuildContext context) {
-    return Gateway(children: [
-      RouteBase(segment,
-          root: root, handleUnknownAsRoot: handleUnknownAsRoot, child: child)
-    ]);
-  }
+  Component build(BuildContext context) => Gateway(children: [
+        RouteBase(segment,
+            root: root, handleUnknownAsRoot: handleUnknownAsRoot, child: child)
+      ]);
 }
 
 ///
@@ -655,22 +637,22 @@ class Route extends StatelessComponent {
   final bool handleUnknownAsRoot;
 
   Binding _findAncestorGatewayOrRoute(BuildContext context) {
-    var _ancestor = context._parent;
-    while (_ancestor != null &&
-        (_ancestor is! GatewayBinding && _ancestor is! RouteBinding)) {
-      _ancestor = _ancestor._parent;
+    var ancestor = context._parent;
+    while (ancestor != null &&
+        (ancestor is! GatewayBinding && ancestor is! RouteBinding)) {
+      ancestor = ancestor._parent;
     }
-    if (_ancestor == null) {
-      throw Exception("Put Cron Job to route or routeTo or gateway");
+    if (ancestor == null) {
+      throw Exception('Put Cron Job to route or routeTo or gateway');
     }
-    return _ancestor;
+    return ancestor;
   }
 
   @override
   Component build(BuildContext context) {
-    var _anc = _findAncestorGatewayOrRoute(context);
+    var anc = _findAncestorGatewayOrRoute(context);
 
-    if (_anc is GatewayBinding) {
+    if (anc is GatewayBinding) {
       return RouteBase(route,
           root: root, child: child, handleUnknownAsRoot: handleUnknownAsRoot);
     } else {

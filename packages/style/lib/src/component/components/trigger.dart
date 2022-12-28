@@ -1,11 +1,12 @@
 /*
  * Copyright 2021 styledart.dev - Mehmet Yaz
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE,
+ *    Version 3 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *       https://www.gnu.org/licenses/agpl-3.0.en.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,12 +22,11 @@ part of '../../style_base.dart';
 class CallTrigger extends SingleChildCallingComponent {
   ///
   CallTrigger(
-      {required Component child,
+      {required super.child,
       this.responseTrigger,
       this.requestTrigger,
       this.ensureResponded = false,
-      this.ensureSent = false})
-      : super(child);
+      this.ensureSent = false});
 
   ///
   final void Function(Request request)? requestTrigger;
@@ -76,7 +76,7 @@ class _CallTriggerCalling extends Calling {
   FutureOr<Message> onCall(Request request) async {
     if (component.requestTrigger != null) {
       if (component.ensureResponded) {
-        _ensureResponded(request);
+        await _ensureResponded(request);
       } else {
         component.requestTrigger!.call(request);
       }
@@ -84,7 +84,7 @@ class _CallTriggerCalling extends Calling {
     if (component.responseTrigger != null) {
       var res = await binding.child.findCalling.calling(request);
       if (component.ensureSent) {
-        _ensureSent(res);
+        await _ensureSent(res);
       } else {
         component.responseTrigger!.call(request);
       }
@@ -115,12 +115,10 @@ class RequestTrigger extends StatelessComponent {
   final bool ensureResponded;
 
   @override
-  Component build(BuildContext context) {
-    return CallTrigger(
+  Component build(BuildContext context) => CallTrigger(
         child: child,
         requestTrigger: trigger,
         ensureResponded: ensureResponded);
-  }
 }
 
 ///
@@ -143,8 +141,6 @@ class ResponseTrigger extends StatelessComponent {
   final bool ensureSent;
 
   @override
-  Component build(BuildContext context) {
-    return CallTrigger(
+  Component build(BuildContext context) => CallTrigger(
         child: child, responseTrigger: trigger, ensureSent: ensureSent);
-  }
 }

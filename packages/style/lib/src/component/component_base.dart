@@ -1,11 +1,12 @@
 /*
  * Copyright 2021 styledart.dev - Mehmet Yaz
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE,
+ *    Version 3 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *       https://www.gnu.org/licenses/agpl-3.0.en.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -111,13 +112,16 @@ abstract class State<T extends StatefulComponent> {
   void initState() async {}
 }
 
+RandomGenerator _randomKey = RandomGenerator('[*]/l(20)');
+
 ///
+@immutable
 class Key {
   ///
   const Key(this.key);
 
   ///
-  Key.random() : key = getRandomId(20);
+  Key.random() : key = _randomKey.generateString();
 
   ///
   final String key;
@@ -136,14 +140,10 @@ class GlobalKey<T extends State<StatefulComponent>> extends Key {
   late final StatefulBinding binding;
 
   ///
-  T get state {
-    return binding._state as T;
-  }
+  T get state => binding._state as T;
 
   @override
-  bool operator ==(Object other) {
-    return other is GlobalKey<T> && other.key == key;
-  }
+  bool operator ==(Object other) => other is GlobalKey<T> && other.key == key;
 
   late final int _hashCode = Object.hash(key, T);
 
@@ -154,7 +154,7 @@ class GlobalKey<T extends State<StatefulComponent>> extends Key {
 /// TODO:
 abstract class CallingComponent extends Component {
   /// TODO:
-  const CallingComponent({Key? key}) : super(key: key);
+  const CallingComponent({super.key});
 
   @override
   CallingBinding createBinding();
@@ -178,7 +178,7 @@ abstract class CallingComponent extends Component {
 ///
 abstract class SingleChildCallingComponent extends CallingComponent {
   ///
-  SingleChildCallingComponent(this.child, {Key? key}) : super(key: key);
+  SingleChildCallingComponent({required this.child, super.key});
 
   ///
   final Component child;
@@ -221,9 +221,8 @@ abstract class CallingBinding extends Binding {
   TreeVisitor<Calling> callingVisitor(TreeVisitor<Calling> visitor);
 
   @override
-  TreeVisitor<Calling> visitCallingChildren(TreeVisitor<Calling> visitor) {
-    return callingVisitor(visitor);
-  }
+  TreeVisitor<Calling> visitCallingChildren(TreeVisitor<Calling> visitor) =>
+      callingVisitor(visitor);
 }
 
 ///
@@ -317,11 +316,11 @@ class MultiChildCallingBinding extends CallingBinding {
   ///
   @override
   void buildBinding() {
-    var _bindings = <Binding>[];
+    var bindings = <Binding>[];
     for (var element in component.children) {
-      _bindings.add(element.createBinding());
+      bindings.add(element.createBinding());
     }
-    children = _bindings;
+    children = bindings;
     for (var bind in children) {
       bind.attachToParent(this);
       bind.buildBinding();
@@ -358,4 +357,13 @@ class MultiChildCallingBinding extends CallingBinding {
     //   bind.visitChildren(visitor);
     // }
   }
+}
+
+class Builder extends StatelessComponent {
+  const Builder({super.key, required this.builder});
+
+  final Component Function(BuildContext context) builder;
+
+  @override
+  Component build(BuildContext context) => builder(context);
 }

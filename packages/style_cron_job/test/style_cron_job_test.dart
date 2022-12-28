@@ -1,11 +1,12 @@
 /*
  * Copyright 2021 styledart.dev - Mehmet Yaz
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE,
+ *    Version 3 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *       https://www.gnu.org/licenses/agpl-3.0.en.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,13 +22,9 @@ import 'package:test/scaffolding.dart';
 
 void main() {
   test("runner", () async {
-
-
     every.x(3).second.listen((time) {
       print("Hello World!");
     });
-
-
 
     var runner = CronJobController();
     var count = 0;
@@ -169,7 +166,8 @@ void main() {
     }
     stop.stop();
     print(
-        "each_day: ${time.add(Duration(seconds: i))} ms: ${stop.elapsedMilliseconds}");
+        "each_day: ${time.add(Duration(seconds: i))}"
+            " ms: ${stop.elapsedMilliseconds}");
     expect(tCount, 7);
   });
 

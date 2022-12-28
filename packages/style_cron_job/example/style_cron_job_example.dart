@@ -1,11 +1,12 @@
 /*
  * Copyright 2021 styledart.dev - Mehmet Yaz
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE,
+ *    Version 3 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *       https://www.gnu.org/licenses/agpl-3.0.en.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,10 +19,5 @@
 import 'package:style_cron_job/style_cron_job.dart';
 
 void main() {
-  every.x(10).second.listen((time) {
-    print(time);
-    // 2021-10-05 10:24:13.101423
-    // 2021-10-05 10:24:23.101423
-    // 2021-10-05 10:24:33.101420
-  });
+  every.x(10).second.listen(print);
 }

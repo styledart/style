@@ -1,11 +1,12 @@
 /*
  * Copyright 2021 styledart.dev - Mehmet Yaz
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE,
+ *    Version 3 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *       https://www.gnu.org/licenses/agpl-3.0.en.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,22 +18,41 @@
 
 part of '../../style_base.dart';
 
+///
+//ignore: prefer_void_to_null
 class NullBody extends Body<Null> {
+  ///
   NullBody() : super._(null);
+
+  @override
+  List<int> toBytes() => [0];
+}
+
+class StreamBody<T> extends Body<Stream<Body<T>>> {
+  StreamBody(Stream<Body<T>> stream, {this.deferredContentType})
+      : super._(stream);
+
+  ContentType? deferredContentType;
+
+  Stream<Body<T>> get stream => super.data;
+
+  Stream<List<int>> get streamBytes => stream.transform(
+          StreamTransformer<Body<T>, List<int>>.fromBind((p0) async* {
+        await for (var b in p0) {
+          yield b.toBytes();
+        }
+      }));
+
+  @override
+  List<int> toBytes() => throw UnimplementedError();
 }
 
 ///
-class Body<T> {
+abstract class Body<T> {
   ///
   Body._(this.data);
 
   /// Body create available body types
-  ///
-  /// Json format : JsonBody,
-  /// Uint8List : BinaryBody,
-  /// Text : HtmlBody
-  ///
-  /// To ensure text use TextBody
   ///
   factory Body(T data) {
     if (data is Body<T>) {
@@ -42,55 +62,75 @@ class Body<T> {
       return BinaryBody(data as Uint8List) as Body<T>;
     }
     if (data is Map<String, dynamic> || data is List) {
-      return JsonBody(data) as Body<T>;
+      return JsonBody(data as Object) as Body<T>;
     } else if (data is String) {
-      if (data.startsWith("<")) {
+      if (isHtml(data)) {
         return HtmlBody(data) as Body<T>;
       }
       return StringBody(data) as Body<T>;
+    } else if (data == null) {
+      return NullBody() as Body<T>;
     }
 
-    return Body._(data);
+    return NullBody() as Body<T>;
   }
 
   ///
   T data;
 
+  /// Text content is html
+  @visibleForTesting
+  static bool isHtml(String value) {
+    var i = 0;
+    while (true) {
+      if (i >= value.length) return false;
+      if (value[i] == '<') {
+        return true;
+      } else if (value[i] != '\n' && value[i] != ' ') {
+        return false;
+      }
+      i++;
+    }
+  }
+
   ///
   @override
-  String toString() {
-    return data.toString();
-  }
+  String toString() => data.toString();
+
+  List<int> toBytes();
 }
 
 ///
 class JsonBody extends Body<dynamic> {
   ///
-  JsonBody(dynamic data)
+  JsonBody(Object data)
       : assert(data is List || data is Map<String, dynamic>),
         super._(data);
 
   ///
-  dynamic operator [](covariant String key) {
-    return data[key];
-  }
+  dynamic operator [](covariant String key) =>
+      (data as Map<String, dynamic>)[key];
 
   ///
   void operator []=(covariant String key, dynamic value) {
-    data[key] = value;
+    (data as Map<String, dynamic>)[key] = value;
   }
 
   ///
   @override
-  String toString() {
-    return json.encode(data);
-  }
+  String toString() => json.encode(data);
+
+  @override
+  List<int> toBytes() => utf8.encode(toString());
 }
 
 ///
 class StringBody extends Body<String> {
   ///
   StringBody(String data) : super._(data);
+
+  @override
+  List<int> toBytes() => utf8.encode(data);
 }
 
 ///
@@ -105,14 +145,15 @@ class BinaryBody extends Body<Uint8List> {
   BinaryBody(Uint8List data) : super._(data);
 
   ///
-  int operator [](covariant int key) {
-    return data[key];
-  }
+  int operator [](covariant int key) => data[key];
 
   ///
   void operator []=(covariant int key, covariant int value) {
     data[key] = value;
   }
+
+  @override
+  List<int> toBytes() => data;
 }
 
 ///
@@ -155,50 +196,64 @@ abstract class Message {
   /// Example: The agent of all http/(s) requests received by the server is [Agent.http]
   Agent get agent => context.agent;
 
+  /// Http GET method
   ContentType? contentType;
 
+  ///
   Map<String, dynamic> toMap() => {
-        if (auth != null) "token": auth!.toMap(),
-        "path": path.toMap(),
-        "agent": agent.index,
-        "cause": cause.index,
-        "type": runtimeType,
-        "create": context.requestTime.millisecondsSinceEpoch
+        if (auth != null) 'token': auth!.toMap(),
+        'path': path.toMap(),
+        'agent': agent.index,
+        'cause': cause.index,
+        'create': context.requestTime.millisecondsSinceEpoch
       };
 
 // TODO: Call Path Builder
 // TODO: Call Path
 
-// /// Data access state of current context
-// ///
-// /// At the point where the request is handled , not only endpoint
-// DataAccess get dataAccess => context.currentContext.dataAccess;
 }
 
 ///
 enum Methods {
-  //ignore_for_file: constant_identifier_names , public_member_api_docs
+  //ignore_for_file: constant_identifier_names
+  /// Http GET method
   GET,
+
+  /// Http POST method
   POST,
+
+  /// Http DELETE method
   DELETE,
+
+  /// Http PUT method
   PUT,
+
+  /// Http PATCH method
   PATCH,
+
+  /// Http OPTIONS method
   OPTIONS,
+
+  /// Http HEAD method
   HEAD,
+
+  /// Http CONNECT method
   CONNECT,
+
+  /// Http TRACE method
   TRACE
 }
 
 var _m = [
-  "GET",
-  "POST",
-  "DELETE",
-  "PUT",
-  "PATCH",
-  "OPTIONS",
-  "HEAD",
-  "CONNECT",
-  "TRACE"
+  'GET',
+  'POST',
+  'DELETE',
+  'PUT',
+  'PATCH',
+  'OPTIONS',
+  'HEAD',
+  'CONNECT',
+  'TRACE'
 ];
 
 /// All requests from client or in-server
@@ -228,6 +283,7 @@ abstract class Request extends Message {
       this.method})
       : super(body: body, context: context, contentType: contentType);
 
+  ///
   Request.fromRequest(Request request)
       : headers = request.headers,
         cookies = request.cookies,
@@ -261,16 +317,35 @@ abstract class Request extends Message {
     }
   }
 
+  ///
   Map<String, dynamic> get arguments => path.arguments;
 
+  ///
   Methods? method;
 
+  ///
   AccessToken? get token => context.accessToken;
 
   ///
   set token(AccessToken? token) {
     if (token == null) return;
     context.accessToken = token;
+  }
+
+  ///
+  FutureOr<void> verifyTokenWith(Authorization authorization) async {
+    try {
+      if (context.tokenVerified) {
+        return;
+      }
+      if (token == null) {
+        throw UnauthorizedException();
+      }
+      await authorization.verifyToken(token!);
+      context.tokenVerified = true;
+    } on Exception {
+      rethrow;
+    }
   }
 
   ///
@@ -282,37 +357,25 @@ abstract class Request extends Message {
 
   ///
   Response response(Body? body,
-      {int? statusCode,
-      Map<String, dynamic>? headers,
-      ContentType? contentType}) {
-    // if (body is DbResult) {
-    //   var h = (headers?..addAll(body.headers ?? {})) ?? {...?body.headers};
-    //   return Response(
-    //       body: Body(body.data),
-    //       request: this,
-    //       statusCode: body.statusCode ?? statusCode ?? 200,
-    //       additionalHeaders: h,
-    //       contentType: contentType);
-    // }
+          {int? statusCode,
+          Map<String, dynamic>? headers,
+          ContentType? contentType}) =>
+      Response(
+          body: Body(body),
+          request: this,
+          statusCode: statusCode ?? 200,
+          additionalHeaders: headers,
+          contentType: contentType);
 
-    return Response(
-        body: /*body is Body ? body :*/ Body(body),
-        request: this,
-        statusCode: statusCode ?? 200,
-        additionalHeaders: headers,
-        contentType: contentType);
-  }
-
+  ///
   factory Request.fromMap(
-      Map<String, dynamic> map, HttpRequest base, RequestContext context) {
-    //TODO: OTHER
-    return HttpStyleRequest(
-        baseRequest: base,
-        body: map["body"],
-        method: Methods.values[map["method"]],
-        context: context,
-        contentType: ContentType.parse(map["content_type"]));
-  }
+          Map<String, dynamic> map, HttpRequest base, RequestContext context) =>
+      HttpStyleRequest(
+          baseRequest: base,
+          body: map['body'] as Body?,
+          method: Methods.values[map['method'] as int],
+          context: context,
+          contentType: ContentType.parse(map['content_type'] as String));
 }
 
 ///
@@ -347,7 +410,7 @@ class Response extends Message {
   }
 
   ///
-  ContentType? get contentType;
+  //ContentType? get contentType;
 
   ///
   Completer<bool>? _waiter;
@@ -401,6 +464,9 @@ class HttpStyleRequest extends Request {
     return m;
   }
 
+  @override
+  Methods get method => super.method!;
+
   ///
   final HttpRequest baseRequest;
 
@@ -409,12 +475,8 @@ class HttpStyleRequest extends Request {
       {required HttpRequest req,
       required dynamic body,
       required BuildContext context}) async {
-    // print("AUTH:::: "
-    //     "${req.uri.queryParameters["token"]
-    //     ?? req.headers[HttpHeaders.authorizationHeader]}");
-
     var q = req.uri.queryParameters;
-    var t = req.headers[HttpHeaders.authorizationHeader]?.first ?? q["token"];
+    var t = req.headers[HttpHeaders.authorizationHeader]?.first ?? q['token'];
     AccessToken? token;
     if (t != null && context.hasService<Authorization>()) {
       token = await Authorization.of(context).decryptToken(t);
@@ -431,11 +493,13 @@ class HttpStyleRequest extends Request {
             // TODO: Look cookies for token
             // createContext: context,
             pathController: PathController.fromHttpRequest(req)),
-        body: body);
+        body: body as Body?);
   }
 }
 
+///
 class CronJobRequest extends Request {
+  ///
   CronJobRequest(
       {required DateTime time, required String path, AccessToken? token})
       : super(
@@ -458,52 +522,201 @@ class NoResponseRequired extends Response {
   }) : super(statusCode: -1, request: request, additionalHeaders: {});
 }
 
-// ///
-// class HttpResponse extends Response {
-//   ///
-//   HttpResponse(
-//       {required RequestContext context,
-//       required String fullPath,
-//       required Map<String, dynamic> body})
-//       : super(context: context, fullPath: fullPath, body: body);
-// }
-//
-// ///
-// class WsRequest extends Request {
-//   ///
-//   WsRequest(
-//       {required RequestContext context, required Map<String, dynamic> body})
-//       : super._(context: context, body: body, accepts: [ContentType.json]);
-// }
-//
-// // ///
-// // class WsResponse extends Response{
-// //   ///
-// //   WsResponse(
-// //       {required RequestContext context,
-// //       required String fullPath,
-// //       required Map<String, dynamic> body})
-// //       : super._(context: context, fullPath: fullPath, body: body);
-// // }
-//
-// ///
-// class InternalRequest extends Request {
-//   ///
-//   InternalRequest({required RequestContext context, required dynamic body})
-//       : super._(context: context, body: body, accepts: [
-//           ContentType.json,
-//           ContentType.text,
-//           ContentType.html,
-//           ContentType.binary
-//         ]);
-// }
+///
+mixin WebSocketMessage {
+  ///
+  WebSocketConnection get connection;
 
-// ///
-// class InternalResponse extends Response {
-//   ///
-//   InternalResponse(
-//       {required RequestContext context,
-//       required String fullPath,
-//       required Map<String, dynamic> body})
-//       : super._(context: context, fullPath: fullPath, body: body);
-// }
+  ///
+  String get id;
+
+  ///
+  String? get eventIdentifier;
+}
+
+///
+class WebSocketRequest extends Request with WebSocketMessage {
+  ///
+  WebSocketRequest(
+      {Map<String, List<String>>? headers,
+      required String path,
+      required String id,
+      String? eventIdentifier,
+      required WebSocketConnection connection,
+      Body? body,
+      List<Cookie>? cookies,
+      Methods? method})
+      : _id = id,
+        _connection = connection,
+        _eventIdentifier = eventIdentifier,
+        super(
+          cookies: cookies,
+          body: body,
+          method: method,
+          contentType: ContentType.json,
+          headers: headers,
+          context: RequestContext(
+              requestTime: DateTime.now(),
+              cause: Cause.clientRequest,
+              agent: Agent.ws,
+              pathController: PathController.fromFullPath(path)),
+        );
+
+  ///
+  @override
+  Response response(Body? body,
+          {int? statusCode,
+          Map<String, dynamic>? headers,
+          ContentType? contentType,
+          String? customResponseId,
+          String? customEventIdentifier}) =>
+      WebSocketResponse(
+        body: body,
+        request: this,
+        connection: connection,
+        statusCode: statusCode ?? 200,
+        headers: headers,
+        id: customResponseId ?? id,
+        eventIdentifier: customEventIdentifier ?? eventIdentifier,
+      );
+
+  final WebSocketConnection _connection;
+
+  final String _id;
+
+  final String? _eventIdentifier;
+
+  @override
+  WebSocketConnection get connection => _connection;
+
+  @override
+  String get id => _id;
+
+  @override
+  String? get eventIdentifier => _eventIdentifier;
+}
+
+///
+class WebSocketResponse extends Response with WebSocketMessage {
+  ///
+  WebSocketResponse(
+      {Map<String, dynamic>? headers,
+      required String id,
+      String? eventIdentifier,
+      required WebSocketConnection connection,
+      required Body? body,
+      required int statusCode,
+      required WebSocketRequest request})
+      : _id = id,
+        _connection = connection,
+        _eventIdentifier = eventIdentifier,
+        super(
+          statusCode: statusCode,
+          request: request,
+          additionalHeaders: headers,
+          body: body,
+          contentType: ContentType.json,
+        );
+
+  final WebSocketConnection _connection;
+
+  final String _id;
+
+  final String? _eventIdentifier;
+
+  final responseCreated = DateTime.now();
+
+  ///
+  @override
+  WebSocketConnection get connection => _connection;
+
+  @override
+  String get id => _id;
+
+  @override
+  String? get eventIdentifier => _eventIdentifier;
+
+  ///
+  @override
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'path': path.calledPath,
+        if (body != null) 'body': body!.data,
+        'cause': cause.index,
+        'create_time': context.requestTime.millisecondsSinceEpoch,
+        'response_time': responseCreated.millisecondsSinceEpoch,
+      };
+}
+
+///
+class WebSocketServerRequest with WebSocketMessage {
+  ///
+  WebSocketServerRequest(
+      {String? customID,
+      required String eventName,
+      required WebSocketConnection connection,
+      required Body? body})
+      : _id = customID ??
+            connection.webSocketService.messageIdGenerator.generateString(),
+        _connection = connection,
+        _eventIdentifier = eventName,
+        _body = body;
+
+  ///
+  Future<WebSocketClientResponse> sendAndWaitResponse() async {
+    throw TimeoutException();
+  }
+
+  final WebSocketConnection _connection;
+
+  final String _id;
+
+  final String? _eventIdentifier;
+
+  final Body? _body;
+
+  Body? get body => _body;
+
+  @override
+  WebSocketConnection get connection => _connection;
+
+  @override
+  String get id => _id;
+
+  @override
+  String? get eventIdentifier => _eventIdentifier;
+}
+
+///
+class WebSocketClientResponse with WebSocketMessage {
+  ///
+  WebSocketClientResponse({
+    required String id,
+    required String eventName,
+    required WebSocketConnection connection,
+    required Body? body,
+  })  : _id = id,
+        _connection = connection,
+        _eventIdentifier = eventName,
+        _body = body;
+
+  final WebSocketConnection _connection;
+
+  final String _id;
+
+  final String? _eventIdentifier;
+
+  final Body? _body;
+
+  Body? get body => _body;
+
+  ///
+  @override
+  WebSocketConnection get connection => _connection;
+
+  @override
+  String get id => _id;
+
+  @override
+  String? get eventIdentifier => _eventIdentifier;
+}

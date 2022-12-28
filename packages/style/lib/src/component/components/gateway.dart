@@ -1,11 +1,12 @@
 /*
  * Copyright 2021 styledart.dev - Mehmet Yaz
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE,
+ *    Version 3 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *       https://www.gnu.org/licenses/agpl-3.0.en.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -42,22 +43,22 @@ class GatewayBinding extends MultiChildCallingBinding {
   void attachToParent(Binding parent) {
     super.attachToParent(parent);
 
-    var _route = findAncestorBindingOfType<RouteBinding>();
-    var _service = findAncestorBindingOfType<ServerBinding>();
+    var route = findAncestorBindingOfType<RouteBinding>();
+    var service = findAncestorBindingOfType<ServerBinding>();
 
-    if (_route == null && _service == null) {
-      throw UnsupportedError("Each Gateway must ancestor of Service or Route"
-          "\nwhere:$_errorWhere");
+    if (route == null && service == null) {
+      throw UnsupportedError('Each Gateway must ancestor of Service or Route'
+          '\nwhere:$_errorWhere');
     }
   }
 
   @override
   void buildBinding() {
     super.buildBinding();
-    var _callings = <PathSegment, Binding>{};
+    var callings = <PathSegment, Binding>{};
     PathSegment? arg;
     for (var child in children) {
-      var _childCalling = child.visitCallingChildren(TreeVisitor((visitor) {
+      var childCalling = child.visitCallingChildren(TreeVisitor((visitor) {
         if (visitor.currentValue is GatewayCalling) {
           visitor.stop();
           return;
@@ -66,13 +67,13 @@ class GatewayBinding extends MultiChildCallingBinding {
           visitor.stop();
         }
       }));
-      if (_childCalling.result == null) {
-        throw UnsupportedError("Each Gateway child (or Service child) must have"
-            "[Route] in the tree."
-            "\nwhere: child ${child.component} in $_errorWhere");
+      if (childCalling.result == null) {
+        throw UnsupportedError('Each Gateway child (or Service child) must have'
+            '[Route] in the tree.'
+            '\nwhere: child ${child.component} in $_errorWhere');
       }
-      if (_childCalling.result is GatewayCalling) {
-        var segments = ((_childCalling.result! as GatewayCalling).binding
+      if (childCalling.result is GatewayCalling) {
+        var segments = ((childCalling.result! as GatewayCalling).binding
                 as GatewayBinding)
             .calling
             .childrenBinding;
@@ -80,35 +81,35 @@ class GatewayBinding extends MultiChildCallingBinding {
         for (var seg in segments.entries) {
           if (seg.key.isArgument) {
             if (arg != null) {
-              throw Exception("Gateways allow only once argument segment."
-                  "\nbut found $arg and"
-                  " $seg\nWHERE: $_errorWhere");
+              throw Exception('Gateways allow only once argument segment.'
+                  '\nbut found $arg and'
+                  ' $seg\nWHERE: $_errorWhere');
             } else {
               arg = seg.key;
             }
           }
-          _callings[seg.key] = child;
+          callings[seg.key] = child;
         }
       } else {
         var seg =
-            (_childCalling.result! as RouteCalling).binding.component.segment;
+            (childCalling.result! as RouteCalling).binding.component.segment;
 
         if (seg.isArgument) {
           if (arg != null) {
-            throw Exception("Gateways allow only once argument segment."
-                " \nbut found $arg and"
-                " $seg\nWHERE: $_errorWhere");
+            throw Exception('Gateways allow only once argument segment.'
+                ' \nbut found $arg and'
+                ' $seg\nWHERE: $_errorWhere');
           } else {
             arg = seg;
           }
         }
-        _callings[seg] = child;
+        callings[seg] = child;
       }
     }
     //
     // print(
     //     "${_callings.map((key, value) => MapEntry(key, value.))}");
-    calling.childrenBinding = _callings;
+    calling.childrenBinding = callings;
   }
 }
 

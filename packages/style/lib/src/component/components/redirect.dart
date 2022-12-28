@@ -1,11 +1,12 @@
 /*
  * Copyright 2021 styledart.dev - Mehmet Yaz
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE,
+ *    Version 3 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *       https://www.gnu.org/licenses/agpl-3.0.en.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -33,22 +34,24 @@ class Redirect extends Endpoint {
     var uri = Uri.parse(path);
 
     if (uri.hasScheme) {
-      if (uri.scheme.startsWith("http")) {
+      if (uri.scheme.startsWith('http')) {
         if (request is HttpStyleRequest) {
           var uriString = uri.toString();
-          var regex = RegExp(r"%7B([^}]*)%7D");
+          var regex = RegExp(r'%7B([^}]*)%7D');
           if (regex.hasMatch(uriString)) {
             uriString = uriString.replaceAllMapped(regex, (match) {
               var matched = uriString.substring(match.start, match.end);
               matched = matched.substring(3, matched.length - 3);
-              return request.path.arguments[matched] ?? "null";
+              return request.path.arguments[matched] ?? 'null';
             });
           }
 
           request.baseRequest.response
             ..statusCode = 301
-            ..headers.add("Location", uriString)
-            ..close();
+            ..headers.add('Location', uriString);
+
+          await request.baseRequest.response.close();
+
           return NoResponseRequired(request: request);
         } else {
           //var req = await HttpClient().getUrl(uri);
@@ -56,18 +59,18 @@ class Redirect extends Endpoint {
           //var resBodyList = await res.toList();
           //var resBodyBinary = mergeList(resBodyList as List<Uint8List>);
           //var resBody = utf8.decode(resBodyBinary);
-          throw "un";
+          throw 'un';
         }
       } else {
-        throw "un";
+        throw 'un';
       }
     } else {
       var segments = List<String>.from(uri.pathSegments);
 
-      if (segments.first != "..") {
+      if (segments.first != '..') {
         var service = context.findAncestorServiceByName(segments.first);
         if (service == null) {
-          throw "Service Not Found";
+          throw 'Service Not Found';
         }
         segments.removeAt(0);
         request.path.notProcessedValues.addAll(segments);
@@ -76,12 +79,12 @@ class Redirect extends Endpoint {
       }
 
       var nBinding = context;
-      while (segments.first == "..") {
+      while (segments.first == '..') {
         var n = nBinding.findAncestorBindingOfType<GatewayBinding>();
         var s = nBinding.findAncestorBindingOfType<ServerBinding>();
         if (n == null && s == null) {
-          throw Exception("Path No Found"
-              " : ${request.path.next} in ${nBinding.component}");
+          throw Exception('Path No Found'
+              ' : ${request.path.next} in ${nBinding.component}');
         }
         nBinding = n as GatewayBinding;
         segments.removeAt(0);
@@ -96,9 +99,7 @@ class Redirect extends Endpoint {
   }
 
   @override
-  FutureOr<Message> onCall(Request request) {
-    return redirect(request: request, path: path, context: context);
-  }
+  FutureOr<Message> onCall(Request request) => redirect(request: request, path: path, context: context);
 }
 
 ///
@@ -127,13 +128,11 @@ class AuthRedirect extends StatelessComponent {
   final String authorized, unauthorized;
 
   @override
-  Component build(BuildContext context) {
-    return GeneratedRedirect(generate: (req) async {
+  Component build(BuildContext context) => GeneratedRedirect(generate: (req) async {
       if (req.context.accessToken != null) {
         return authorized;
       } else {
         return unauthorized;
       }
     });
-  }
 }

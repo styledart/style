@@ -35,3 +35,7 @@
 ## 1.0.2+7
 
 - sdk version changed to 2.14
+
+## 1.0.2+8
+
+- get started added

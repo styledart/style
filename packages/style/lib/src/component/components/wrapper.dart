@@ -1,11 +1,12 @@
 /*
  * Copyright 2021 styledart.dev - Mehmet Yaz
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE,
+ *    Version 3 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *       https://www.gnu.org/licenses/agpl-3.0.en.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,11 +22,11 @@ part of '../../style_base.dart';
 class ExceptionWrapper<T extends Exception> extends StatelessComponent {
   ///
   factory ExceptionWrapper(
-      {required Component child,
-      required ExceptionEndpoint<T> exceptionEndpoint,
-      Key? key}) {
-    return ExceptionWrapper.fromMap(child: child, map: {T: exceptionEndpoint});
-  }
+          {required Component child,
+          required ExceptionEndpoint<T> exceptionEndpoint,
+          Key? key}) =>
+      ExceptionWrapper.fromMap(
+          child: child, map: {T: exceptionEndpoint}, key: key);
 
   ///
   ExceptionWrapper.fromMap(
@@ -41,14 +42,10 @@ class ExceptionWrapper<T extends Exception> extends StatelessComponent {
   final Map<Type, ExceptionEndpoint> _map;
 
   @override
-  Component build(BuildContext context) {
-    return child;
-  }
+  Component build(BuildContext context) => child;
 
   @override
-  StatelessBinding createBinding() {
-    return _ExceptionWrapperBinding(this);
-  }
+  StatelessBinding createBinding() => _ExceptionWrapperBinding(this);
 }
 
 class _ExceptionWrapperBinding extends StatelessBinding {
@@ -61,23 +58,23 @@ class _ExceptionWrapperBinding extends StatelessBinding {
         InternalServerError: DefaultExceptionEndpoint<InternalServerError>()
       });
     }
-    var _bindings = <Type, ExceptionEndpointCallingBinding>{};
+    var bindings = <Type, ExceptionEndpointCallingBinding>{};
     for (var w in component._map.entries) {
-      _bindings[w.key] = w.value.createBinding();
+      bindings[w.key] = w.value.createBinding();
     }
     _exceptionHandler ??= ExceptionHandler({});
-    exceptionHandler._map.addAll(_bindings);
+    exceptionHandler._map.addAll(bindings);
     var p = _parent;
     while (p != null && p._exceptionHandler == null) {
       p._exceptionHandler = _exceptionHandler;
       p = p._parent;
     }
-    for (var _b in _bindings.values) {
-      _b.attachToParent(this);
-      _b.buildBinding();
+    for (var b in bindings.values) {
+      b.attachToParent(this);
+      b.buildBinding();
     }
-    for (var _b in _bindings.values) {
-      var r = _b.visitChildren(TreeVisitor((visitor) {
+    for (var b in bindings.values) {
+      var r = b.visitChildren(TreeVisitor((visitor) {
         if (visitor.currentValue.component
                 is PathSegmentCallingComponentMixin ||
             visitor.currentValue is GatewayBinding) {
@@ -85,10 +82,10 @@ class _ExceptionWrapperBinding extends StatelessBinding {
         }
       }));
       if (r.result != null) {
-        throw Exception("[exception] tree must ends with Endpoint"
-            "\nAnd must not have a new route\n"
+        throw Exception('[exception] tree must ends with Endpoint'
+            '\nAnd must not have a new route\n'
             "Ensure exception/exception's any child not [Route, RouteTo, GateWay]\n"
-            "WHERE: $_errorWhere");
+            'WHERE: $_errorWhere');
       }
     }
 

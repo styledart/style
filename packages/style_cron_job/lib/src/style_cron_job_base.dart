@@ -1,11 +1,12 @@
 /*
  * Copyright 2021 styledart.dev - Mehmet Yaz
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE,
+ *    Version 3 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *       https://www.gnu.org/licenses/agpl-3.0.en.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,6 +17,8 @@
  */
 
 import 'dart:async';
+
+import 'package:meta/meta.dart';
 
 /// CronJobController manages multiple cron jobs
 /// processes not started before calling [start]
@@ -77,6 +80,7 @@ typedef CronCallback = FutureOr<void> Function(DateTime time);
 
 /// Runner for each cron jobs
 /// [onCall] call in period
+@immutable
 class CronJobRunner {
   CronJobRunner({required this.period, required this.onCall});
 

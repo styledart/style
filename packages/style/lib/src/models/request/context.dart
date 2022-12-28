@@ -1,11 +1,12 @@
 /*
  * Copyright 2021 styledart.dev - Mehmet Yaz
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE,
+ *    Version 3 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *       https://www.gnu.org/licenses/agpl-3.0.en.html
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,7 +27,8 @@ class RequestContext {
       required this.cause,
       required this.agent,
       required this.pathController,
-      this.accessToken});
+      this.accessToken,
+      this.tokenVerified = false});
 
   /// Path-Call Controller
   PathController pathController;
@@ -41,6 +43,9 @@ class RequestContext {
   /// [Request] agent.
   /// Example: The agent of all http/(s) requests received by the server is [Agent.http]
   Agent agent;
+
+  ///
+  bool tokenVerified;
 
   /// Access Token
   ///
