@@ -15,60 +15,29 @@
  * limitations under the License.
  *
  */
+import 'dart:convert';
+import 'dart:typed_data';
 
 import '../style_query.dart';
 
+/// Client creates a new access or query.
 ///
-class CommonLanguage extends AccessLanguage {
-  @override
-  String get name => "common";
-}
+/// Clients can converts to desired language
+///
+/// Server can create a new access or query from a client message.
+///
+/// Server can convert to desired language
+///
+class CommonLanguage extends AccessLanguage {}
 
 ///
 class CommonLanguageDelegate extends AccessLanguageDelegate<CommonLanguage> {
-  @override
-  CreateData<CommonLanguage> createFromRaw(Map<String, dynamic> raw) {
-    return CommonCreate(raw);
-  }
+  ///
+  const CommonLanguageDelegate() : super('common');
 
   @override
-  Fields<CommonLanguage> fieldsFromRaw(Map<String, dynamic> raw) {
-    return CommonFields(
-        excludeKeys: raw['exclude'], includeKeys: raw['include']);
-  }
-
-  @override
-  Access<CommonLanguage> fromCommonLanguage(CommonAccess access) {
+  CommonAccess fromCommonLanguage(CommonAccess access) {
     return access;
-  }
-
-  @override
-  Pipeline<CommonLanguage> pipelineFromRaw(Map<String, dynamic> raw) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Query<CommonLanguage> queryFromRaw(Map<String, dynamic> raw) {
-    var filter = raw['filter'];
-
-    FilterExpression? expression;
-
-    if (filter is Map) {
-      if (filter.length > 1) {
-
-
-
-        expression = AndExpression([]);
-      }
-
-
-      if (filter.containsKey('or') || filter.containsKey('and')){
-
-      }
-    }
-
-
-    return CommonQuery(identifier: raw['identifier']);
   }
 
   @override
@@ -77,114 +46,188 @@ class CommonLanguageDelegate extends AccessLanguageDelegate<CommonLanguage> {
   }
 
   @override
-  UpdateData<CommonLanguage> updateFromRaw(Map<String, dynamic> raw) {
-    return CommonUpdate(raw);
+  CommonAccess accessFromJson(JsonMap jsonMap) {
+    return CommonAccess.fromJson(jsonMap);
+  }
+
+  @override
+  CommonQuery queryFromJson(JsonMap jsonMap) {
+    return CommonQuery.fromJson(jsonMap);
+  }
+
+  @override
+  CommonCreateData createDataFromJson(JsonMap jsonMap) {
+    return CommonCreateData(jsonMap);
+  }
+
+  @override
+  CommonUpdate updateDataFromJson(JsonMap jsonMap) {
+    return CommonUpdate(jsonMap);
   }
 }
 
 ///
 class CommonQuery extends Query<CommonLanguage> {
   ///
-  CommonQuery({this.identifier,
-    FilterExpression? filter,
-    Map<String, Sorting>? sort,
-    this.offset,
-    this.limit,
-    this.fields})
-      : sortExpression = SortExpression(sort ?? {});
+  CommonQuery(
+      {this.identifier,
+      FilterExpression? filter,
+      Map<String, Sorting>? sort,
+      this.offset,
+      this.limit,
+      this.fields})
+      : sortExpression = CommonSort(sort ?? <String, Sorting>{});
+
+  ///
+  factory CommonQuery.fromJson(JsonMap jsonMap) {
+    return CommonQuery(
+        identifier: jsonMap['identifier'] as String?,
+        sort: jsonMap['sort'] == null
+            ? null
+            : (jsonMap['sort'] as JsonMap).map(
+                (key, value) => MapEntry(key, Sorting.values[value as int])),
+        offset: jsonMap['offset'] as int?,
+        limit: jsonMap['limit'] as int?);
+  }
 
   ///
   @override
   int? limit, offset;
 
   @override
-  JsonMap toMap() =>
-      {
-        if (identifier != null) "id": identifier,
-        if (offset != null) "offset": offset,
-        if (limit != null) "limit": limit,
-        if (fields != null) 'fields': fields!.toMap(),
-        if (filter != null) 'filter': filter!.toMap(),
-        if (sortExpression != null) 'sort': sortExpression!.sorts
-      };
-
-  @override
   String? identifier;
 
   @override
-  Fields<CommonLanguage>? fields;
+  Fields? fields;
 
   @override
   FilterExpression? filter;
 
   @override
-  SortExpression<AccessLanguage>? sortExpression;
+  SortExpression<CommonLanguage>? sortExpression;
+
+  @override
+  Uint8List toBinary() {
+    // TODO: implement toBinary
+    throw UnimplementedError();
+  }
+
+  @override
+  JsonMap toJson() {
+    // TODO: implement toJson
+    throw UnimplementedError();
+  }
+}
+
+///
+class CommonSort extends SortExpression<CommonLanguage> {
+  ///
+  CommonSort(this.sorts) : super();
+
+  @override
+  Map<String, Sorting> sorts;
 }
 
 ///
 class CommonUpdate extends UpdateData<CommonLanguage> {
   ///
-  CommonUpdate(this._data);
+  CommonUpdate(this.map);
 
-  final JsonMap _data;
+  ///
+  JsonMap map;
 
   @override
-  UpdateDifference<T>? difference<T>(String key) {
-    throw UnimplementedError();
+  JsonMap toJson() {
+    return map;
   }
 
   @override
-  JsonMap toMap() => _data;
+  Uint8List toBinary() {
+    return utf8.encode(jsonEncode(map)) as Uint8List;
+  }
 
   @override
-  List<String> keysRenamed() => throw UnimplementedError();
-
-  @override
-  List<String> fieldsChanged() => throw UnimplementedError();
-
-  @override
-  List<String> fieldsRemoved() => throw UnimplementedError();
-
-  @override
-  Map<String, UpdateDifference<CommonLanguage>> differences() =>
-      throw UnimplementedError();
+  Map<String, List<UpdateDifference>> differences() {
+    throw UnimplementedError();
+  }
 }
 
 ///
-class CommonCreate extends CreateData<CommonLanguage> {
+class CommonCreateData extends CreateData<CommonLanguage> {
   ///
-  CommonCreate(this._data);
+  CommonCreateData(this._data);
+
+  ///
+  static String idField = 'id';
 
   final JsonMap _data;
 
   @override
-  JsonMap toMap() => _data;
+  JsonMap toJson() => _data;
 
   @override
-  String get id => throw UnimplementedError();
+  String get id => '${_data[idField]}';
+
+  @override
+  Uint8List toBinary() => _data.toBinary();
+
+  @override
+  JsonMap get data => _data;
 }
 
 ///
 class CommonAccess extends Access<CommonLanguage> {
   ///
-  CommonAccess({required super.type,
-    required super.collection,
-    CommonQuery? super.query,
-    CommonCreate? super.create,
-    CommonUpdate? super.update,
-    OperationSettings? settings})
-  /* : super(
-            type: type,
-            collection: collection,
-            settings: settings,
-            query: query,
-            create: create,
-            update: update)*/
-  ;
+  CommonAccess(
+      {required super.type,
+      required super.collection,
+      CommonQuery? super.query,
+      OperationSettings? settings,
+      super.pipeline,
+      super.createData,
+      super.updateData});
+
+  ///
+  factory CommonAccess.fromBinary(Uint8List binary) {
+    return CommonAccess.fromJson(binary.toJson());
+  }
+
+  ///
+  factory CommonAccess.fromJson(JsonMap jsonMap) {
+    return CommonAccess(
+        type: AccessType.values[jsonMap['type'] as int],
+        collection: jsonMap['collection'] as String,
+        query: jsonMap['query'] != null
+            ? CommonQuery.fromJson(jsonMap['query'] as JsonMap)
+            : null,
+        settings: jsonMap['settings'] == null
+            ? null
+            : OperationSettings(jsonMap['settings'] as JsonMap),
+        createData: jsonMap['createData'] == null
+            ? null
+            : CommonCreateData(jsonMap['createData'] as JsonMap),
+        updateData: CommonUpdate(jsonMap['updateData'] as JsonMap));
+  }
+
+  @override
+  CommonQuery? get query => super.query as CommonQuery?;
+
+  @override
+  JsonMap toJson() {
+    return {
+      'type': type.index,
+      'collection': collection,
+      if (query != null) 'query': query?.toJson(),
+      if (settings != null) 'settings': settings?.settings,
+      if (pipeline != null) 'pipeline': pipeline?.toJson(),
+      if (createData != null) 'createData': createData?.toJson(),
+      if (updateData != null) 'updateData': updateData?.toJson()
+    };
+  }
 }
 
 ///
-class CommonFields extends Fields<CommonLanguage> {
+class CommonFields extends Fields {
   ///
   CommonFields({this.includeKeys, this.excludeKeys});
 
@@ -195,5 +238,5 @@ class CommonFields extends Fields<CommonLanguage> {
   final List<String>? includeKeys;
 
   @override
-  JsonMap toMap() => {'include': includeKeys, 'exclude': excludeKeys};
+  JsonMap toJson() => {'include': includeKeys, 'exclude': excludeKeys};
 }

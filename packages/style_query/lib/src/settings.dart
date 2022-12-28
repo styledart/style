@@ -19,7 +19,11 @@
 import '../style_query.dart';
 
 /// Db Operation settings
-abstract class OperationSettings<L extends AccessLanguage> {
+class OperationSettings<L extends AccessLanguage> {
+
   ///
-  Map<String,dynamic> get raw;
+  OperationSettings(this.settings);
+
+  ///
+  JsonMap  settings;
 }

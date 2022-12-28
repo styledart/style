@@ -18,11 +18,13 @@
 
 import 'access_language.dart';
 import 'access_object.dart';
+import 'style_query_base.dart';
 
 ///
 abstract class CreateData<L extends AccessLanguage> with AccessObject {
-
   ///
   String get id;
 
+  ///
+  JsonMap get data;
 }

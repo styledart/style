@@ -22,5 +22,5 @@ import 'access_language.dart';
 ///
 mixin Pipeline<L extends AccessLanguage> {
   ///
-  Map<String, dynamic> toMap();
+  Map<String, dynamic> toJson();
 }

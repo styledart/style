@@ -138,10 +138,10 @@ abstract class DataAccess<L extends AccessLanguage> extends BaseService {
   TriggerService? triggerService;
 
   FutureOr<T> _operation<T extends DbResult>(
-      AccessEvent event, FutureOr<T> Function(Access access) interoperation);
+      AccessEvent<L> event, FutureOr<T> Function(Access access) interoperation);
 
   ///
-  FutureOr<DbResult> any(AccessEvent access) {
+  FutureOr<DbResult> any(AccessEvent<L> access) {
     switch (access.access.type) {
       case AccessType.read:
         return _operation(access, _read);
@@ -251,7 +251,7 @@ class _DataAccessWithTriggerAndPermission<L extends AccessLanguage>
             identifierMapping: identifierMapping);
 
   @override
-  FutureOr<T> _operation<T extends DbResult>(AccessEvent builder,
+  FutureOr<T> _operation<T extends DbResult>(AccessEvent<L> builder,
       FutureOr<T> Function(Access<L> acc) interoperation) async {
     var e = buildAccess(builder);
     if (await permissionHandler!.check(e)) {
@@ -271,7 +271,7 @@ class _DataAccessWithOnlyTrigger<L extends AccessLanguage>
             identifierMapping: identifierMapping);
 
   @override
-  FutureOr<T> _operation<T extends DbResult>(AccessEvent builder,
+  FutureOr<T> _operation<T extends DbResult>(AccessEvent<L> builder,
       FutureOr<T> Function(Access<L> access) interoperation) {
     try {
       return triggerService!
@@ -288,7 +288,7 @@ class _DataAccessEmpty<L extends AccessLanguage> extends DataAccess<L> {
       : super._(implementation, identifierMapping: identifierMapping);
 
   @override
-  FutureOr<T> _operation<T extends DbResult>(AccessEvent access,
+  FutureOr<T> _operation<T extends DbResult>(AccessEvent<L> access,
           FutureOr<T> Function(Access<L> acc) interoperation) =>
       interoperation(buildAccess(access).access);
 }
@@ -304,14 +304,14 @@ class _DataAccessWithPermission<L extends AccessLanguage>
             identifierMapping: identifierMapping);
 
   @override
-  FutureOr<T> _operation<T extends DbResult>(AccessEvent builder,
+  FutureOr<T> _operation<T extends DbResult>(AccessEvent<L> builder,
       FutureOr<T> Function(Access<L> access) interoperation) async {
     try {
       var e = buildAccess(builder);
       if (await permissionHandler!.check(e)) {
         return interoperation(e.access);
       } else {
-        throw ForbiddenUnauthorizedException()..payload = e.toMap(false);
+        throw ForbiddenUnauthorizedException()..payload = e /*.toMap(false)*/;
       }
     } on Exception {
       rethrow;
@@ -443,139 +443,139 @@ class DeleteDbResult extends DbResult<Map<String, dynamic>?> {
 }
 
 ///
-class SimpleCacheDataAccess extends DataAccessImplementation<CommonLanguage> {
-  ///
-  SimpleCacheDataAccess();
-
-  ///
-  final Map<String, Map<String, Map<String, dynamic>>> data = {};
-
-  @override
-  Future<bool> init([bool inInterface = true]) async => true;
-
-  @override
-  FutureOr<CreateDbResult> create(Access<CommonLanguage> access) =>
-      CreateDbResult(identifier: '1111');
-
-  @override
-  FutureOr<DeleteDbResult> delete(Access<CommonLanguage> access) {
-    throw UnimplementedError();
-    // if (access.identifier == null) {
-    //   throw BadRequests();
-    // }
-    // if (data[access.collection]?[access.identifier!] == null) {
-    //   return DeleteDbResult(exists: false);
-    // } else {
-    //   data[access.collection]!.remove(access.identifier);
-    //   return DeleteDbResult(exists: true);
-    // }
-  }
-
-  @override
-  Future<ReadDbResult> read(Access<CommonLanguage> access) async {
-    throw UnimplementedError();
-    // if (access.identifier == null) {
-    //   throw BadRequests();
-    // }
-    // var d = data[access.collection]?[access.identifier];
-    //
-    // if (d == null) throw NotFoundException();
-    // return ReadDbResult(data: Map<String, dynamic>.from(d));
-  }
-
-  @override
-  FutureOr<ReadListResult> readList(covariant CommonAccess access) {
-    var q = access.query as CommonQuery?;
-
-    if (q?.filter != null) {
-      Logger.of(context).warn(context, 'query_not_supported',
-          title: 'Query selector '
-              'not supported with SimpleCacheDataAccess , so its skipped');
-    }
-
-    if (q?.sortExpression != null) {
-      Logger.of(context).warn(context, 'sort_not_supported',
-          title: 'Query sort '
-              'not supported with SimpleCacheDataAccess , so its skipped');
-    }
-    if (access.query?.fields != null) {
-      Logger.of(context).warn(context, 'fields_not_supported',
-          title: 'Query fields '
-              'not supported with SimpleCacheDataAccess , so its skipped');
-    }
-    var l = q?.limit ?? 200;
-    var s = q?.offset ?? 0;
-
-    var len = data[access.collection]?.length ?? 0;
-
-    var nLen = len - s;
-
-    if (nLen <= 0) {
-      return ReadListResult(data: []);
-    }
-
-    if (l >= nLen) {
-      l = nLen;
-    }
-
-    return ReadListResult(
-        data: _copy(
-            data[access.collection]?.values.toList().sublist(s).sublist(0, l)));
-  }
-
-  List<T>? _copy<T>(List<T>? l) {
-    if (l == null) return null;
-    return List<T>.from(l);
-  }
-
-  @override
-  FutureOr<UpdateDbResult> update(Access<CommonLanguage> access) {
-    throw UnimplementedError();
-    // if (access.update == null) {
-    //   throw BadRequests();
-    // }
-    // if (access.identifier == null) {
-    //   throw BadRequests();
-    // }
-    // data[access.collection]?[access.identifier]
-    // ?.addAll(access.update!.toMap());
-    // return UpdateDbResult(data: null);
-  }
-
-  @override
-  FutureOr<DbResult<int>> count(Access<CommonLanguage> access) {
-    if (access.query != null) {
-      Logger.of(context).warn(context, 'query_not_supported',
-          title: 'Query '
-              'not supported with SimpleCacheDataAccess , so its skipped');
-    }
-    return DbResult<int>(data: data[access.collection]?.length ?? 0);
-  }
-
-  @override
-  FutureOr<DbResult<bool>> exists(Access<CommonLanguage> access) {
-    throw UnimplementedError();
-    // // TODO: implement exists
-    // if (access.query != null) {
-    //   Logger.of(context).warn(context, "query_not_supported",
-    //       title: "Query "
-    //           "not supported with SimpleCacheDataAccess , so its skipped");
-    // }
-    //
-    // if (access.identifier == null) {
-    //   throw BadRequests();
-    // }
-    //
-    // return DbResult<bool>(
-    //     data: data[access.collection]?[access.identifier!] != null);
-  }
-
-  @override
-  FutureOr<ReadListResult> aggregation(Access<CommonLanguage> access) {
-    throw UnimplementedError(
-        'Aggregation not supported with Simple(Cache)DataAccess');
-  }
-}
+// class SimpleCacheDataAccess extends DataAccessImplementation<StyleKey, StyleData, CommonLanguage> {
+//   ///
+//   SimpleCacheDataAccess();
+//
+//   ///
+//   final Map<String, Map<String, Map<String, dynamic>>> data = {};
+//
+//   @override
+//   Future<bool> init([bool inInterface = true]) async => true;
+//
+//   @override
+//   FutureOr<CreateDbResult> create(Access<CommonLanguage> access) =>
+//       CreateDbResult(identifier: '1111');
+//
+//   @override
+//   FutureOr<DeleteDbResult> delete(Access<CommonLanguage> access) {
+//     throw UnimplementedError();
+//     // if (access.identifier == null) {
+//     //   throw BadRequests();
+//     // }
+//     // if (data[access.collection]?[access.identifier!] == null) {
+//     //   return DeleteDbResult(exists: false);
+//     // } else {
+//     //   data[access.collection]!.remove(access.identifier);
+//     //   return DeleteDbResult(exists: true);
+//     // }
+//   }
+//
+//   @override
+//   Future<ReadDbResult> read(Access<CommonLanguage> access) async {
+//     throw UnimplementedError();
+//     // if (access.identifier == null) {
+//     //   throw BadRequests();
+//     // }
+//     // var d = data[access.collection]?[access.identifier];
+//     //
+//     // if (d == null) throw NotFoundException();
+//     // return ReadDbResult(data: Map<String, dynamic>.from(d));
+//   }
+//
+//   @override
+//   FutureOr<ReadListResult> readList(covariant CommonAccess access) {
+//     var q = access.query as CommonQuery?;
+//
+//     if (q?.filter != null) {
+//       Logger.of(context).warn(context, 'query_not_supported',
+//           title: 'Query selector '
+//               'not supported with SimpleCacheDataAccess , so its skipped');
+//     }
+//
+//     if (q?.sortExpression != null) {
+//       Logger.of(context).warn(context, 'sort_not_supported',
+//           title: 'Query sort '
+//               'not supported with SimpleCacheDataAccess , so its skipped');
+//     }
+//     if (access.query?.fields != null) {
+//       Logger.of(context).warn(context, 'fields_not_supported',
+//           title: 'Query fields '
+//               'not supported with SimpleCacheDataAccess , so its skipped');
+//     }
+//     var l = q?.limit ?? 200;
+//     var s = q?.offset ?? 0;
+//
+//     var len = data[access.collection]?.length ?? 0;
+//
+//     var nLen = len - s;
+//
+//     if (nLen <= 0) {
+//       return ReadListResult(data: []);
+//     }
+//
+//     if (l >= nLen) {
+//       l = nLen;
+//     }
+//
+//     return ReadListResult(
+//         data: _copy(
+//             data[access.collection]?.values.toList().sublist(s).sublist(0, l)));
+//   }
+//
+//   List<T>? _copy<T>(List<T>? l) {
+//     if (l == null) return null;
+//     return List<T>.from(l);
+//   }
+//
+//   @override
+//   FutureOr<UpdateDbResult> update(Access<CommonLanguage> access) {
+//     throw UnimplementedError();
+//     // if (access.update == null) {
+//     //   throw BadRequests();
+//     // }
+//     // if (access.identifier == null) {
+//     //   throw BadRequests();
+//     // }
+//     // data[access.collection]?[access.identifier]
+//     // ?.addAll(access.update!.toMap());
+//     // return UpdateDbResult(data: null);
+//   }
+//
+//   @override
+//   FutureOr<DbResult<int>> count(Access<CommonLanguage> access) {
+//     if (access.query != null) {
+//       Logger.of(context).warn(context, 'query_not_supported',
+//           title: 'Query '
+//               'not supported with SimpleCacheDataAccess , so its skipped');
+//     }
+//     return DbResult<int>(data: data[access.collection]?.length ?? 0);
+//   }
+//
+//   @override
+//   FutureOr<DbResult<bool>> exists(Access<CommonLanguage> access) {
+//     throw UnimplementedError();
+//     // // TODO: implement exists
+//     // if (access.query != null) {
+//     //   Logger.of(context).warn(context, "query_not_supported",
+//     //       title: "Query "
+//     //           "not supported with SimpleCacheDataAccess , so its skipped");
+//     // }
+//     //
+//     // if (access.identifier == null) {
+//     //   throw BadRequests();
+//     // }
+//     //
+//     // return DbResult<bool>(
+//     //     data: data[access.collection]?[access.identifier!] != null);
+//   }
+//
+//   @override
+//   FutureOr<ReadListResult> aggregation(Access<CommonLanguage> access) {
+//     throw UnimplementedError(
+//         'Aggregation not supported with Simple(Cache)DataAccess');
+//   }
+// }
 
 ///
 // class StoreDelegate<T extends Identifier> {
@@ -627,67 +627,67 @@ class SimpleCacheDataAccess extends DataAccessImplementation<CommonLanguage> {
 // }
 
 ///
-class SimpleDataAccess extends SimpleCacheDataAccess {
-  ///
-  SimpleDataAccess(this.directory)
-      : assert(directory.endsWith(Platform.pathSeparator) ||
-            directory.endsWith('/'));
-
-  ///
-  String directory;
-
-  @override
-  Future<bool> init([bool inInterface = true]) async {
-    var docs = await Directory(directory)
-        .list()
-        .where((event) => event.path.endsWith('.json'))
-        .toList();
-
-    var colsFtrs =
-        docs.map((e) async => json.decode(await File(e.path).readAsString()));
-    var cols = await Future.wait(colsFtrs);
-    var i = 0;
-    while (i < cols.length) {
-      data[docs[i].path.split('/').last.replaceAll('.json', '')] =
-          (cols[i] as Map).cast<String, Map<String, dynamic>>();
-      i++;
-    }
-    return true;
-  }
-
-  ///
-  Future<void> saveCollection(String collection) async {
-    var f = File('$directory$collection.json');
-    if (!(await f.exists())) {
-      await f.create();
-    }
-    await f.writeAsString(json.encode(data[collection]));
-  }
-
-  @override
-  FutureOr<CreateDbResult> create(Access<CommonLanguage> access) async {
-    var res = await super.create(access);
-
-    await saveCollection(access.collection);
-
-    return res;
-  }
-
-  @override
-  FutureOr<UpdateDbResult> update(Access<CommonLanguage> access) async {
-    var res = await super.update(access);
-
-    await saveCollection(access.collection);
-
-    return res;
-  }
-
-  @override
-  FutureOr<DeleteDbResult> delete(Access<CommonLanguage> access) async {
-    var res = await super.delete(access);
-
-    await saveCollection(access.collection);
-
-    return res;
-  }
-}
+// class SimpleDataAccess extends SimpleCacheDataAccess {
+//   ///
+//   SimpleDataAccess(this.directory)
+//       : assert(directory.endsWith(Platform.pathSeparator) ||
+//             directory.endsWith('/'));
+//
+//   ///
+//   String directory;
+//
+//   @override
+//   Future<bool> init([bool inInterface = true]) async {
+//     var docs = await Directory(directory)
+//         .list()
+//         .where((event) => event.path.endsWith('.json'))
+//         .toList();
+//
+//     var colsFtrs =
+//         docs.map((e) async => json.decode(await File(e.path).readAsString()));
+//     var cols = await Future.wait(colsFtrs);
+//     var i = 0;
+//     while (i < cols.length) {
+//       data[docs[i].path.split('/').last.replaceAll('.json', '')] =
+//           (cols[i] as Map).cast<String, Map<String, dynamic>>();
+//       i++;
+//     }
+//     return true;
+//   }
+//
+//   ///
+//   Future<void> saveCollection(String collection) async {
+//     var f = File('$directory$collection.json');
+//     if (!(await f.exists())) {
+//       await f.create();
+//     }
+//     await f.writeAsString(json.encode(data[collection]));
+//   }
+//
+//   @override
+//   FutureOr<CreateDbResult> create(Access<CommonLanguage> access) async {
+//     var res = await super.create(access);
+//
+//     await saveCollection(access.collection);
+//
+//     return res;
+//   }
+//
+//   @override
+//   FutureOr<UpdateDbResult> update(Access<CommonLanguage> access) async {
+//     var res = await super.update(access);
+//
+//     await saveCollection(access.collection);
+//
+//     return res;
+//   }
+//
+//   @override
+//   FutureOr<DeleteDbResult> delete(Access<CommonLanguage> access) async {
+//     var res = await super.delete(access);
+//
+//     await saveCollection(access.collection);
+//
+//     return res;
+//   }
+// }

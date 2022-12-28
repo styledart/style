@@ -16,6 +16,10 @@
  *
  */
 
+import 'dart:typed_data';
+
+import 'package:meta/meta.dart';
+
 import '../style_query.dart';
 
 ///
@@ -30,6 +34,10 @@ class QueryLanguageBinding {
   final Map<Type, AccessLanguageDelegate> _delegates = {};
 
   ///
+  AccessLanguageDelegate<L> delegate<L extends AccessLanguage>() =>
+      _delegates[L]! as AccessLanguageDelegate<L>;
+
+  ///
   void initDelegate<T extends AccessLanguage>(
       AccessLanguageDelegate<T> delegate) {
     _delegates[T] = delegate;
@@ -37,14 +45,10 @@ class QueryLanguageBinding {
 
   ///
   Access<T> convertTo<T extends AccessLanguage>(Access access) {
-    print(access.language);
-    print(T);
-
     if (access.language == T) {
       return access as Access<T>;
     }
-
-    var from = _delegates[access.language];
+    var from = _delegates[T];
 
     if (from == null) {
       throw Exception(
@@ -66,34 +70,64 @@ class QueryLanguageBinding {
 }
 
 ///
-abstract class AccessLanguage {
+@immutable
+abstract class FieldKey<L extends AccessLanguage> {
   ///
-  String get name;
+  @override
+  int get hashCode;
+
+  ///
+  @override
+  bool operator ==(Object other);
 }
 
 ///
+abstract class AccessLanguage {
+  ///
+  const AccessLanguage();
+}
+
+/// R is raw data format.
+///
+/// This delegate allows R instances to be converted to general access
+/// objects like [CreateData], [UpdateData] etc.
 abstract class AccessLanguageDelegate<L extends AccessLanguage> {
   ///
-  AccessLanguageDelegate();
+  const AccessLanguageDelegate(this.name);
 
   ///
-  CreateData<L> createFromRaw(Map<String, dynamic> raw);
-
-  ///
-  UpdateData<L> updateFromRaw(Map<String, dynamic> raw);
-
-  ///
-  Pipeline<L> pipelineFromRaw(Map<String, dynamic> raw);
-
-  ///
-  Fields<L> fieldsFromRaw(Map<String, dynamic> raw);
-
-  ///
-  Query<L> queryFromRaw(Map<String, dynamic> raw);
+  final String name;
 
   ///
   CommonAccess toCommonLanguage(Access<L> access);
 
   ///
   Access<L> fromCommonLanguage(CommonAccess access);
+
+  ///
+  Access<L> accessFromJson(JsonMap jsonMap);
+
+  ///
+  Access<L> accessFromBinary(Uint8List binary) =>
+      accessFromJson(binary.toJson());
+
+  ///
+  Query<L> queryFromJson(JsonMap jsonMap);
+
+  ///
+  Query<L> queryFromBinary(Uint8List binary) => queryFromJson(binary.toJson());
+
+  ///
+  UpdateData<L> updateDataFromJson(JsonMap jsonMap);
+
+  ///
+  UpdateData<L> updateDataFromBinary(Uint8List binary) =>
+      updateDataFromJson(binary.toJson());
+
+  ///
+  CreateData<L> createDataFromJson(JsonMap jsonMap);
+
+  ///
+  CreateData<L> createDataFromBinary(Uint8List binary) =>
+      createDataFromJson(binary.toJson());
 }

@@ -26,7 +26,7 @@ class PermissionHandler {
   ///
   PermissionHandler.custom(
       {required PermissionCheckerCallback callback, this.beforeNeed = false}) {
-    checker = (_) => callback(_);
+    checker = callback;
   }
 
   static FutureOr<bool> _validateCreate(
@@ -34,8 +34,9 @@ class PermissionHandler {
     if (a.type != DbOperationType.create) {
       return true;
     }
+
     var validator = StyleValidator(await create);
-    var valid = validator.validate(a.access.create!.toMap());
+    var valid = validator.validate(a.access.createData!.data);
     if (!valid) {
       a.errors = validator.errorObjects.map((e) => e.toMapEntry()).toList();
     }
@@ -49,7 +50,7 @@ class PermissionHandler {
     }
 
     var validator = StyleValidator(await update);
-    var valid = validator.validate(a.access.update!.toMap());
+    var valid = validator.validate(a.access.updateData!.toJson());
     if (!valid) {
       a.errors = validator.errorObjects.map((e) => e.toMapEntry()).toList();
     }
@@ -159,9 +160,11 @@ class PermissionHandler {
         assert(write == null ||
             (update == null && delete == null && create == null)) {
     var defaultsMap = {
-      if (write != null) DbOperationType.create: write,
-      if (write != null) DbOperationType.update: write,
-      if (write != null) DbOperationType.delete: write,
+      if (write != null) ...{
+        DbOperationType.create: write,
+        DbOperationType.update: write,
+        DbOperationType.delete: write
+      },
       if (read != null) DbOperationType.read: read,
       if (update != null) DbOperationType.update: update,
       if (create != null) DbOperationType.create: create,

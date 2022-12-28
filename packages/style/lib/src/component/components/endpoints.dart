@@ -163,141 +163,141 @@ class SimpleEndpoint extends Endpoint {
 ///
 ///
 /// ## Query
-class RestAccessPoint extends StatelessComponent {
-  ///
-  RestAccessPoint(this.route, {this.queryBuilder, Key? key}) : super(key: key);
-
-  ///
-  final String route;
-
-  ///
-  final CommonQuery Function(Map<String, String> queryParameters)? queryBuilder;
-
-  ///
-  final RandomGenerator randomIdentifier = RandomGenerator('[*#]/l(30)');
-
-  ///
-  Access _create(Request request, BuildContext context) {
-    try {
-      var col = request.path.next;
-      var identifierKey = context.dataAccess.identifierMapping?[col] ?? '_sid';
-      var body = (request.body?.data) as Map<String, dynamic>;
-      String identifier;
-      if (body.containsKey(identifierKey)) {
-        identifier = body[identifierKey] as String;
-      } else {
-        identifier = randomIdentifier.generateString();
-        body[identifierKey] = identifier;
-      }
-      return CommonAccess(
-          type: AccessType.create, collection: col, create: CommonCreate(body));
-    } on Exception {
-      rethrow;
-    }
-  }
-
-  ///
-  Access _read(Request request) {
-    try {
-      //TODO: check not processed is not empty
-      return CommonAccess(
-        type: AccessType.read,
-        collection: request.path.next,
-        query: CommonQuery(identifier: request.path.notProcessedValues.first),
-      );
-    } on Exception {
-      rethrow;
-    }
-  }
-
-  ///
-  Access _readList(Request request) {
-    try {
-      throw UnimplementedError();
-      // return CommonAccess(
-      //     type: AccessType.readMultiple,
-      //     collection: request.path.next,
-      //     query: queryBuilder?.call(request.path.queryParameters) ??
-      //         CommonQuery.fromMap(request.path.queryParameters['q'] != null
-      //             ? (json.decode(request.path.queryParameters['q']!)
-      //                 as Map<String, dynamic>)
-      //             : () {
-      //                 throw Exception();
-      //               }()));
-    } on Exception {
-      rethrow;
-    }
-  }
-
-  ///
-  Access _update(Request request) {
-    try {
-      return CommonAccess(
-          type: AccessType.update,
-          collection: request.path.next,
-          query: CommonQuery(identifier: request.path.notProcessedValues.first),
-          update: CommonUpdate((request.body?.data) as Map<String, dynamic>));
-    } on Exception {
-      rethrow;
-    }
-  }
-
-  ///
-  Access _delete(Request request) {
-    try {
-      //TODO: check not processed is not empty
-      return CommonAccess(
-        type: AccessType.delete,
-        collection: request.path.next,
-        query: CommonQuery(identifier: request.path.notProcessedValues.first),
-      );
-    } on Exception {
-      rethrow;
-    }
-  }
-
-  @override
-  Component build(BuildContext context) {
-    var result = AccessPoint((request, ctx) async {
-      var method = request.method;
-      Access access;
-
-      if (method == null) {
-        throw MethodNotAllowedException();
-      } else if (method == Methods.POST) {
-        if (request.body is! JsonBody) {
-          throw BadRequests();
-        }
-        access = _create(request, ctx);
-      } else if (method == Methods.GET) {
-        if (request.path.notProcessedValues.isEmpty) {
-          access = _readList(request);
-        } else {
-          access = _read(request);
-        }
-      } else if (method == Methods.PUT || method == Methods.PATCH) {
-        if (request.path.notProcessedValues.isEmpty) {
-          throw UnimplementedError();
-        } else {
-          access = _update(request);
-        }
-      } else if (method == Methods.DELETE) {
-        if (request.path.notProcessedValues.isEmpty) {
-          throw UnimplementedError();
-        } else {
-          access = _delete(request);
-        }
-      } else {
-        throw MethodNotAllowedException();
-      }
-      return AccessEvent(
-        access: access,
-        request: request,
-      );
-    });
-    return Route(route, handleUnknownAsRoot: true, root: result);
-  }
-}
+// class RestAccessPoint extends StatelessComponent {
+//   ///
+//   RestAccessPoint(this.route, {this.queryBuilder, Key? key}) : super(key: key);
+//
+//   ///
+//   final String route;
+//
+//   ///
+//   final CommonQuery Function(Map<String, String> queryParameters)? queryBuilder;
+//
+//   ///
+//   final RandomGenerator randomIdentifier = RandomGenerator('[*#]/l(30)');
+//
+//   ///
+//   Access _create(Request request, BuildContext context) {
+//     try {
+//       var col = request.path.next;
+//       var identifierKey = context.dataAccess.identifierMapping?[col] ?? '_sid';
+//       var body = (request.body?.data) as Map<String, dynamic>;
+//       String identifier;
+//       if (body.containsKey(identifierKey)) {
+//         identifier = body[identifierKey] as String;
+//       } else {
+//         identifier = randomIdentifier.generateString();
+//         body[identifierKey] = identifier;
+//       }
+//       return CommonAccess(
+//           type: AccessType.create, collection: col, create: CommonCreate(body));
+//     } on Exception {
+//       rethrow;
+//     }
+//   }
+//
+//   ///
+//   Access _read(Request request) {
+//     try {
+//       //TODO: check not processed is not empty
+//       return CommonAccess(
+//         type: AccessType.read,
+//         collection: request.path.next,
+//         query: CommonQuery(identifier: request.path.notProcessedValues.first),
+//       );
+//     } on Exception {
+//       rethrow;
+//     }
+//   }
+//
+//   ///
+//   Access _readList(Request request) {
+//     try {
+//       throw UnimplementedError();
+//       // return CommonAccess(
+//       //     type: AccessType.readMultiple,
+//       //     collection: request.path.next,
+//       //     query: queryBuilder?.call(request.path.queryParameters) ??
+//       //         CommonQuery.fromMap(request.path.queryParameters['q'] != null
+//       //             ? (json.decode(request.path.queryParameters['q']!)
+//       //                 as Map<String, dynamic>)
+//       //             : () {
+//       //                 throw Exception();
+//       //               }()));
+//     } on Exception {
+//       rethrow;
+//     }
+//   }
+//
+//   ///
+//   Access _update(Request request) {
+//     try {
+//       return CommonAccess(
+//           type: AccessType.update,
+//           collection: request.path.next,
+//           query: CommonQuery(identifier: request.path.notProcessedValues.first),
+//           update: CommonUpdate((request.body?.data) as Map<String, dynamic>));
+//     } on Exception {
+//       rethrow;
+//     }
+//   }
+//
+//   ///
+//   Access _delete(Request request) {
+//     try {
+//       //TODO: check not processed is not empty
+//       return CommonAccess(
+//         type: AccessType.delete,
+//         collection: request.path.next,
+//         query: CommonQuery(identifier: request.path.notProcessedValues.first),
+//       );
+//     } on Exception {
+//       rethrow;
+//     }
+//   }
+//
+//   @override
+//   Component build(BuildContext context) {
+//     var result = AccessPoint((request, ctx) async {
+//       var method = request.method;
+//       Access access;
+//
+//       if (method == null) {
+//         throw MethodNotAllowedException();
+//       } else if (method == Methods.POST) {
+//         if (request.body is! JsonBody) {
+//           throw BadRequests();
+//         }
+//         access = _create(request, ctx);
+//       } else if (method == Methods.GET) {
+//         if (request.path.notProcessedValues.isEmpty) {
+//           access = _readList(request);
+//         } else {
+//           access = _read(request);
+//         }
+//       } else if (method == Methods.PUT || method == Methods.PATCH) {
+//         if (request.path.notProcessedValues.isEmpty) {
+//           throw UnimplementedError();
+//         } else {
+//           access = _update(request);
+//         }
+//       } else if (method == Methods.DELETE) {
+//         if (request.path.notProcessedValues.isEmpty) {
+//           throw UnimplementedError();
+//         } else {
+//           access = _delete(request);
+//         }
+//       } else {
+//         throw MethodNotAllowedException();
+//       }
+//       return AccessEvent(
+//         access: access,
+//         request: request,
+//       );
+//     });
+//     return Route(route, handleUnknownAsRoot: true, root: result);
+//   }
+// }
 
 /// TODO: Document
 class AccessPoint extends Endpoint {

@@ -33,20 +33,6 @@ enum DbOperationType {
   delete,
 }
 
-// class AccessBuilder {
-//   ///
-//   AccessBuilder(
-//       {this.request , required this.access, this.context});
-//
-//   ///
-//   Request? request;
-//
-//   ///
-//   BuildContext? context;
-//
-//   ///
-//   Access access;
-// }
 
 ///
 class AccessEvent<T extends AccessLanguage> {
@@ -104,120 +90,93 @@ class AccessEvent<T extends AccessLanguage> {
   ///
   BuildContext? context;
 
-  // ignore_for_file: avoid_positional_boolean_parameters
-  ///
-  Map<String, dynamic> toMap([bool includeBeforeAfter = true]) => {
-        'data_access': context?.dataAccess.toMap() ?? 'unknown',
-        'type': type.index,
-        'create': createTime.millisecondsSinceEpoch,
-        'request': request?.toMap(),
-        if (includeBeforeAfter) 'before': before,
-        if (includeBeforeAfter) 'after': after,
-        'access': access.toMap(),
-        'errors': errors
-      };
+  // // ignore_for_file: avoid_positional_boolean_parameters
+  // ///
+  // Map<String, dynamic> toMap([bool includeBeforeAfter = true]) => {
+  //       'data_access': context?.dataAccess.toMap() ?? 'unknown',
+  //       'type': type.index,
+  //       'create': createTime.millisecondsSinceEpoch,
+  //       'request': request?.toMap(),
+  //       if (includeBeforeAfter) 'before': before,
+  //       if (includeBeforeAfter) 'after': after,
+  //       'access': access.toJson(),
+  //       'errors': errors
+  //     };
 }
+//
+// ///
+// class Read<L extends AccessLanguage> extends AccessEvent<L> {
+//   ///
+//   Read(
+//       {Request? request,
+//       required String collection,
+//       required Query<L> query,
+//       AccessToken? customToken})
+//       : super(
+//             request: request?..token = customToken,
+//             access: Access<L>(
+//                 type: AccessType.read, collection: collection, query: query));
+// }
+//
+// ///
+// class ReadMultiple<L extends AccessLanguage>
+//     extends AccessEvent<L> {
+//   ///
+//   ReadMultiple(
+//       {Request? request,
+//       required String collection,
+//       Query<L>? query,
+//       AccessToken? customToken})
+//       : super(
+//             request: request?..token = customToken,
+//             access: Access<L>(
+//                 type: AccessType.readMultiple,
+//                 collection: collection,
+//                 query: query));
+// }
 
-///
-class Read<L extends AccessLanguage> extends AccessEvent<L> {
-  ///
-  Read(
-      {Request? request,
-      required String collection,
-      required Query<L> query,
-      AccessToken? customToken})
-      : super(
-            request: request?..token = customToken,
-            access: Access<L>(
-                type: AccessType.read, collection: collection, query: query));
-}
-
-///
-class ReadMultiple<L extends AccessLanguage> extends AccessEvent<L> {
-  ///
-  ReadMultiple(
-      {Request? request,
-      required String collection,
-      Query<L>? query,
-      AccessToken? customToken})
-      : super(
-            request: request?..token = customToken,
-            access: Access<L>(
-                type: AccessType.readMultiple,
-                collection: collection,
-                query: query));
-}
-
-///
-class Create<L extends AccessLanguage> extends AccessEvent<L> {
-  ///
-  Create(
-      {Request? request,
-      required String collection,
-      required CreateData<L> data,
-      AccessToken? customToken})
-      : super(
-            request: request?..token = customToken,
-            access: Access(
-                type: AccessType.create, collection: collection, create: data));
-}
-
-///
-class Update<L extends AccessLanguage> extends AccessEvent<L> {
-  ///
-  Update(
-      {Request? request,
-      required String collection,
-      Query<L>? query,
-      String? identifier,
-      required UpdateData<L> data,
-      AccessToken? customToken})
-      : assert(identifier != null || query != null),
-        super(
-            request: request?..token = customToken,
-            access: Access(
-                type: AccessType.update, collection: collection, update: data));
-}
-
-///
-class Delete<L extends AccessLanguage> extends AccessEvent<L> {
-  ///
-  Delete(
-      {Request? request,
-      required String collection,
-      required Query<L> query,
-      AccessToken? customToken})
-      : super(
-            request: request?..token = customToken,
-            access: Access<L>(
-                type: AccessType.delete, collection: collection, query: query));
-}
-
-///
-class Count<L extends AccessLanguage> extends AccessEvent<L> {
-  ///
-  Count(
-      {Request? request,
-      required String collection,
-      Query<L>? query,
-      AccessToken? customToken})
-      : super(
-          request: request?..token = customToken,
-          access: Access(
-              type: AccessType.count, collection: collection, query: query),
-        );
-}
-
-///
-class Exists<L extends AccessLanguage> extends AccessEvent<L> {
-  ///
-  Exists(
-      {Request? request,
-      required String collection,
-      required Query<L> query,
-      AccessToken? customToken})
-      : super(
-            request: request?..token = customToken,
-            access: Access<L>(
-                type: AccessType.exists, collection: collection, query: query));
-}
+//
+// ///
+// class Delete<L extends AccessLanguage>
+//     extends AccessEvent<L> {
+//   ///
+//   Delete(
+//       {Request? request,
+//       required String collection,
+//       required Query<L> query,
+//       AccessToken? customToken})
+//       : super(
+//             request: request?..token = customToken,
+//             access: Access<L>(
+//                 type: AccessType.delete, collection: collection, query: query));
+// }
+//
+// ///
+// class Count<L extends AccessLanguage> extends AccessEvent<L> {
+//   ///
+//   Count(
+//       {Request? request,
+//       required String collection,
+//       Query<L>? query,
+//       AccessToken? customToken})
+//       : super(
+//           request: request?..token = customToken,
+//           access: Access(
+//               type: AccessType.count, collection: collection, query: query),
+//         );
+// }
+//
+// ///
+// class Exists<L extends AccessLanguage>
+//     extends AccessEvent<L> {
+//   ///
+//   Exists(
+//       {Request? request,
+//       required String collection,
+//       required Query<L> query,
+//       AccessToken? customToken})
+//       : super(
+//             request: request?..token = customToken,
+//             access: Access<L>(
+//                 type: AccessType.exists, collection: collection, query: query));
+// }

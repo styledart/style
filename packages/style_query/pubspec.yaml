@@ -1,6 +1,7 @@
 name: style_query
 description: A starting point for Dart libraries or applications.
 version: 1.0.0
+publish_to: none
 # homepage: https://www.example.com
 
 environment:
@@ -8,7 +9,8 @@ environment:
 
 
 dependencies:
-  meta: ^1.7.0
+  meta: ^1.8.0
+
 
 # dependencies:
 #   path: ^1.8.0

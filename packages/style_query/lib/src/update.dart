@@ -21,78 +21,28 @@ import 'access_object.dart';
 
 ///
 abstract class UpdateData<L extends AccessLanguage> with AccessObject {
-  ///
-  UpdateDifference<T>? difference<T>(String key);
+
 
   ///
-  Map<String, UpdateDifference> differences();
+  Map<String, List<UpdateDifference>> differences();
 
-  ///
-  List<String> keysRenamed();
-
-  ///
-  List<String> fieldsChanged();
-
-  ///
-  List<String> fieldsRemoved();
-
-  ///
-  bool isChangedField(String key) {
-    return fieldsChanged().contains(key);
-  }
-
-  ///
-  bool keyIsRenamed(String key) {
-    return keysRenamed().contains(key);
-  }
-
-  ///
-  bool keyRemoved(String key) {
-    return fieldsRemoved().contains(key);
-  }
 }
 
 ///
-enum DifferenceType {
+abstract class UpdateDifference {
   ///
-  set,
+  UpdateDifference(this.key);
 
   ///
-  remove,
-
-  ///
-  increment,
-
-  /// Insert object to array
-  insert,
-
-  ///
-  removeArrayObj
+  String key;
 }
 
 ///
-abstract class UpdateDifference<T> {
+class SetFieldsDifference<T> extends UpdateDifference {
   ///
-  DifferenceType get type;
-
-  ///
-  String get key;
-}
-
-///
-class SetFieldsDifference<T> extends UpdateDifference<T> {
-  ///
-  SetFieldsDifference(this._key, this.newValue);
+  SetFieldsDifference(super.key, this.newValue);
 
   ///
   T newValue;
 
-  ///
-  final String _key;
-
-  @override
-  String get key => _key;
-
-  @override
-  DifferenceType get type => DifferenceType.set;
 }

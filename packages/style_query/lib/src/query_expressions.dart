@@ -25,7 +25,7 @@ abstract class FilterExpression {
   bool documentIsMatch(JsonMap map);
 
   ///
-  dynamic toMap();
+  dynamic toJson();
 }
 
 ///
@@ -70,9 +70,9 @@ class AndExpression extends LogicalExpression {
   }
 
   @override
-  JsonMap toMap() {
+  JsonMap toJson() {
     return {
-      "&&": [...expressions.map((e) => e.toMap()).toList()]
+      "&&": [...expressions.map((e) => e.toJson()).toList()]
     };
   }
 }
@@ -93,15 +93,15 @@ class OrExpression extends LogicalExpression {
   }
 
   @override
-  JsonMap toMap() {
+  JsonMap toJson() {
     return {
-      "||": [...expressions.map((e) => e.toMap()).toList()]
+      "||": [...expressions.map((e) => e.toJson()).toList()]
     };
   }
 }
 
 ///
-abstract class MatchExpression<Q extends Object> extends FilterExpression {
+abstract class MatchExpression<Q> extends FilterExpression {
   ///
   MatchExpression(this.key, this.queryValue);
 
@@ -114,46 +114,46 @@ abstract class MatchExpression<Q extends Object> extends FilterExpression {
   ///
   String get expression;
 
-  ///
-  bool compareTo(dynamic value);
-
   @override
-  List toMap() {
+  List toJson() {
     return [key, expression, queryValue];
   }
 
+  ///
+  bool valueIsMatch(Q? value);
+
   @override
-  bool documentIsMatch(JsonMap map) {
-    return compareTo(map[key]);
+  bool documentIsMatch(Map map) {
+    return valueIsMatch(map[key]?.value as Q?);
   }
 }
 
 ///
-class EqualExpression<Q extends Object> extends MatchExpression<Q> {
+class EqualExpression extends MatchExpression {
   ///
-  EqualExpression(String key, Q queryValue) : super(key, queryValue);
+  EqualExpression(String key, dynamic queryValue) : super(key, queryValue);
 
   @override
-  bool compareTo(dynamic value) => value == queryValue;
+  bool valueIsMatch(dynamic value) => value == queryValue;
 
   @override
   String get expression => "==";
 }
 
 ///
-class NotEqual<Q extends Object> extends MatchExpression<Q> {
+class NotEqual extends MatchExpression {
   ///
-  NotEqual(String key, Q queryValue) : super(key, queryValue);
+  NotEqual(String key, dynamic queryValue) : super(key, queryValue);
 
   @override
-  bool compareTo(dynamic value) => value != queryValue;
+  bool valueIsMatch(dynamic value) => value != queryValue;
 
   @override
   String get expression => "!=";
 }
 
 ///
-mixin ComparisonExpression<Q extends Comparable> on MatchExpression<Q> {
+mixin ComparisonExpression<Q> on MatchExpression<Q> {
   ///
   bool get equal;
 
@@ -168,10 +168,6 @@ class Greater<Q extends Comparable> extends MatchExpression<Q>
   Greater(String key, Q queryValue) : super(key, queryValue);
 
   @override
-  bool compareTo(dynamic value) =>
-      value is Comparable && value.compareTo(queryValue) > 0;
-
-  @override
   bool get equal => false;
 
   @override
@@ -179,17 +175,22 @@ class Greater<Q extends Comparable> extends MatchExpression<Q>
 
   @override
   String get expression => ">";
+
+  @override
+  bool valueIsMatch(Q? value) {
+    return value != null && value.compareTo(queryValue) > 0;
+  }
 }
 
 ///
 class Less<Q extends Comparable> extends MatchExpression<Q>
-    with ComparisonExpression {
+    with ComparisonExpression<Q> {
   ///
-  Less(String key, Q queryValue) : super(key, queryValue);
+  Less(super.key, super.queryValue);
 
   @override
-  bool compareTo(dynamic value) =>
-      value is Comparable && value.compareTo(queryValue) < 0;
+  bool valueIsMatch(Q? value) =>
+      value != null && value.compareTo(queryValue) < 0;
 
   @override
   bool get equal => false;
@@ -203,13 +204,13 @@ class Less<Q extends Comparable> extends MatchExpression<Q>
 
 ///
 class GreaterOrEqual<Q extends Comparable> extends MatchExpression<Q>
-    with ComparisonExpression {
+    with ComparisonExpression<Q> {
   ///
-  GreaterOrEqual(String key, Q queryValue) : super(key, queryValue);
+  GreaterOrEqual(super.key, super.queryValue);
 
   @override
-  bool compareTo(dynamic value) =>
-      value is Comparable && value.compareTo(queryValue) > -1;
+  bool valueIsMatch(Q? value) =>
+      value != null && value.compareTo(queryValue) > -1;
 
   @override
   bool get equal => true;
@@ -225,11 +226,11 @@ class GreaterOrEqual<Q extends Comparable> extends MatchExpression<Q>
 class LessOrEqual<Q extends Comparable> extends MatchExpression<Q>
     with ComparisonExpression {
   ///
-  LessOrEqual(String key, Q queryValue) : super(key, queryValue);
+  LessOrEqual(super.key, super.queryValue);
 
   @override
-  bool compareTo(dynamic value) =>
-      value is Comparable && value.compareTo(queryValue) < 1;
+  bool valueIsMatch(Q? value) =>
+      value != null && value.compareTo(queryValue) < 1;
 
   @override
   bool get equal => true;

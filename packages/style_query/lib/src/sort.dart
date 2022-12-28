@@ -19,16 +19,16 @@
 import 'access_language.dart';
 
 ///
-class SortExpression<L extends AccessLanguage> {
+abstract class SortExpression<L extends AccessLanguage> {
 
   ///
-  SortExpression(this.sorts);
+  SortExpression();
 
   /// AccessEvent is sort by key.<br>
   /// returns true if sorted ascending, <br>
   /// returns false if sorted descending, <br>
   /// returns null if not sorted by this key.
-  bool? sortedByAsc(String key) {
+  bool? sortedByAsc(dynamic key) {
     if (sorts.containsKey(key)) {
       return sorts[key] == Sorting.ascending;
     }
@@ -39,7 +39,7 @@ class SortExpression<L extends AccessLanguage> {
   /// returns true if sorted descending, <br>
   /// returns false if sorted ascending, <br>
   /// returns null if not sorted by this key.
-  bool? sortedByDesc(String key) {
+  bool? sortedByDesc(dynamic key) {
     if (sorts.containsKey(key)) {
       return sorts[key] == Sorting.descending;
     }
@@ -47,8 +47,10 @@ class SortExpression<L extends AccessLanguage> {
   }
 
   ///
-  final Map<String, Sorting> sorts;
+  Map<String, Sorting> get sorts;
 }
+
+
 
 ///
 enum Sorting {

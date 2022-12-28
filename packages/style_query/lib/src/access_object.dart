@@ -16,10 +16,16 @@
  *
  */
 
+
+import 'dart:typed_data';
+
 import 'style_query_base.dart';
 
 ///
 mixin AccessObject {
   ///
-  JsonMap toMap();
+  JsonMap toJson();
+
+  ///
+  Uint8List toBinary() => toJson().toBinary();
 }

@@ -16,16 +16,31 @@
  *
  */
 
+import 'dart:typed_data';
+
 import '../style_query.dart';
 import 'access_object.dart';
 
 ///
 abstract class Query<L extends AccessLanguage> with AccessObject {
+  ///
+  factory Query.fromBinary(Uint8List binary) {
+    return QueryLanguageBinding().delegate<L>().queryFromBinary(binary);
+  }
+
+  ///
+  factory Query.fromJson(JsonMap json) {
+    return QueryLanguageBinding().delegate<L>().queryFromJson(json);
+  }
+
+  ///
+  Query();
+
   /// AccessEvent is sort by key.<br>
   /// returns true if sorted ascending, <br>
   /// returns false if sorted descending, <br>
   /// returns null if not sorted by this key.
-  bool? sortedByAsc(String key) {
+  bool? sortedByAsc(dynamic key) {
     return sortExpression?.sortedByAsc(key) ?? false;
   }
 
@@ -33,7 +48,7 @@ abstract class Query<L extends AccessLanguage> with AccessObject {
   /// returns true if [key] specified as exclude
   /// returns false if [key] specified as include
   /// returns null if [key] not specified
-  bool? fieldIsExcluded(String key) {
+  bool? fieldIsExcluded(dynamic key) {
     if (fields?.excludeKeys != null) {
       return fields!.excludeKeys!.contains(key);
     }
@@ -49,7 +64,7 @@ abstract class Query<L extends AccessLanguage> with AccessObject {
   /// returns true if [key] specified as include
   /// returns false if [key] specified as exclude
   /// returns null if [key] not specified any exclude/include
-  bool? fieldIsIncluded(String key) {
+  bool? fieldIsIncluded(dynamic key) {
     if (fields?.includeKeys != null) {
       return fields!.includeKeys!.contains(key);
     }
@@ -62,7 +77,7 @@ abstract class Query<L extends AccessLanguage> with AccessObject {
   }
 
   /// return null if not filtered
-  FilterExpression? filteredBy(String key) {
+  FilterExpression? filteredBy(dynamic key) {
     if (filter is LogicalExpression) {
       return (filter as LogicalExpression).filteredBy(key);
     } else {
@@ -77,16 +92,16 @@ abstract class Query<L extends AccessLanguage> with AccessObject {
   FilterExpression? get filter;
 
   /// Response fields manipulates
-  Fields<L>? get fields;
+  Fields? get fields;
 
   ///
   SortExpression? get sortExpression;
 
   /// Response fields manipulates
-  set fields(Fields<L>? value);
+  set fields(Fields? value);
 
   /// Query known object
-  String? get identifier;
+  dynamic get identifier;
 
   /// Document limit
   int? get limit;

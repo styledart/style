@@ -16,13 +16,10 @@
  *
  */
 
-
-import 'access_language.dart';
 import 'access_object.dart';
 
 /// Field includes, excludes or projects
-abstract class Fields<L extends AccessLanguage> with AccessObject {
-
+abstract class Fields with AccessObject {
   /// Include specified
   List<String>? get includeKeys;
 

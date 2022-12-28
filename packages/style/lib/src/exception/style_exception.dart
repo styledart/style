@@ -58,15 +58,15 @@ abstract class StyleException<T extends Exception> implements Exception {
   Type get superType => T;
 
   ///
-  Map<String, dynamic>? payload;
+  dynamic payload;
 
-  ///
-  Map<String, dynamic> toMap() => {
-        'code': statusCode,
-        'type': runtimeType,
-        'super_type': T,
-        'payload': payload
-      };
+  // ///
+  // Map<String, dynamic> toMap() => {
+  //       'code': statusCode,
+  //       'type': runtimeType,
+  //       'super_type': T,
+  //       'payload': payload
+  //     };
 }
 
 ///

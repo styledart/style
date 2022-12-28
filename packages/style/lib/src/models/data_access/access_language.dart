@@ -29,8 +29,6 @@ abstract class LanguageDelegate<L extends AccessLanguage> {
   ///
   Query<L> fromCommonQuery(CommonQuery query);
 
-  ///
-  AccessEvent<L> buildAccess(AccessEvent<L> builder);
 }
 
 

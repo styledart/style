@@ -16,9 +16,13 @@
  *
  */
 
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:meta/meta.dart';
 
 import 'access_language.dart';
+import 'access_object.dart';
 import 'create.dart';
 import 'pipeline.dart';
 import 'query.dart';
@@ -27,6 +31,23 @@ import 'update.dart';
 
 ///
 typedef JsonMap = Map<String, dynamic>;
+
+
+///
+extension JsonToBinary on JsonMap {
+  ///
+  Uint8List toBinary() => utf8.encode(jsonEncode(this)) as Uint8List;
+
+  ///
+  String toJson() => jsonEncode(this);
+}
+
+
+///
+extension BinaryToJson on Uint8List {
+  ///
+  JsonMap toJson() => jsonDecode(utf8.decode(this)) as JsonMap;
+}
 
 ///
 enum AccessType {
@@ -63,16 +84,16 @@ enum AccessType {
 /// or other operations are defined as [Access].
 ///
 @immutable
-class Access<L extends AccessLanguage> {
+abstract class Access<L extends AccessLanguage> with AccessObject {
   ///
   const Access(
       {this.query,
       required this.type,
-      this.create,
-      this.update,
       required this.collection,
       this.pipeline,
-      this.settings});
+      this.settings,
+      this.createData,
+      this.updateData});
 
   /// Access language
   Type get language => L;
@@ -87,24 +108,14 @@ class Access<L extends AccessLanguage> {
   final OperationSettings? settings;
 
   ///
+  final CreateData<L>? createData;
+
+  ///
+  final UpdateData<L>? updateData;
+
+  ///
   final AccessType type;
 
   ///
   final String collection;
-
-  ///
-  final CreateData<L>? create;
-
-  ///
-  final UpdateData<L>? update;
-
-  ///
-  JsonMap toMap() => {
-        "collection": collection,
-        "type": type.index,
-        if (create != null) "create": create!.toMap(),
-        if (update != null) "update": update!.toMap(),
-        if (pipeline != null) "pipeline": pipeline!.toMap(),
-        if (query != null) "query": query!.toMap(),
-      };
 }
